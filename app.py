@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timedelta
 
 # --- CONFIGURAZIONE PROFESSIONALE ---
-st.set_page_config(page_title="LoopBaby - Moda Circolare", page_icon="♻️", layout="wide")
+st.set_page_config(page_title="LoopBaby - Moda Circolare", page_icon="🧸", layout="wide")
 
 # --- FUNZIONE POP-UP VALORI ---
 @st.dialog("Perché scegliere LoopBaby? 🌿")
@@ -20,12 +20,10 @@ def pop_up_valori():
         st.session_state.mostra_valori = False
         st.rerun()
 
-# Gestione sessione pop-up
 if "sessione_avviata" not in st.session_state:
     st.session_state.sessione_avviata = True
     st.session_state.mostra_valori = True
 
-# Funzione salvataggio dati
 def salva_dati(nuovi_dati):
     file_nome = 'iscrizioni_loopbaby.csv'
     df = pd.DataFrame([nuovi_dati])
@@ -34,10 +32,16 @@ def salva_dati(nuovi_dati):
     else:
         df.to_csv(file_nome, mode='a', header=False, index=False)
 
-# --- STILE GRAFICO AD ALTA LEGGIBILITÀ ---
+# --- STILE GRAFICO AD ALTA LEGGIBILITÀ (VERDE/BLU) + LOGO ---
 st.markdown("""
     <style>
     .stApp { background-color: #f0fdfa; }
+    
+    /* Logo Stilizzato Orsetto */
+    .logo-container { text-align: center; padding: 10px; }
+    .logo-text { font-family: 'Helvetica Neue', sans-serif; color: #0d9488; font-size: 38px; font-weight: 800; letter-spacing: -1px; margin-bottom: 0px; }
+    .logo-sub { color: #0369a1; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: -5px; }
+
     .stButton>button { 
         border-radius: 25px; height: 3.5em; font-weight: bold; 
         background: linear-gradient(135deg, #0d9488 0%, #0369a1 100%); 
@@ -65,20 +69,19 @@ st.markdown("""
 
 # --- MENU LATERALE ---
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center;'>♻️</h1>", unsafe_allow_html=True)
-    st.title("LoopBaby")
-    st.caption("Moda Circolare 0-24 mesi")
+    st.markdown("<h1 style='text-align: center; color: #0d9488; margin-bottom: 0px;'>🧸</h1>", unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center;"><p class="logo-text" style="font-size: 28px;">LoopBaby</p></div>', unsafe_allow_html=True)
     st.write("---")
     scelta = st.sidebar.radio("Navigazione:", 
                      ["🏠 Benvenuta", "📝 Profilo Bimbo (0-24m)", "📦 Ordina Box (15€)", "💎 Box Premium (25€)", "🛍️ Vetrina Acquisto", "🔐 Area Admin"],
-                     key="nav_vfinal_fix")
+                     key="nav_final_bear")
     st.write("---")
     st.success("✨ Iscrizione GRATUITA")
 
 # --- SEZIONE 1: HOME ---
 if scelta == "🏠 Benvenuta":
-    st.title("🌿 Benvenuti in LoopBaby")
-    st.subheader("L'armadio del tuo bimbo a poco prezzo e in modo sostenibile.")
+    st.markdown('<div class="logo-container"><p class="logo-text">LoopBaby</p><p class="logo-sub">L\'armadio del tuo bimbo a poco prezzo e in modo sostenibile</p></div>', unsafe_allow_html=True)
+    st.write("---")
     
     if st.session_state.get("mostra_valori", False):
         pop_up_valori()
@@ -157,7 +160,7 @@ elif scelta == "💎 Box Premium (25€)":
 # --- SEZIONE 5: VETRINA ---
 elif scelta == "🛍️ Vetrina Acquisto":
     st.title("🛍️ Vetrina: Compra e Tieni")
-    st.info("I capi acquistati qui non devono essere restituiti.")
+    st.info("I capi acquistati in questa sezione non devono essere restituiti.")
     v1, v2 = st.columns(2)
     v1.image("https://unsplash.com", caption="Maglione Orsetto - 9,00 €")
     v1.button("Acquista", key="acq1")

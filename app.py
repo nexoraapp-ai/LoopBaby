@@ -28,6 +28,10 @@ st.markdown("""
         background-color: #e0f2fe; padding: 20px; border-radius: 20px; 
         border-left: 10px solid #0369a1; margin-bottom: 20px; color: #0c4a6e; 
     }
+    .costi-card {
+        background-color: #fff1f2; padding: 20px; border-radius: 15px;
+        border: 2px solid #e11d48; color: #333; margin-bottom: 20px;
+    }
     .savings-text { 
         text-align: center; color: #065f46; font-weight: bold; 
         font-size: 1.2em; margin-top: 30px; padding: 10px; border-top: 1px solid #0d9488;
@@ -85,15 +89,37 @@ with st.sidebar:
 
 if scelta == "🏠 Home":
     st.markdown(f"### Benvenuta {st.session_state.user_data['nome']}! ✨")
-    st.subheader("La moda circolare da 0 a 24 mesi.")
     
+    # --- COS'È LOOPBABY ---
+    with st.container():
+        st.markdown("""
+        <div style="background-color: #ffffff; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #0d9488;">
+            <h4 style="color: #0d9488;">Cos'è LoopBaby?</h4>
+            <p>È la prima app di <b>Moda Circolare</b> dedicata ai più piccoli. Un sistema intelligente che ti permette di avere un armadio sempre perfetto, senza sprechi di soldi e spazio.</p>
+            <p><b>Come funziona:</b> Scegli la tua Box, ricevi i capi igienizzati, usali finché il bimbo cresce e rendili per ricevere la taglia successiva.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
     col_a, col_b, col_c = st.columns(3)
     with col_a:
-        st.markdown('<div class="step-box"><h3>📦 Inviaci i tuoi capi</h3><p>Svuota il tuo armadio: spedisci 10 o più capi al Locker più vicino a te.</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="step-box"><h3>📦 Inviaci i tuoi capi</h3><p>Svuota l\'armadio: spedisci 10 o più capi al Locker più vicino a te.</p></div>', unsafe_allow_html=True)
     with col_b:
         st.markdown('<div class="step-box"><h3>🚚 Ricevi la Box</h3><p>Scegli una box da 10 capi igienizzati e stirati per il tuo bimbo.</p></div>', unsafe_allow_html=True)
     with col_c:
-        st.markdown('<div class="step-box"><h3>🔄 Scambia / Acquista</h3><p>Quando il bimbo cresce rendi i capi per la nuova taglia o acquistali!</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="step-box"><h3>🔄 Usa e Rendi</h3><p>Usali e rendili entro 3 mesi o al cambio taglia! Reso gratis se rinnovi.</p></div>', unsafe_allow_html=True)
+
+    # --- COSTI E REGOLE ---
+    st.markdown("""
+    <div class="costi-card">
+        <h4 style="color: #e11d48;">💰 Costi e Spedizioni</h4>
+        <ul>
+            <li><b>Box Standard: 19,00 €</b> (Spedizione Inclusa).</li>
+            <li><b>Reso GRATIS:</b> Se ordini una nuova box di valore pari o superiore.</li>
+            <li><b>Reso Singolo:</b> Se vuoi solo rendere senza riordinare, inviamo noi un ticket al costo di <b>7,90 €</b>.</li>
+            <li><b>Durata:</b> I capi vanno resi entro un massimo di <b>3 mesi</b>.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown('<div class="promo-card">🚀 <b>PROMO FONDATRICI:</b> Ritiro Locker GRATIS e PRIMA BOX OMAGGIO!</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="savings-text">💰 Risparmio Annuale stimato per te: ~1.048 €</div>', unsafe_allow_html=True)
@@ -104,23 +130,41 @@ elif scelta == "📝 Profilo Bimbo":
     st.info("La taglia viene aggiornata automaticamente quando inserisci il peso nel prossimo ordine.")
 
 elif scelta == "📦 Box Standard (19€)":
-    st.title("📦 Scegli la tua Box (19€)")
+    st.title("📦 Scegli la tua Box Standard")
     st.write(f"Taglia per {st.session_state.user_data['bimbo']}: **{st.session_state.user_data['taglia']}**")
-    st.warning("⏳ La box è tua per 3 mesi. Ti avviseremo 10 giorni prima della scadenza!")
-    
-    t_luna, t_sole, t_nuvola = st.tabs(["🌙 LUNA", "☀️ SOLE", "☁️ NUVOLA"])
-    with t_luna:
-        st.write("**Stile Luna:** Colori delicati e tessuti pastello.")
-        if os.path.exists("vestiti.jpg"): st.image("vestiti.jpg")
-        st.button("Ordina Luna", key="l1")
-    with t_sole:
-        st.write("**Stile Sole:** Colori vivaci e stampe allegre.")
-        if os.path.exists("vestiti.jpg"): st.image("vestiti.jpg")
-        st.button("Ordina Sole", key="s1")
-    with t_nuvola:
-        st.write("**Stile Nuvola:** Look casual e pratico per ogni giorno.")
-        if os.path.exists("vestiti.jpg"): st.image("vestiti.jpg")
-        st.button("Ordina Nuvola", key="n1")
+    st.warning("⏳ I capi vanno restituiti entro 3 mesi o prima al cambio taglia.")
+    st.write("---")
+
+    # --- BOX LUNA ---
+    with st.container():
+        st.markdown("### 🌙 Tipologia LUNA")
+        st.write("Stile delicato, tessuti morbidi e colori pastello.")
+        with st.expander("🔍 Vedi Foto e Dettagli Luna"):
+            if os.path.exists("vestiti.jpg"): st.image("vestiti.jpg")
+        if st.button("Ordina LUNA - 19€", key="btn_luna"):
+            st.success("Hai ordinato la Box Luna! Spedizione a nostro carico.")
+
+    st.write("---")
+
+    # --- BOX SOLE ---
+    with st.container():
+        st.markdown("### ☀️ Tipologia SOLE")
+        st.write("Colori vivaci, stampe allegre e tessuti resistenti.")
+        with st.expander("🔍 Vedi Foto e Dettagli Sole"):
+            if os.path.exists("vestiti.jpg"): st.image("vestiti.jpg")
+        if st.button("Ordina SOLE - 19€", key="btn_sole"):
+            st.success("Hai ordinato la Box Sole! Spedizione a nostro carico.")
+
+    st.write("---")
+
+    # --- BOX NUVOLA ---
+    with st.container():
+        st.markdown("### ☁️ Tipologia NUVOLA")
+        st.write("Look casual, pratico e colori neutri per ogni giorno.")
+        with st.expander("🔍 Vedi Foto e Dettagli Nuvola"):
+            if os.path.exists("vestiti.jpg"): st.image("vestiti.jpg")
+        if st.button("Ordina NUVOLA - 19€", key="btn_nuvola"):
+            st.success("Hai ordinato la Box Nuvola! Spedizione a nostro carico.")
 
 elif scelta == "💎 Box Premium (29€)":
     st.title("💎 Box Premium (29€)")
@@ -128,7 +172,7 @@ elif scelta == "💎 Box Premium (29€)":
     if os.path.exists("scarpe.jpg"): st.image("scarpe.jpg")
     st.button("Ordina Premium")
 
-elif scelta == "🛍️ Vetrina":
+elif scelta == "🛍️ Vetrina Acquisto":
     st.title("🛍️ Vetrina Acquisto")
     col1, col2 = st.columns(2)
     with col1:

@@ -3,9 +3,10 @@ import pandas as pd
 import os
 from datetime import datetime, timedelta
 
+# --- CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", page_icon="🧸", layout="centered")
 
-# --- STILE GRAFICO CORRETTO ---
+# --- STILE GRAFICO (CSS PULITO) ---
 st.markdown("""
     <style>
     header, footer, #MainMenu {visibility: hidden;}
@@ -21,10 +22,12 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# --- SESSIONE ---
 if "autenticato" not in st.session_state: st.session_state.autenticato = False
 if "user_data" not in st.session_state: st.session_state.user_data = {"nome": "Mamma", "bimbo": "", "taglia": "da definire", "data_ordine": datetime.now()}
 if "iscritti" not in st.session_state: st.session_state.iscritti = 12
 
+# --- LOGIN ---
 if not st.session_state.autenticato:
     st.markdown("<h2 style='text-align: center; color: #0d9488;'>🧸 LoopBaby</h2>", unsafe_allow_html=True)
     t1, t2 = st.tabs(["Accedi", "Registrati"])
@@ -44,6 +47,7 @@ if not st.session_state.autenticato:
             if nm: st.session_state.user_data = {"nome": nm, "bimbo": nb, "taglia": tg, "data_ordine": datetime.now()}; st.session_state.autenticato = "utente"; st.session_state.iscritti += 1; st.rerun()
     st.stop()
 
+# --- MENU ---
 with st.sidebar:
     st.title("🧸 LoopBaby")
     st.write(f"Ciao, **{st.session_state.user_data['nome']}**!")
@@ -52,6 +56,7 @@ with st.sidebar:
     scelta = st.radio("Vai a:", menu)
     if st.button("Esci"): st.session_state.autenticato = False; st.rerun()
 
+# --- SEZIONI ---
 if scelta == "🏠 Home":
     st.markdown(f"### Benvenuta {st.session_state.user_data['nome']}! ✨")
     scad = st.session_state.user_data["data_ordine"] + timedelta(days=90)
@@ -62,8 +67,8 @@ if scelta == "🏠 Home":
     st.markdown('<div class="costi-card"><h4>💰 Tariffe e Resi</h4><ul><li>🏷️ Box Standard: 19€ | 💎 Premium: 29€</li><li>🔄 Reso GRATIS se rinnovi | ⏳ Durata: 3 mesi</li></ul></div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown('<div class="step-box"><h3>📦 Inviaci i capi</h3><p>Svuota l\'armadio: spedisci 10+ capi.</p></div>', unsafe_allow_html=True)
-    with col2: st.markdown('<div class="step-box"><h3>🚚 Ricevi la Box</h3><p>10 capi igienizzati: il fabbisogno ideale.</p></div>', unsafe_allow_html=True)
-    with col3: st.markdown('<div class="step-box"><h3>🔄 Usa e Rendi</h3><p>Rendi entro 3 mesi per il cambio taglia!</p></div>', unsafe_allow_html=True)
+    with c2: st.markdown('<div class="step-box"><h3>🚚 Ricevi la Box</h3><p>10 capi igienizzati: il fabbisogno ideale.</p></div>', unsafe_allow_html=True)
+    with c3: st.markdown('<div class="step-box"><h3>🔄 Usa e Rendi</h3><p>Rendi entro 3 mesi per il cambio taglia!</p></div>', unsafe_allow_html=True)
 
 elif scelta == "📦 Box Standard (19€)":
     st.title("📦 Box Standard")

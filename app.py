@@ -1,21 +1,29 @@
 import streamlit as st
 import pandas as pd
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
-# --- CONFIGURAZIONE ---
-st.set_page_config(page_title="LoopBaby", page_icon="🧸", layout="centered")
+# --- 1. CONFIGURAZIONE E ICONA ---
+st.set_page_config(
+    page_title="LoopBaby", 
+    page_icon="🧸", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
-# --- STILE GRAFICO (CSS) ---
+# --- 2. STILE GRAFICO BLINDATO (STILE APP SOCIAL) ---
 st.markdown("""
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
     header, footer, #MainMenu {visibility: hidden;}
-    .stApp { background-color: #f0fdfa; }
+    .stApp { background-color: #f0fdfa; max-width: 500px; margin: 0 auto; }
+    
     .stButton>button { 
         border-radius: 25px; height: 3.5em; font-weight: bold; 
         background: linear-gradient(135deg, #0d9488 0%, #0369a1 100%); 
         color: white; border: none; width: 100%; 
     }
+    
     .step-box { 
         background-color: #ffffff; padding: 20px; border-radius: 20px; 
         border: 3px solid #0d9488; text-align: center; margin-bottom: 15px; 
@@ -31,17 +39,22 @@ st.markdown("""
     }
     .counter-badge { background-color: #d97706; color: white; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 1.2em; display: inline-block; margin-top: 10px; }
     .costi-card { background-color: #fff1f2; padding: 25px; border-radius: 20px; border: 2px solid #e11d48; color: #333; margin-bottom: 20px; }
-    .vetrina-card { background-color: #ffffff; padding: 15px; border-radius: 15px; border: 1px solid #0d9488; margin-bottom: 20px; text-align: center; }
-    .free-ship-badge { background-color: #059669; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.8em; display: inline-block; margin-bottom: 10px; }
+    .vision-card { background-color: #ffffff; padding: 25px; border-radius: 20px; border: 1px solid #0d9488; margin-bottom: 20px; }
+    .alert-scadenza { background-color: #fef3c7; border-left: 10px solid #d97706; padding: 20px; border-radius: 15px; color: #92400e; font-weight: bold; margin-bottom: 20px; }
+    .sigillo-oro { background-color: #fef3c7; color: #92400e; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 0.8em; border: 2px solid #b45309; display: inline-block; margin-bottom: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- STATO APPLICAZIONE ---
+# --- 3. GESTIONE SESSIONE E DATI ---
 if "iscritti_totali" not in st.session_state: st.session_state.iscritti_totali = 12 
 if "autenticato" not in st.session_state: st.session_state.autenticato = False
-if "user_data" not in st.session_state: st.session_state.user_data = {"nome": "Mamma", "bimbo": "", "taglia": "da definire"}
+if "user_data" not in st.session_state: 
+    st.session_state.user_data = {
+        "nome": "Mamma", "bimbo": "", "taglia": "da definire",
+        "data_ultimo_ordine": datetime.now() - timedelta(days=82) # Simulazione per test alert
+    }
 
-# --- 1. SCHERMATA LOGIN / REGISTRAZIONE ---
+# --- 4. LOGIN / REGISTRAZIONE BLOCCANTE ---
 if not st.session_state.autenticato:
     st.markdown("<h2 style='text-align: center; color: #0d9488;'>🧸 LoopBaby</h2>", unsafe_allow_html=True)
     tab1, tab2 = st.tabs(["Accedi", "Registrati"])
@@ -56,16 +69,16 @@ if not st.session_state.autenticato:
         n_m = st.text_input("Il tuo Nome")
         n_b = st.text_input("Nome del Bimbo/a")
         p_b = st.number_input("Peso attuale (kg)", 2.0, 20.0, 5.0)
-        t = "0-1m" if p_b < 4.5 else "1-3m" if p_b < 5.5 else "3-6m" if p_b < 7.5 else "6-9m" if p_b < 9.0 else "12-24m"
+        t_calc = "0-1m" if p_b < 4.5 else "1-3m" if p_b < 5.5 else "3-6m" if p_b < 7.5 else "6-9m" if p_b < 9.0 else "12-24m"
         if st.button("REGISTRATI E BLOCCA IL POSTO"):
             if n_m: 
-                st.session_state.user_data = {"nome": n_m, "bimbo": n_b, "taglia": t}
+                st.session_state.user_data = {"nome": n_m, "bimbo": n_b, "taglia": t_calc, "data_ultimo_ordine": datetime.now()}
                 st.session_state.autenticato = "utente"
                 st.session_state.iscritti_totali += 1
                 st.rerun()
     st.stop()
 
-# --- 2. MENU LATERALE ---
+# --- 5. MENU LATERALE ---
 with st.sidebar:
     st.markdown(f"### Ciao, **{st.session_state.user_data['nome']}**! 🧸")
     menu = ["🏠 Home", "📝 Profilo Bimbo", "📦 Box Standard (19€)", "💎 Box Premium (29€)", "🛍️ Vetrina"]
@@ -73,79 +86,69 @@ with st.sidebar:
     scelta = st.radio("Naviga:", menu)
     if st.button("Esci"): st.session_state.autenticato = False; st.rerun()
 
-# --- 3. SEZIONI ---
-
+# --- 6. SEZIONE HOME ---
 if scelta == "🏠 Home":
     st.markdown(f"### Benvenuta {st.session_state.user_data['nome']}! ✨")
+    
+    # ALERT 10 GIORNI
+    data_scadenza = st.session_state.user_data["data_ultimo_ordine"] + timedelta(days=90)
+    giorni_rimasti = (data_scadenza - datetime.now()).days
+    if 0 <= giorni_rimasti <= 10:
+        st.markdown(f'<div class="alert-scadenza">🔔 Ciao {st.session_state.user_data["nome"]}, mancano {giorni_rimasti} gg, cambiamo taglia? 📦</div>', unsafe_allow_html=True)
+
+    # VISION CARD
+    st.markdown("""<div class="vision-card"><h4 style="color: #0d9488; margin-top:0;">Cos'è LoopBaby? 🌿</h4><p>LoopBaby è la scelta intelligente per la tua famiglia. <b>Obiettivo Risparmio:</b> riduci la spesa per i vestiti di oltre 1.000€ l'anno liberando spazio in casa. Seguiamo noi la crescita del tuo bambino!</p></div>""", unsafe_allow_html=True)
+
+    # PROMO
     p_rimasti = 50 - st.session_state.iscritti_totali
     st.markdown(f"""<div class="promo-card"><h2>🚀 PROMO FONDATRICI</h2><p>Ritiro Locker GRATIS e PRIMA BOX OMAGGIO!</p><div class="counter-badge">{st.session_state.iscritti_totali} / 50 posti</div><p style="margin-top:10px; font-weight:bold;">Restano solo {p_rimasti} posti!</p></div>""", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="costi-card">
-        <h4>💰 Tariffe e Resi</h4>
-        <ul>
-            <li>🏷️ <b>Box Standard: 19,00 €</b> (Sped. Inclusa).</li>
-            <li>💎 <b>Box Premium: 29,00 €</b> (Sped. Inclusa).</li>
-            <li>🚛 <b>Vetrina:</b> Spedizione <b>OMAGGIO</b> se superi i 50,00 €!</li>
-            <li>🔄 <b>Reso GRATIS:</b> Se rinnovi la box.</li>
-            <li>🎟️ <b>Reso Singolo:</b> Ticket a <b>7,90 €</b>.</li>
-            <li>⏳ <b>Durata:</b> Reso entro <b>3 mesi</b>.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+    # COSTI
+    st.markdown("""<div class="costi-card"><h4>💰 Tariffe e Resi</h4><ul><li>🏷️ <b>Box Standard: 19,00 €</b> (Sped. Inclusa).</li><li>💎 <b>Box Premium: 29,00 €</b> (Sped. Inclusa).</li><li>🚛 <b>Vetrina:</b> Spedizione <b>OMAGGIO</b> sopra i 50,00 €!</li><li>🔄 <b>Reso GRATIS:</b> Se rinnovi la box.</li><li>🎟️ <b>Reso Singolo:</b> Ticket a <b>7,90 €</b>.</li><li>⏳ <b>Durata:</b> Reso entro <b>3 mesi</b>.</li></ul></div>""", unsafe_allow_html=True)
 
     col_a, col_b, col_c = st.columns(3)
     with col_a: st.markdown('<div class="step-box"><h3>📦 Inviaci i tuoi capi</h3><p>Svuota l\'armadio: spedisci 10 o più capi al Locker.</p></div>', unsafe_allow_html=True)
     with col_b: st.markdown('<div class="step-box"><h3>🚚 Ricevi la Box</h3><p>10 capi igienizzati: il fabbisogno settimanale ideale.</p></div>', unsafe_allow_html=True)
     with col_c: st.markdown('<div class="step-box"><h3>🔄 Usa e Rendi</h3><p>Rendi entro 3 mesi per il cambio taglia! Reso gratis se rinnovi.</p></div>', unsafe_allow_html=True)
 
-elif scelta == "📝 Profilo Bimbo":
-    st.title("👤 Profilo Bimbo")
-    st.write(f"Nome: **{st.session_state.user_data['bimbo']}**")
-    st.write(f"Taglia attuale: **{st.session_state.user_data['taglia']}**")
-
+# --- 7. BOX STANDARD ---
 elif scelta == "📦 Box Standard (19€)":
-    st.title("📦 Box Standard")
+    st.title("📦 Box Standard (19,00 €)")
+    st.write(f"Taglia per {st.session_state.user_data['bimbo']}: **{st.session_state.user_data['taglia']}**")
+    st.write("---")
     for s, d in {"🌙 LUNA": "Delicato e pastello", "☀️ SOLE": "Vivace e allegro", "☁️ NUVOLA": "Casual e pratico"}.items():
         st.markdown(f"### {s}")
         st.write(d)
         with st.expander(f"🔍 Vedi Foto {s}"):
             if os.path.exists("vestiti.jpg"): st.image("vestiti.jpg")
-        if st.button(f"Ordina {s}", key=s): st.success(f"Ordine {s} inviato!")
+        if st.button(f"Ordina {s}", key=s): 
+            st.session_state.user_data["data_ultimo_ordine"] = datetime.now()
+            st.success(f"Ordine {s} inviato! Il tuo Loop riparte oggi.")
 
+# --- 8. BOX PREMIUM ---
 elif scelta == "💎 Box Premium (29€)":
     st.title("💎 Box Premium (29,00 €)")
-    st.write("Grandi firme selezionate (Nike, Adidas, Ralph Lauren...)")
+    st.markdown('<div class="sigillo-oro">✨ QUALITÀ ORO: Grandi Firme</div>', unsafe_allow_html=True)
     with st.expander("🔍 Vedi Foto Premium"):
         if os.path.exists("scarpe.jpg"): st.image("scarpe.jpg")
-    if st.button("ORDINA PREMIUM"): st.balloons(); st.success("Richiesta Premium inviata!")
+    if st.button("ORDINA PREMIUM"): 
+        st.session_state.user_data["data_ultimo_ordine"] = datetime.now()
+        st.balloons(); st.success("Richiesta Premium inviata!")
 
+# --- 9. VETRINA ---
 elif scelta == "🛍️ Vetrina":
-    st.title("🛍️ Vetrina Acquisto")
-    st.markdown("""
-    <div style="background-color: #e0f2fe; padding: 15px; border-radius: 10px; margin-bottom: 20px; color: #0c4a6e; text-align: center;">
-        ✨ <b>Compra e Tieni:</b> Questi capi sono tuoi per sempre!<br>
-        🚚 <b style="color: #059669;">SPEDIZIONE GRATUITA per ordini superiori a 50,00 €</b>
-    </div>
-    """, unsafe_allow_html=True)
-    
+    st.title("🛍️ Vetrina")
+    st.info("Spedizione GRATIS sopra i 50€! Capi da tenere per sempre.")
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown('<div class="vetrina-card">', unsafe_allow_html=True)
         if os.path.exists("scarpe.jpg"): st.image("scarpe.jpg")
-        st.write("**Scarpe Sportive Firmate**")
-        st.write("Prezzo: **14,90 €**")
-        if st.button("Aggiungi al carrello", key="v1"): st.success("Aggiunto!")
-        st.markdown('</div>', unsafe_allow_html=True)
-        
+        st.button("Compra Scarpe", key="v1")
     with col2:
-        st.markdown('<div class="vetrina-card">', unsafe_allow_html=True)
         if os.path.exists("vestiti.jpg"): st.image("vestiti.jpg")
-        st.write("**Set Coordinato Invernale**")
-        st.write("Prezzo: **19,50 €**")
-        if st.button("Aggiungi al carrello", key="v2"): st.success("Aggiunto!")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.button("Compra Set", key="v2")
 
+# --- 10. ADMIN ---
 elif scelta == "🔐 Area Admin":
     st.title("🔐 Admin")
-    st.write(f"Iscritti: {st.session_state.iscritti_totali}")
+    st.write(f"Iscritti: **{st.session_state.iscritti_totali}**")
+    st.write(st.session_state.user_data)

@@ -25,11 +25,11 @@ st.markdown("""
     .card { background: white; padding: 20px; border-radius: 20px; border: 1px solid #0d9488; margin-bottom: 20px; }
     .promo-card { background: #fef3c7; padding: 20px; border-radius: 20px; border: 2px solid #d97706; text-align: center; margin-bottom: 20px; }
     .tracker-box { background: white; padding: 15px; border-radius: 20px; border: 2px solid #0d9488; margin-bottom: 20px; text-align: center; }
-    .price-tag { font-weight: bold; color: #e11d48; }
+    .suggested-tag { font-size: 1.5em; font-weight: bold; color: #e11d48; background: #fff1f2; padding: 10px; border-radius: 10px; display: inline-block; margin: 10px 0; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. SESSIONE ---
+# --- 3. SESSIONE (Inizializzazione robusta) ---
 if "autenticato" not in st.session_state: st.session_state.autenticato = False
 if "iscritti" not in st.session_state: st.session_state.iscritti = 12
 if "primo_accesso" not in st.session_state: st.session_state.primo_accesso = False
@@ -65,7 +65,7 @@ if not st.session_state.autenticato:
         n_b = st.text_input("Nome del Bimbo/a")
         d_n = st.date_input("Data di Nascita", min_value=datetime(2022, 1, 1))
         p_b = st.number_input("Peso attuale (kg)", 2.0, 20.0, 4.0)
-        c_m = st.text_input("Cellulare (per allert Locker)")
+        c_m = st.text_input("Cellulare")
         if st.button("REGISTRATI E BLOCCA PROMO"):
             if n_m and c_m:
                 st.session_state.user_data.update({
@@ -75,13 +75,13 @@ if not st.session_state.autenticato:
                 st.session_state.autenticato = "utente"; st.session_state.primo_accesso = True; st.rerun()
     st.stop()
 
-# --- 5. CONFERMA TAGLIA DOPO LOGIN ---
+# --- 5. CONFERMA TAGLIA ---
 if st.session_state.primo_accesso and not st.session_state.user_data["taglia_confermata"]:
     st.title(f"Benvenuta {st.session_state.user_data['nome']}! ✨")
     st.markdown(f"""
     <div class="card" style="text-align: center;">
         <h4>Taglia suggerita per {st.session_state.user_data['bimbo']}</h4>
-        <div class="suggested-tag" style="font-size:2em; color:#e11d48; font-weight:bold;">{st.session_state.user_data['taglia']}</div>
+        <div class="suggested-tag">{st.session_state.user_data['taglia']}</div>
         <p>In base al peso di {st.session_state.user_data['peso']} kg</p>
     </div>
     """, unsafe_allow_html=True)
@@ -99,7 +99,6 @@ if st.session_state.primo_accesso and not st.session_state.user_data["taglia_con
 
 # --- 6. MENU SIDEBAR ---
 with st.sidebar:
-    if os.path.exists("logo.png"): st.image("logo.png", width=120)
     st.write(f"Mamma: **{st.session_state.user_data['nome']}**")
     scelta = st.radio("Naviga:", ["🏠 Home", "📝 Profilo", "📦 Box Standard", "💎 Box Premium", "🛍️ Vetrina", "🔐 Admin"])
     if st.button("Esci"): st.session_state.autenticato = False; st.rerun()
@@ -119,7 +118,7 @@ if scelta == "🏠 Home":
         <hr>
         <p>📦 <b>Il Servizio:</b> Box da 19,90€ o 29,90€ compreso di trasporto. Invieremo 10 capi della taglia precisa al Locker più vicino a te.</p>
         <p>🔄 <b>Il Cambio:</b> Entro 90 giorni cambi taglia senza pagare il pacco di andata né quello di ritorno.</p>
-        <p>🛑 <b>Reso Semplice:</b> Se non vuoi rinnovare, ritiriamo i vestiti al Locker per soli 7,90€.</p>
+        <p>🛑 <b>Reso:</b> Se non vuoi rinnovare, ritiriamo i vestiti al Locker per soli 7,90€.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -127,76 +126,51 @@ if scelta == "🏠 Home":
     <div class="promo-card">
         <h2>🚀 PROMO FONDATRICI</h2>
         <h3 style="color:#d97706 !important;">{st.session_state.iscritti} / 50 mamme</h3>
-        <p>Inviaci 10 o più capi usati: <b>1ª Box Gratis</b> e <b>Ritiro a casa OMAGGIO</b> pagato da noi!</p>
+        <p>Inviaci 10 o più capi usati: <b>1ª Box Gratis</b> e <b>Ritiro OMAGGIO</b> pagato da noi!</p>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 8. PROFILO ---
+# --- 8. PROFILO (Con FIX KeyError) ---
 elif scelta == "📝 Profilo":
     st.title("Il tuo Profilo 📝")
-    with st.container():
-        st.markdown(f"""
-        <div class="card">
-            <p><b>Mamma:</b> {st.session_state.user_data['nome']}</p>
-            <p><b>Bimbo/a:</b> {st.session_state.user_data['bimbo']}</p>
-            <p><b>Data di Nascita:</b> {st.session_state.user_data['nascita']}</p>
-            <p><b>Telefono:</b> {st.session_state.user_data['cellulare']}</p>
-            <p><b>Taglia Attuale:</b> {st.session_state.user_data['taglia']}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    if st.button("Modifica Dati"):
-        st.info("In questa sezione potrai presto modificare i tuoi dati direttamente.")
+    u = st.session_state.user_data
+    st.markdown(f"""
+    <div class="card">
+        <p><b>Mamma:</b> {u.get('nome', 'N/D')}</p>
+        <p><b>Bimbo/a:</b> {u.get('bimbo', 'N/D')}</p>
+        <p><b>Data di Nascita:</b> {u.get('nascita', 'Non inserita')}</p>
+        <p><b>Telefono:</b> {u.get('cellulare', 'N/D')}</p>
+        <p><b>Taglia Attuale:</b> {u.get('taglia', 'da definire')}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- 9. BOX STANDARD ---
 elif scelta == "📦 Box Standard":
     st.title("📦 Box Standard (19,90 €)")
-    st.write("Scegli lo stile per i tuoi 10 capi:")
-    for stile, desc in [("🌙 LUNA", "Colori neutri"), ("☀️ SOLE", "Colori vivaci"), ("☁️ NUVOLA", "Casual")]:
-        with st.expander(stile):
-            st.write(desc)
-            st.write("(Qui caricheremo le 10 foto reali della box)")
-            if st.button(f"Scegli {stile}"):
+    stili = [("🌙 LUNA", "Colori neutri"), ("☀️ SOLE", "Colori vivaci"), ("☁️ NUVOLA", "Casual")]
+    for s, d in stili:
+        with st.expander(s):
+            st.write(d)
+            st.write("(Caricheremo qui le 10 foto reali)")
+            if st.button(f"Scegli {s}"):
                 st.session_state.user_data.update({"ha_ordinato": True, "data_ordine": datetime.now()})
-                st.success(f"Box {stile} ordinata!")
+                st.success(f"Box {s} ordinata!")
 
 # --- 10. BOX PREMIUM ---
 elif scelta == "💎 Box Premium":
     st.title("💎 Box Premium (29,90 €)")
-    st.markdown("""
-    <div class="card">
-        <p>Un'unica box esclusiva con <b>10 vestiti di Alta Gamma (Grandi Firme)</b>.</p>
-        <p><i>Caricheremo qui le 10 foto reali dei capi inclusi.</i></p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.write("Box esclusiva con 10 vestiti di Grandi Firme. Caricheremo qui le 10 foto reali.")
     if st.button("ORDINA PREMIUM"):
         st.session_state.user_data.update({"ha_ordinato": True, "data_ordine": datetime.now()})
         st.balloons()
-        st.success("Box Premium ordinata! Preparati allo stile.")
 
-# --- 11. VETRINA ---
-elif scelta == "🛍️ Vetrina":
-    st.title("🛍️ Vetrina Shopping")
-    st.info("I capi in vetrina rimangono a te! Spedizione GRATIS sopra i 50€.")
-    st.write("Qui caricheremo le foto e i prezzi di ogni singolo capo.")
-
-# --- 12. ADMIN ---
+# --- 11. ADMIN ---
 elif scelta == "🔐 Admin":
     if st.session_state.autenticato == "admin":
         st.title("Area Admin 🔐")
-        st.write(f"Mamme iscritte: **{st.session_state.iscritti}**")
-        
-        # Tabella rapida
-        df_utenti = pd.DataFrame([{
-            "Mamma": st.session_state.user_data['nome'],
-            "Bimbo": st.session_state.user_data['bimbo'],
-            "Taglia": st.session_state.user_data['taglia'],
-            "Tel": st.session_state.user_data['cellulare']
-        }])
-        st.table(df_utenti)
-        
-        cel = st.session_state.user_data["cellulare"]
-        if cel:
-            wa_text = urllib.parse.quote(f"Ciao {st.session_state.user_data['nome']}! Qui LoopBaby...")
-            st.markdown(f'<a href="https://wa.me{cel}?text={wa_text}" target="_blank"><button style="background:#25D366; color:white; border:none; padding:15px; border-radius:10px; width:100%; cursor:pointer;">📲 CONTATTA SU WHATSAPP</button></a>', unsafe_allow_html=True)
-    else:
-        st.error("Accesso riservato all'amministratore.")
+        u = st.session_state.user_data
+        st.write(f"Mamma: {u.get('nome')} | Tel: {u.get('cellulare')}")
+        if u.get('cellulare'):
+            wa = urllib.parse.quote(f"Ciao {u['nome']}! Qui LoopBaby...")
+            st.markdown(f'<a href="https://wa.me{u["cellulare"]}?text={wa}" target="_blank"><button style="background:#25D366; color:white; border:none; padding:15px; border-radius:10px; width:100%;">📲 WHATSAPP</button></a>', unsafe_allow_html=True)
+    else: st.error("Solo admin!")

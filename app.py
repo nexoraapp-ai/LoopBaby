@@ -25,8 +25,7 @@ st.markdown("""
     .card { background: white; padding: 20px; border-radius: 20px; border: 1px solid #0d9488; margin-bottom: 20px; }
     .promo-card { background: #fef3c7; padding: 20px; border-radius: 20px; border: 2px solid #d97706; text-align: center; margin-bottom: 20px; }
     .tracker-box { background: #eef2ff; padding: 15px; border-radius: 20px; border: 2px solid #4338ca; margin-bottom: 20px; text-align: center; }
-    .suggested-tag { font-size: 1.5em; font-weight: bold; color: #e11d48; background: #fff1f2; padding: 10px; border-radius: 10px; display: inline-block; margin: 10px 0; }
-    .highlight { font-weight: bold; color: #0d9488; }
+    .price-tag { font-weight: bold; color: #e11d48; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -34,9 +33,10 @@ st.markdown("""
 if "autenticato" not in st.session_state: st.session_state.autenticato = False
 if "iscritti" not in st.session_state: st.session_state.iscritti = 12
 if "primo_accesso" not in st.session_state: st.session_state.primo_accesso = False
+if "carrello_vetrina" not in st.session_state: st.session_state.carrello_vetrina = 0
 if "user_data" not in st.session_state: 
     st.session_state.user_data = {
-        "nome": "", "bimbo": "", "cellulare": "", "peso": 4.0,
+        "nome": "", "bimbo": "", "nascita": None, "cellulare": "", "peso": 4.0,
         "ha_ordinato": False, "data_ordine": None, "taglia": "da definire",
         "taglia_confermata": False
     }
@@ -53,112 +53,101 @@ if not st.session_state.autenticato:
     if os.path.exists("logo.png"): st.image("logo.png", use_container_width=True)
     t1, t2 = st.tabs(["Accedi", "Registrati"])
     
-    with t1:
-        e = st.text_input("Email")
-        p = st.text_input("Password", type="password")
-        if st.button("ENTRA"):
-            if e == "admin" and p == "baby2024": st.session_state.autenticato = "admin"; st.rerun()
-            elif e: st.session_state.autenticato = "utente"; st.rerun()
-            
     with t2:
-        st.info("**Perché scegliere LoopBaby? 🌿**\n\n- 💰 **Risparmio:** Oltre 1.000€ l'anno in vestitini.\n- 📦 **Comodità:** Tutto tramite Locker vicino a casa tua.\n- 🌍 **Sostenibilità:** Basta sprechi tessili, entra nell'economia circolare.")
+        st.info("**Perché scegliere LoopBaby? 🌿**\nRisparmio, spazio e sostenibilità per bimbi 0-24 mesi.")
         n_m = st.text_input("Tuo Nome (Mamma)")
-        c_m = st.text_input("Cellulare (per allert Locker)")
         n_b = st.text_input("Nome del Bimbo/a")
+        d_n = st.date_input("Data di Nascita", min_value=datetime(2022, 1, 1))
         p_b = st.number_input("Peso attuale (kg)", 2.0, 20.0, 4.0)
-        if st.button("REGISTRATI E BLOCCA PROMO"):
-            if n_m and c_m:
-                st.session_state.user_data.update({"nome": n_m, "bimbo": n_b, "cellulare": c_m, "peso": p_b, "taglia": calcola_tg(p_b)})
-                st.session_state.autenticato = "utente"
-                st.session_state.primo_accesso = True
-                st.session_state.iscritti += 1
-                st.rerun()
+        c_m = st.text_input("Cellulare")
+        if st.button("REGISTRATI"):
+            if n_m and n_b:
+                st.session_state.user_data.update({
+                    "nome": n_m, "bimbo": n_b, "nascita": d_n, "cellulare": c_m, 
+                    "peso": p_b, "taglia": calcola_tg(p_b)
+                })
+                st.session_state.autenticato = "utente"; st.session_state.primo_accesso = True; st.session_state.iscritti += 1; st.rerun()
     st.stop()
 
-# --- 5. BENVENUTA (CONFERMA TAGLIA) ---
+# --- 5. CONFERMA TAGLIA ---
 if st.session_state.primo_accesso and not st.session_state.user_data["taglia_confermata"]:
     st.title(f"Benvenuta {st.session_state.user_data['nome']}! ✨")
-    st.markdown(f"""
-    <div class="card" style="text-align: center;">
-        <h4>Taglia suggerita per {st.session_state.user_data['bimbo']}</h4>
-        <div class="suggested-tag">{st.session_state.user_data['taglia']}</div>
-        <p>Calcolata sul peso di {st.session_state.user_data['peso']} kg</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div class="card" style="text-align: center;"><h4>Taglia suggerita per {st.session_state.user_data["bimbo"]}</h4><h2 style="color:#e11d48;">{st.session_state.user_data["taglia"]}</h2><p>Basata su {st.session_state.user_data["peso"]}kg</p></div>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
-    if c1.button("✅ CONFERMA"):
-        st.session_state.user_data["taglia_confermata"] = True
-        st.session_state.primo_accesso = False; st.rerun()
+    if c1.button("✅ CONFERMA"): st.session_state.user_data["taglia_confermata"] = True; st.session_state.primo_accesso = False; st.rerun()
     if c2.button("✏️ MODIFICA"):
         nuova = st.selectbox("Scegli taglia", ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"])
-        if st.button("SALVA"):
-            st.session_state.user_data["taglia"] = nuova
-            st.session_state.user_data["taglia_confermata"] = True
-            st.session_state.primo_accesso = False; st.rerun()
+        if st.button("SALVA"): st.session_state.user_data["taglia"] = nuova; st.session_state.user_data["taglia_confermata"] = True; st.session_state.primo_accesso = False; st.rerun()
     st.stop()
 
-# --- 6. SIDEBAR ---
+# --- 6. MENU ---
 with st.sidebar:
     st.write(f"Mamma: **{st.session_state.user_data['nome']}**")
-    scelta = st.radio("Menu:", ["🏠 Home", "📝 Profilo", "📦 Box Loop", "🛍️ Vetrina", "🔐 Admin"])
+    st.write(f"Bimbo: **{st.session_state.user_data['bimbo']}**")
+    scelta = st.radio("Menu:", ["🏠 Home", "📝 Profilo", "📦 Box Standard", "💎 Box Premium", "🛍️ Vetrina", "🔐 Admin"])
     if st.button("Esci"): st.session_state.autenticato = False; st.rerun()
 
-# --- 7. HOME PAGE ---
+# --- 7. HOME ---
 if scelta == "🏠 Home":
     st.title(f"Benvenuta {st.session_state.user_data['nome']}! ✨")
-
     if st.session_state.user_data["ha_ordinato"]:
-        inizio = st.session_state.user_data["data_ordine"]
-        giorni = (datetime.now() - inizio).days + 1
-        st.markdown(f'<div class="tracker-box"><h4>🔄 Loop attivo</h4><h2>Giorno {giorni} di 90</h2></div>', unsafe_allow_html=True)
+        giorni = (datetime.now() - st.session_state.user_data["data_ordine"]).days + 1
+        st.markdown(f'<div class="tracker-box"><h4>🔄 Loop attivo per {st.session_state.user_data["bimbo"]}</h4><h2>Giorno {giorni} di 90</h2></div>', unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="card">
-        <h4>Cos'è LoopBaby? 🌿</h4>
-        <p>L'armadio circolare intelligente per il tuo bimbo. <b>Risparmi, liberi spazio e rispetti il pianeta.</b></p>
-        <hr>
-        <p>📦 <b>Come funziona:</b><br>
-        Scegli la tua Box (Standard <span class="highlight">19,90€</span> o Premium <span class="highlight">29,90€</span>). 
-        Il trasporto è <span class="highlight">sempre compreso</span>!</p>
-        <p>👕 <b>Cosa ricevi:</b><br>
-        Ti invieremo <b>10 capi</b> della taglia precisa di <b>{st.session_state.user_data['bimbo']}</b> al Locker più vicino a te.</p>
-        <p>🔄 <b>Il Cambio Taglia:</b><br>
-        Entro 90 giorni (o quando preferisci), ordina la taglia successiva. 
-        <b>Non pagherai nulla</b>: né la spedizione della nuova box, né il reso della vecchia!</p>
-        <p>🛑 <b>Se vuoi fermarti:</b><br>
-        Se decidi di non ordinare una nuova box, pagherai solo un ticket di reso di <b>7,90€</b> e porterai i vestiti al Locker più comodo.</p>
+        <h4>LoopBaby: Vestiti Circolari 0-24 Mesi 🌿</h4>
+        <p>Scegli una Box (19,90€ o 29,90€) con <b>10 capi</b> scelti per te e inviati al <b>Locker</b> più vicino.</p>
+        <p>🔄 <b>Reso Gratis</b> se rinnovi la taglia. Se vuoi fermarti, rendi tutto al Locker con un ticket di soli <b>7,90€</b>.</p>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class="promo-card">
-        <h2>🚀 PROMO FONDATRICI</h2>
-        <h3 style="color:#d97706 !important;">{st.session_state.iscritti} / 50 posti occupati</h3>
-        <p>Le prime 50 mamme che caricano il Loop con 10+ capi usati ricevono la 
-        <b>1ª BOX GRATIS</b> e il <b>RITIRO A DOMICILIO OMAGGIO</b>. LoopBaby paga tutto!</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div class="promo-card"><h2>🚀 PROMO FONDATRICI</h2><h3>{st.session_state.iscritti} / 50 mamme</h3><p>Inviaci 10 capi usati: 1ª Box Gratis e ritiro a casa pagato da noi!</p></div>', unsafe_allow_html=True)
 
-# --- 8. PROFILO ---
-elif scelta == "📝 Profilo":
-    st.title("I tuoi dati 📝")
-    st.write(f"Mamma: **{st.session_state.user_data['nome']}**")
-    st.write(f"Bimbo: **{st.session_state.user_data['bimbo']}**")
-    st.write(f"Taglia attuale: **{st.session_state.user_data['taglia']}**")
+# --- 8. BOX STANDARD (3 STILI) ---
+elif scelta == "📦 Box Standard":
+    st.title("📦 Box Standard (19,90 €)")
+    st.write("Scegli lo stile per i 10 capi di questa taglia:")
+    stili = [("🌙 LUNA", "Colori neutri e delicati"), ("☀️ SOLE", "Colori vivaci e allegri"), ("☁️ NUVOLA", "Vestiti casual e pratici")]
+    for nome, desc in stili:
+        with st.expander(nome):
+            st.write(desc)
+            st.write("(Qui caricheremo le 10 foto reali)")
+            if st.button(f"Scegli Box {nome}"):
+                st.session_state.user_data.update({"ha_ordinato": True, "data_ordine": datetime.now()})
+                st.success(f"Hai scelto lo stile {nome}! Preparazione in corso.")
 
-# --- 9. BOX LOOP ---
-elif scelta == "📦 Box Loop":
-    st.title("Scegli il tuo Box 📦")
-    st.markdown('<div class="card"><b>Standard Loop</b> (19,90€)<br>10 capi stili misti igienizzati.</div>', unsafe_allow_html=True)
-    if st.button("ORDINA STANDARD"):
+# --- 9. BOX PREMIUM ---
+elif scelta == "💎 Box Premium":
+    st.title("💎 Box Premium (29,90 €)")
+    st.write("Un'unica box esclusiva con 10 vestiti di **Alta Gamma** (Grandi Firme).")
+    if st.button("ORDINA PREMIUM"):
         st.session_state.user_data.update({"ha_ordinato": True, "data_ordine": datetime.now()})
-        st.success("Ordine confermato! Corri in Home a vedere il tuo Loop.")
+        st.balloons()
 
-# --- 10. ADMIN ---
+# --- 10. VETRINA ---
+elif scelta == "🛍️ Vetrina":
+    st.title("🛍️ Vetrina Shopping")
+    st.info("I vestiti in vetrina sono tuoi per sempre! Spedizione GRATIS sopra i 50€ o se acquistati con una Box.")
+    
+    prezzo_capo = 15.0 # Esempio
+    st.write(f"Capo Esempio: **Giacchino Bio** - <span class='price-tag'>{prezzo_capo}€</span>", unsafe_allow_html=True)
+    if st.button("Aggiungi al carrello"):
+        st.session_state.carrello_vetrina += prezzo_capo
+        st.toast("Aggiunto!")
+
+    st.divider()
+    tot = st.session_state.carrello_vetrina
+    sped = 0 if (tot >= 50 or st.session_state.user_data["ha_ordinato"]) else 7.90
+    st.write(f"Totale Prodotti: {tot}€")
+    st.write(f"Spedizione: {'GRATIS' if sped == 0 else str(sped) + '€'}")
+    if st.button("PROCEDI ALL'ACQUISTO"): st.success("Ordine Vetrina ricevuto!")
+
+# --- 11. ADMIN ---
 elif scelta == "🔐 Admin":
     if st.session_state.autenticato == "admin":
         st.title("Admin 🔐")
         cel = st.session_state.user_data["cellulare"]
         if cel:
-            wa_text = urllib.parse.quote(f"Ciao {st.session_state.user_data['nome']}! Qui LoopBaby, come va il Loop di {st.session_state.user_data['bimbo']}?")
-            st.markdown(f'<a href="https://wa.me{cel}?text={wa_text}" target="_blank"><button style="background:#25D366; color:white; border:none; padding:15px; border-radius:10px; width:100%; cursor:pointer;">📲 CONTATTA SU WHATSAPP</button></a>', unsafe_allow_html=True)
+            wa = urllib.parse.quote(f"Ciao {st.session_state.user_data['nome']}! Novità per il Loop di {st.session_state.user_data['bimbo']}.")
+            st.markdown(f'<a href="https://wa.me{cel}?text={wa}"><button style="background:#25D366; color:white; border:none; padding:15px; border-radius:10px; width:100%;">📲 WHATSAPP</button></a>', unsafe_allow_html=True)

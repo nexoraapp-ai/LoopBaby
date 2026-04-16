@@ -4,32 +4,29 @@ import os
 from datetime import datetime, timedelta
 import urllib.parse
 
-# --- 1. CONFIGURAZIONE & ICONA ---
-st.set_page_config(
-    page_title="LoopBaby", 
-    page_icon="favicon.ico", 
-    layout="centered"
-)
+# --- 1. CONFIGURAZIONE ---
+st.set_page_config(page_title="LoopBaby", page_icon="favicon.ico", layout="centered")
 
-# Sostituisci 'NOME_REPO' con il nome reale del tuo repository su GitHub se necessario
-URL_LOGO = "https://githubusercontent.com"
-
-# --- 2. STILE GRAFICO (CSS con doppie graffe per f-string) ---
-st.markdown(f"""
-    <head>
-        <link rel="icon" href="{URL_LOGO}" type="image/png">
-        <link rel="apple-touch-icon" href="{URL_LOGO}">
-    </head>
+# --- 2. STILE GRAFICO (VERSIONE FIXATA) ---
+# Usiamo le doppie graffe {{ }} e carichiamo il CSS in un blocco unico e pulito
+st.markdown("""
     <style>
-    header {{ visibility: visible !important; }}
-    footer {{ visibility: hidden; }}
-    .stApp {{ background-color: #f0fdfa !important; max-width: 500px; margin: 0 auto; }}
+    /* Nasconde header e footer di Streamlit */
+    header { visibility: hidden; }
+    footer { visibility: hidden; }
     
-    /* Testi e Titoli */
-    h1, h2, h3, p, span, label, .stMarkdown {{ color: #0d9488 !important; }}
+    /* Sfondo e Contenitore */
+    .stApp { 
+        background-color: #f0fdfa !important; 
+        max-width: 500px !important; 
+        margin: 0 auto !important; 
+    }
     
-    /* Pulsanti Custom */
-    div.stButton > button:first-child {{
+    /* Testi */
+    h1, h2, h3, h4, p, span, label { color: #0d9488 !important; font-family: 'sans-serif'; }
+    
+    /* PULSANTI: Forza il colore e nasconde il codice */
+    .stButton>button { 
         border-radius: 30px !important; 
         height: 3.5em !important; 
         font-weight: 800 !important; 
@@ -38,38 +35,36 @@ st.markdown(f"""
         border: none !important; 
         width: 100% !important;
         box-shadow: 0 4px 12px rgba(13,148,136,0.3) !important;
-    }}
+        margin-top: 10px;
+    }
     
-    div.stButton > button:first-child:hover {{
-        color: white !important;
-        border: none !important;
-    }}
+    .stButton>button:hover { color: white !important; opacity: 0.9; }
 
-    /* Card Strutturate */
-    .card {{ 
+    /* CARD */
+    .card { 
         background: white; 
         padding: 20px; 
         border-radius: 20px; 
         border: 1px solid #0d9488; 
         margin-bottom: 20px; 
-    }}
-    .promo-card {{ 
+    }
+    .promo-card { 
         background: #fef3c7; 
         padding: 20px; 
         border-radius: 20px; 
         border: 2px solid #d97706; 
         text-align: center; 
         margin-bottom: 20px; 
-    }}
-    .price-tag {{ 
+    }
+    .price-tag { 
         font-size: 1.2em; 
         font-weight: bold; 
         color: #e11d48 !important; 
-    }}
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. SESSION STATE (GESTIONE DATI) ---
+# --- 3. SESSION STATE ---
 if "autenticato" not in st.session_state: st.session_state.autenticato = False
 if "iscritti" not in st.session_state: st.session_state.iscritti = 12
 if "user_data" not in st.session_state: 
@@ -78,30 +73,31 @@ if "user_data" not in st.session_state:
         "ha_ordinato": False, "data_ordine": None, "taglia": "0-1m"
     }
 
-# --- 4. LOGIN / REGISTRAZIONE ---
+# --- 4. ACCESSO ---
 if not st.session_state.autenticato:
     if os.path.exists("logo.png"): st.image("logo.png", use_container_width=True)
-    t1, t2 = st.tabs(["Accedi", "Registrati"])
     
-    with t1:
-        e = st.text_input("Email")
-        p = st.text_input("Password", type="password")
-        if st.button("ENTRA", key="login_btn"):
-            if e == "admin" and p == "baby2024": 
+    tab1, tab2 = st.tabs(["Accedi", "Registrati"])
+    
+    with tab1:
+        email = st.text_input("Email", key="login_email")
+        password = st.text_input("Password", type="password", key="login_pass")
+        if st.button("ENTRA"):
+            if email == "admin" and password == "baby2024":
                 st.session_state.autenticato = "admin"
                 st.rerun()
-            elif e: 
-                st.session_state.user_data["email"] = e
+            elif email:
+                st.session_state.user_data["email"] = email
                 st.session_state.autenticato = "utente"
                 st.rerun()
-            
-    with t2:
+                
+    with tab2:
         st.write("### Diventa una Mamma Fondatrice")
-        n_m = st.text_input("Tuo Nome")
-        c_m = st.text_input("N° Telefono")
-        n_b = st.text_input("Nome del Bimbo/a")
-        p_b = st.number_input("Peso attuale (kg)", 2.0, 20.0, 5.0)
-        if st.button("REGISTRATI E BLOCCA PROMO", key="reg_btn"):
+        n_m = st.text_input("Tuo Nome", key="reg_nome")
+        c_m = st.text_input("N° Telefono", key="reg_tel")
+        n_b = st.text_input("Nome del Bimbo/a", key="reg_bimbo")
+        p_b = st.number_input("Peso attuale (kg)", 2.0, 20.0, 5.0, key="reg_peso")
+        if st.button("REGISTRATI ORA"):
             if n_m and c_m:
                 tg = "0-1m" if p_b < 4.5 else "1-3m" if p_b < 5.5 else "3-6m" if p_b < 7.5 else "6-9m" if p_b < 9.0 else "12-24m"
                 st.session_state.user_data.update({"nome": n_m, "bimbo": n_b, "cellulare": c_m, "taglia": tg})
@@ -110,107 +106,61 @@ if not st.session_state.autenticato:
                 st.rerun()
     st.stop()
 
-# --- 5. NAVIGAZIONE (SIDEBAR) ---
+# --- 5. SIDEBAR ---
 with st.sidebar:
     if os.path.exists("logo.png"): st.image("logo.png", width=120)
     st.write(f"Ciao **{st.session_state.user_data['nome']}**! 🧸")
-    scelta = st.radio("Menu:", ["🏠 Home", "📝 Profilo", "📦 Box Loop", "🛍️ Vetrina Shopping", "🔐 Area Admin"])
-    if st.button("Esci"): 
+    scelta = st.radio("Menu:", ["🏠 Home", "📝 Profilo", "📦 Box Loop", "🛍️ Vetrina Shopping", "🔐 Admin"])
+    if st.button("Esci"):
         st.session_state.autenticato = False
         st.rerun()
 
-# --- 6. HOME PAGE ---
+# --- 6. PAGINE ---
 if scelta == "🏠 Home":
-    st.title("Benvenuta in LoopBaby! ✨")
-    
+    st.title("Benvenuta! ✨")
     st.markdown(f"""
-    <div class="promo-card">
-        <h2>🚀 PROMO FONDATRICI</h2>
-        <p><b>1ª BOX OMAGGIO E RITIRO GRATIS!</b><br>Riservato alle prime 50 mamme.</p>
-        <div style="font-size:1.5em; font-weight:800; color:#d97706 !important;">{st.session_state.iscritti} / 50 posti occupati</div>
-    </div>
+        <div class="promo-card">
+            <h2>🚀 PROMO FONDATRICI</h2>
+            <p>1ª BOX OMAGGIO E RITIRO GRATIS!</p>
+            <div style="font-size:1.5em; font-weight:800;">{st.session_state.iscritti} / 50 posti occupati</div>
+        </div>
     """, unsafe_allow_html=True)
-
+    
     st.markdown("""
-    <div class="card">
-        <h4>Come funziona? 🌿</h4>
-        <p>1. Scegli una <b>Box</b> (Standard o Premium).<br>
-        2. Usala per 90 giorni.<br>
-        3. Rendi tutto e ricevi la taglia successiva!</p>
-    </div>
+        <div class="card">
+            <h4>Il tuo armadio circolare 🌿</h4>
+            <p>Scegli il tuo box, usalo e cambialo quando il bimbo cresce. Risparmia tempo, spazio e denaro.</p>
+        </div>
     """, unsafe_allow_html=True)
 
-# --- 7. PROFILO (MODIFICABILE) ---
 elif scelta == "📝 Profilo":
-    st.title("Il tuo Profilo 📝")
-    with st.form("edit_profilo"):
-        u_nome = st.text_input("Nome Mamma", st.session_state.user_data["nome"])
+    st.title("I tuoi dati 📝")
+    with st.form("form_p"):
+        u_nome = st.text_input("Nome", st.session_state.user_data["nome"])
         u_tel = st.text_input("Telefono", st.session_state.user_data["cellulare"])
-        u_bimbo = st.text_input("Nome Bimbo/a", st.session_state.user_data["bimbo"])
-        
-        liste_t = ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"]
-        try:
-            default_t = liste_t.index(st.session_state.user_data["taglia"])
-        except ValueError:
-            default_t = 0
-            
-        u_taglia = st.selectbox("Taglia Attuale", liste_t, index=default_t)
-        
-        if st.form_submit_button("CONFERMA E SALVA"):
-            st.session_state.user_data.update({"nome": u_nome, "cellulare": u_tel, "bimbo": u_bimbo, "taglia": u_taglia})
-            st.success("Dati aggiornati correttamente! ✨")
+        u_taglia = st.selectbox("Taglia Bimbo", ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"])
+        if st.form_submit_button("SALVA"):
+            st.session_state.user_data.update({"nome": u_nome, "cellulare": u_tel, "taglia": u_taglia})
+            st.success("Dati aggiornati!")
 
-# --- 8. BOX LOOP ---
 elif scelta == "📦 Box Loop":
-    st.title("Scegli il tuo Loop 📦")
-    
-    st.markdown('<div class="card"><b>Box Standard</b><br><span class="price-tag">19,90€</span><br><small>10 capi stili Luna, Sole, Nuvola. Spedizione inclusa.</small></div>', unsafe_allow_html=True)
-    if st.button("SCEGLI STANDARD"): st.success("Hai scelto la Box Standard!")
-        
-    st.markdown('<div class="card"><b>Box Premium</b><br><span class="price-tag">29,90€</span><br><small>10 capi grandi firme. Spedizione inclusa.</small></div>', unsafe_allow_html=True)
-    if st.button("SCEGLI PREMIUM"): st.success("Hai scelto la Box Premium!")
+    st.title("I nostri Box 📦")
+    st.markdown('<div class="card"><b>Standard Loop</b><br><span class="price-tag">19,90€</span></div>', unsafe_allow_html=True)
+    st.button("ORDINA STANDARD", key="btn_std")
+    st.markdown('<div class="card"><b>Premium Loop</b><br><span class="price-tag">29,90€</span></div>', unsafe_allow_html=True)
+    st.button("ORDINA PREMIUM", key="btn_pre")
 
-# --- 9. VETRINA SHOPPING ---
 elif scelta == "🛍️ Vetrina Shopping":
-    st.title("Vetrina LoopBaby 🛍️")
-    st.info("🚚 Spedizione GRATIS sopra i 50€!")
-    
-    prodotti = [
-        {"n": "Set 3 Body Bio", "p": 18.00, "i": "🌱"},
-        {"n": "Sacco Nanna 2.5 Tog", "p": 45.00, "i": "😴"},
-        {"n": "Kit Accessori Pappa", "p": 22.00, "i": "🥣"}
-    ]
-    
-    for item in prodotti:
-        with st.container():
-            st.markdown(f"""
-            <div class="card">
-                <b>{item['i']} {item['n']}</b><br>
-                Prezzo: <span class="price-tag">{item['p']}0€</span>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button(f"Acquista {item['n']}"):
-                st.toast(f"{item['n']} aggiunto!")
+    st.title("Vetrina 🛍️")
+    st.info("Consegna GRATIS sopra i 50€")
+    st.markdown('<div class="card">🌱 <b>Set 3 Body Bio</b><br><span class="price-tag">18,00€</span></div>', unsafe_allow_html=True)
+    st.button("ACQUISTA SET", key="buy1")
 
-# --- 10. AREA ADMIN ---
-elif scelta == "🔐 Area Admin":
-    if st.session_state.autenticato != "admin":
-        st.error("Area riservata all'amministratore.")
+elif scelta == "🔐 Admin":
+    if st.session_state.autenticato == "admin":
+        st.title("Pannello Admin 🔐")
+        st.write("Gestione Mamme Iscritte")
+        # Link rapido mail
+        st.markdown("[✉️ Invia Email Assistenza](mailto:info@loopbaby.it)")
     else:
-        st.title("Pannello Gestione 🔐")
-        
-        utenti = [
-            {"Mamma": "Chiara", "Tel": "3331234567", "Mail": "chiara@esempio.com", "Stato": "In Scadenza"},
-            {"Mamma": "Elena", "Tel": "3470001122", "Mail": "elena@esempio.com", "Stato": "Attivo"}
-        ]
-        
-        for m in utenti:
-            with st.expander(f"👤 {m['Mamma']} ({m['Stato']})"):
-                st.write(f"Tel: {m['Tel']} | Email: {m['Mail']}")
-                col1, col2 = st.columns(2)
-                
-                wa_msg = urllib.parse.quote(f"Ciao {m['Mamma']}, qui LoopBaby! Il tuo box è quasi pronto per il cambio.")
-                col1.markdown(f"[💬 WhatsApp](https://wa.me{m['Tel']}?text={wa_msg})")
-                
-                mail_subj = urllib.parse.quote("Novità dal tuo Loop")
-                col2.markdown(f"[✉️ Invia Email](mailto:{m['Mail']}?subject={mail_subj})")
+        st.error("Non hai i permessi.")

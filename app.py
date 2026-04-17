@@ -7,7 +7,7 @@ import urllib.parse
 # --- 1. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", page_icon="logo.png", layout="centered")
 
-# --- 2. STILE GRAFICO (VERDE MENTA & GRIGIO FUMO) ---
+# --- 2. STILE GRAFICO ---
 st.markdown("""
     <style>
     header { visibility: visible !important; }
@@ -52,22 +52,24 @@ def calcola_tg(peso):
 if not st.session_state.autenticato:
     if os.path.exists("logo.png"): st.image("logo.png", use_container_width=True)
     t1, t2 = st.tabs(["Accedi", "Registrati"])
+    
     with t1:
-        e_log = st.text_input("Email")
-        p_log = st.text_input("Password", type="password")
-        if st.button("ENTRA"):
+        e_log = st.text_input("Email", key="login_email")
+        p_log = st.text_input("Password", type="password", key="login_pass")
+        if st.button("ENTRA", key="btn_login"):
             if e_log == "admin" and p_log == "baby2024": st.session_state.autenticato = "admin"; st.rerun()
             elif e_log: st.session_state.autenticato = "utente"; st.rerun()
+            
     with t2:
         st.write("### Diventa una Mamma Fondatrice")
-        n_m = st.text_input("Nome")
-        cg_m = st.text_input("Cognome")
-        em_m = st.text_input("Email")
-        n_b = st.text_input("Nome del Bimbo/a")
-        d_n = st.date_input("Data di Nascita")
-        p_b = st.number_input("Peso attuale (kg)", 2.0, 20.0, 4.0)
-        c_m = st.text_input("Cellulare")
-        if st.button("REGISTRATI E BLOCCA PROMO"):
+        n_m = st.text_input("Nome", key="reg_nome")
+        cg_m = st.text_input("Cognome", key="reg_cognome")
+        em_m = st.text_input("Email Professionale", key="reg_email")
+        n_b = st.text_input("Nome del Bimbo/a", key="reg_bimbo")
+        d_n = st.date_input("Data di Nascita", key="reg_nascita")
+        p_b = st.number_input("Peso attuale (kg)", 2.0, 20.0, 4.0, key="reg_peso")
+        c_m = st.text_input("Cellulare", key="reg_tel")
+        if st.button("REGISTRATI E BLOCCA PROMO", key="btn_reg"):
             if n_m and em_m and c_m:
                 st.session_state.user_data.update({"nome": n_m, "cognome": cg_m, "email": em_m, "bimbo": n_b, "nascita": d_n, "cellulare": c_m, "peso": p_b, "taglia": calcola_tg(p_b)})
                 st.session_state.autenticato = "utente"; st.session_state.primo_accesso = True; st.rerun()
@@ -78,17 +80,17 @@ if st.session_state.primo_accesso and not st.session_state.user_data["taglia_con
     st.title(f"Benvenuta {st.session_state.user_data['nome']}! ✨")
     st.markdown(f'<div class="card" style="text-align: center;"><h4>Taglia suggerita per {st.session_state.user_data["bimbo"]}</h4><h2 style="color:#e11d48;">{st.session_state.user_data["taglia"]}</h2></div>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
-    if c1.button("✅ CONFERMA"): st.session_state.user_data["taglia_confermata"] = True; st.session_state.primo_accesso = False; st.rerun()
-    if c2.button("✏️ MODIFICA"):
-        nuova = st.selectbox("Seleziona taglia:", ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"])
-        if st.button("SALVA"): st.session_state.user_data["taglia"] = nuova; st.session_state.user_data["taglia_confermata"] = True; st.session_state.primo_accesso = False; st.rerun()
+    if c1.button("✅ CONFERMA", key="confirm_tg"): st.session_state.user_data["taglia_confermata"] = True; st.session_state.primo_accesso = False; st.rerun()
+    if c2.button("✏️ MODIFICA", key="edit_tg_init"):
+        nuova = st.selectbox("Seleziona taglia:", ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"], key="select_new_tg")
+        if st.button("SALVA", key="save_tg_init"): st.session_state.user_data["taglia"] = nuova; st.session_state.user_data["taglia_confermata"] = True; st.session_state.primo_accesso = False; st.rerun()
     st.stop()
 
 # --- 6. MENU ---
 with st.sidebar:
     st.write(f"Ciao **{st.session_state.user_data['nome']}**!")
     scelta = st.radio("Naviga:", ["🏠 Home", "📝 Profilo", "📦 Box Standard", "💎 Box Premium", "🛍️ Vetrina", "🔐 Admin"])
-    if st.button("Esci"): st.session_state.autenticato = False; st.rerun()
+    if st.button("Esci", key="btn_logout"): st.session_state.autenticato = False; st.rerun()
 
 # --- 7. HOME PAGE (IL MANIFESTO) ---
 if scelta == "🏠 Home":
@@ -107,21 +109,11 @@ if scelta == "🏠 Home":
     st.markdown(f"""
     <div class="card">
         <h4>Perché scegliere LoopBaby? 🌿</h4>
-        <div class="diff-card">
-            <b>💶 Risparmio Economico:</b> Vesti tuo figlio con capi di alta qualità a meno di 2€ l'uno. Risparmi oltre il 70% rispetto all'acquisto del nuovo.
-        </div>
-        <div class="diff-card">
-            <b>⏱️ Guadagno di Tempo:</b> Dimentica le ore passate a fotografare, caricare e contrattare sui mercatini dell'usato. Con noi gestisci tutto in un unico click.
-        </div>
-        <div class="diff-card">
-            <b>🏠 Più Spazio in Casa:</b> Basta scatole di vestiti che non vanno più bene ammucchiate in garage o negli armadi. Quando cresce, rendi e liberi spazio.
-        </div>
-        <div class="diff-card">
-            <b>🌍 Scelta Ecologica:</b> Riduci drasticamente l'impatto ambientale e lo spreco tessile. Ogni capo ha una vita più lunga e felice.
-        </div>
-        <div class="diff-card">
-            <b>✨ Qualità Garantita:</b> Ogni singolo capo viene controllato dal Team LoopBaby. Igiene e stato dei vestiti sono la nostra priorità.
-        </div>
+        <div class="diff-card"><b>💶 Risparmio:</b> Vesti tuo figlio con meno di 2€ a capo.</div>
+        <div class="diff-card"><b>⏱️ Tempo:</b> Gestisci tutto in un click, niente foto o mercatini.</div>
+        <div class="diff-card"><b>🏠 Spazio:</b> Quando cresce, rendi e liberi l'armadio.</div>
+        <div class="diff-card"><b>🌍 Ecologia:</b> Riduci lo spreco tessile.</div>
+        <div class="diff-card"><b>✨ Qualità:</b> Ogni capo è sanificato e controllato dal Team LoopBaby.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -129,22 +121,25 @@ if scelta == "🏠 Home":
     <div class="promo-card">
         <h2>🚀 PROMO FONDATRICI</h2>
         <h3 style="color:#d97706 !important;">{st.session_state.iscritti} / 50 mamme</h3>
-        <p>Inviaci 10+ capi usati: <b>1ª Box Gratis</b> e <b>Ritiro OMAGGIO</b> a casa nostra!</p>
+        <p>Inviaci 10+ capi usati: <b>1ª Box Gratis</b> e <b>Ritiro OMAGGIO</b> a casa!</p>
     </div>
     """, unsafe_allow_html=True)
 
-# --- RESTO DEL CODICE ---
+# --- 8. PROFILO ---
 elif scelta == "📝 Profilo":
     st.title("Il tuo Profilo 📝")
-    with st.form("edit_profilo"):
+    with st.form("edit_profilo_form"):
         u = st.session_state.user_data
         n = st.text_input("Nome", u['nome'])
         em = st.text_input("Email", u['email'])
-        tg = st.selectbox("Taglia", ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"], index=["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"].index(u['taglia']))
-        if st.form_submit_button("SALVA"):
+        tg_opzioni = ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"]
+        tg_idx = tg_opzioni.index(u["taglia"]) if u["taglia"] in tg_opzioni else 0
+        tg = st.selectbox("Taglia", tg_opzioni, index=tg_idx)
+        if st.form_submit_button("SALVA MODIFICHE"):
             st.session_state.user_data.update({"nome": n, "email": em, "taglia": tg})
             st.success("Dati salvati!")
 
+# --- 9. ADMIN ---
 elif scelta == "🔐 Admin":
     if st.session_state.autenticato == "admin":
         st.title("Admin 🔐")
@@ -152,4 +147,5 @@ elif scelta == "🔐 Admin":
         if u['nome']:
             st.write(f"Utente: {u['nome']} | Tel: {u['cellulare']}")
             msg = urllib.parse.quote(f"Ciao {u['nome']}! Novità per il tuo Loop...")
-            st.markdown(f'<a href="https://wa.me{u["cellulare"]}?text={msg}" target="_blank"><button style="background:#25D366; color:white; border:none; padding:15px; border-radius:10px; width:100%;">📲 CONTATTA WHATSAPP</button></a>', unsafe_allow_html=True)
+            st.markdown(f'<a href="https://wa.me{u["cellulare"]}?text={msg}" target="_blank"><button style="background:#25D366; color:white; border:none; padding:15px; border-radius:10px; width:100%; cursor:pointer;">📲 CONTATTA WHATSAPP</button></a>', unsafe_allow_html=True)
+    else: st.error("Solo Admin")

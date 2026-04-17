@@ -7,7 +7,7 @@ import urllib.parse
 # --- 1. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", page_icon="logo.png", layout="centered")
 
-# --- 2. STILE GRAFICO (LO SCHELETRO PERFETTO) ---
+# --- 2. STILE GRAFICO (SCHELETRO ORIGINALE) ---
 st.markdown("""
     <style>
     header { visibility: visible !important; }
@@ -37,7 +37,7 @@ if "primo_accesso" not in st.session_state: st.session_state.primo_accesso = Fal
 if "carrello_vetrina" not in st.session_state: st.session_state.carrello_vetrina = []
 if "user_data" not in st.session_state: 
     st.session_state.user_data = {
-        "nome": "Mamma", "cognome": "", "email": "", "bimbo": "Bimbo", "sesso": "Neutro",
+        "nome": "", "cognome": "", "email": "", "bimbo": "", "sesso": "Neutro",
         "nascita": datetime.now().date(), "cellulare": "", "peso": 4.0,
         "ha_ordinato": False, "data_ordine": None, "tipo_box": "", "taglia": "0-1m", "taglia_confermata": False
     }
@@ -61,27 +61,25 @@ if not st.session_state.autenticato:
             elif e_log: st.session_state.autenticato = "utente"; st.rerun()
     with t2:
         st.write("### Diventa una Mamma Fondatrice")
-        n = st.text_input("Nome", key="r_n")
-        cg = st.text_input("Cognome", key="r_cg")
+        n = st.text_input("Nome", key="r_n"); cg = st.text_input("Cognome", key="r_cg")
         em = st.text_input("Email Professionale", key="r_em")
         b = st.text_input("Nome del Bimbo/a", key="r_b")
         sx = st.selectbox("Sesso", ["Maschietto", "Femminuccia", "Neutro"], key="r_sx")
         ps = st.number_input("Peso attuale (kg)", 2.0, 20.0, 4.0, key="r_ps")
         tl = st.text_input("Cellulare", key="r_tl")
         if st.button("REGISTRATI ORA", key="btn_r"):
-            if n and em and tl:
-                st.session_state.user_data.update({"nome": n, "cognome": cg, "email": em, "bimbo": b, "sesso": sx, "peso": ps, "cellulare": tl, "taglia": calcola_tg(ps)})
-                st.session_state.autenticato = "utente"; st.session_state.primo_accesso = True; st.rerun()
+            st.session_state.user_data.update({"nome": n, "cognome": cg, "email": em, "bimbo": b, "sesso": sx, "peso": ps, "cellulare": tl, "taglia": calcola_tg(ps)})
+            st.session_state.autenticato = "utente"; st.session_state.primo_accesso = True; st.rerun()
     st.stop()
 
-# --- 5. BENVENUTA / CONFERMA TAGLIA (FIX NOME) ---
-u_nome = st.session_state.user_data.get('nome', 'Mamma')
+# --- 5. BENVENUTA / CONFERMA TAGLIA ---
 if st.session_state.primo_accesso and not st.session_state.user_data["taglia_confermata"]:
-    st.title(f"Benvenuta {u_nome}! ✨")
+    st.title(f"Benvenuta {st.session_state.user_data['nome']}! ✨")
     st.markdown(f"""
     <div class="card" style="text-align: center;">
-        <h4>Taglia suggerita per {st.session_state.user_data['bimbo']}</h4>
+        <h4>Taglia suggerita per il tuo {st.session_state.user_data['sesso']}</h4>
         <div style="font-size:2.5em; font-weight:bold; color:#e11d48; margin:15px 0;">{st.session_state.user_data['taglia']}</div>
+        <p>In base al peso di {st.session_state.user_data['peso']} kg</p>
     </div>
     """, unsafe_allow_html=True)
     c1, c2 = st.columns(2)
@@ -90,18 +88,21 @@ if st.session_state.primo_accesso and not st.session_state.user_data["taglia_con
         nuova = st.selectbox("Scegli taglia:", ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"], key="sel_new_tg")
         if st.button("SALVA TAGLIA", key="btn_save_tg"):
             st.session_state.user_data["taglia"] = nuova
-            st.session_state.user_data["taglia_confermata"] = True; st.session_state.primo_accesso = False; st.rerun()
+            st.session_state.user_data["taglia_confermata"] = True
+            st.session_state.primo_accesso = False; st.rerun()
     st.stop()
 
 # --- 6. MENU SIDEBAR ---
 with st.sidebar:
-    st.write(f"Ciao **{u_nome}**! 🧸")
+    u = st.session_state.user_data
+    st.write(f"Ciao **{u.get('nome')}**! 🧸")
     scelta = st.radio("Naviga:", ["🏠 Home", "📝 Profilo", "📦 Box Standard", "💎 Box Premium", "🛍️ Vetrina", "🔐 Admin"])
     if st.button("Esci", key="logout"): st.session_state.autenticato = False; st.rerun()
 
-# --- 7. HOME PAGE (SCHELETRO PERFETTO) ---
+# --- 7. HOME PAGE ---
 if scelta == "🏠 Home":
-    st.title(f"Benvenuta {u_nome}! ✨")
+    st.title(f"Benvenuta {u.get('nome')}! ✨")
+    
     st.markdown(f"""
     <div class="story-card">
         <h4>Chi Siamo? 👨‍👩‍👧</h4>
@@ -122,35 +123,53 @@ if scelta == "🏠 Home":
     </div>
     """, unsafe_allow_html=True)
 
-# --- 8. PROFILO ---
+# --- 8. PROFILO (MODIFICABILE) ---
 elif scelta == "📝 Profilo":
     st.title("Il tuo Profilo 📝")
     with st.form("edit_p"):
         u = st.session_state.user_data
         n_p = st.text_input("Nome", u.get('nome'))
-        cg_p = st.text_input("Cognome", u.get('cognome'))
         em_p = st.text_input("Email", u.get('email'))
         tl_p = st.text_input("Telefono", u.get('cellulare'))
         tg_p = st.selectbox("Taglia Attuale", ["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"], index=["0-1m", "1-3m", "3-6m", "6-9m", "12-24m"].index(u["taglia"]))
         if st.form_submit_button("SALVA MODIFICHE"):
-            st.session_state.user_data.update({"nome": n_p, "cognome": cg_p, "email": em_p, "cellulare": tl_p, "taglia": tg_p})
+            st.session_state.user_data.update({"nome": n_p, "email": em_p, "cellulare": tl_p, "taglia": tg_p})
             st.success("Dati aggiornati!")
 
-# --- 9. ALTRE SEZIONI POPOLATE ---
+# --- 9. BOX STANDARD ---
 elif scelta == "📦 Box Standard":
-    st.title(f"Box {st.session_state.user_data['sesso']} - {st.session_state.user_data['taglia']}")
-    st.write("Scegli tra Luna, Sole o Nuvola (10 foto reali in arrivo).")
+    st.title(f"Box {u.get('sesso')} - Taglia {u.get('taglia')}")
+    for s, d in [("🌙 LUNA", "Neutri"), ("☀️ SOLE", "Vivaci"), ("☁️ NUVOLA", "Casual")]:
+        with st.expander(f"{s} - Stile {d}"):
+            st.write(f"10 capi selezionati per {u.get('sesso')} taglia {u.get('taglia')}.")
+            if st.button(f"Scegli Box {s}", key=f"btn_{s}"):
+                st.session_state.user_data.update({"ha_ordinato": True, "data_ordine": datetime.now()})
+                st.success("Loop attivato!")
 
+# --- 10. BOX PREMIUM ---
 elif scelta == "💎 Box Premium":
-    st.title("💎 Box Premium")
-    st.write("Grandi Firme per il tuo bimbo. Foto reali in arrivo.")
+    st.title(f"Premium {u.get('sesso')} - Taglia {u.get('taglia')}")
+    st.markdown('<div class="card">10 vestiti Grandi Firme selezionati per qualità superiore. Caricheremo qui le 10 foto reali.</div>', unsafe_allow_html=True)
+    if st.button("ORDINA PREMIUM", key="btn_prem"):
+        st.session_state.user_data.update({"ha_ordinato": True, "data_ordine": datetime.now()})
+        st.success("Premium ordinata!")
 
+# --- 11. VETRINA ---
 elif scelta == "🛍️ Vetrina":
-    st.title("🛍️ Vetrina Shopping")
-    st.info("Capi definitivi. Trasporto GRATIS > 50€.")
+    st.title(f"Vetrina {u.get('sesso')}")
+    st.info("Capi che rimangono a te. Gratis > 50€ o con una Box.")
+    for n, p in [("Body Bio", 15.0), ("Tutina Felpata", 25.0)]:
+        st.markdown(f"<div class='card'><b>{n}</b> - <span class='price-tag'>{p}€</span></div>", unsafe_allow_html=True)
+        if st.button(f"Acquista {n}", key=f"v_{n}"): 
+            st.session_state.carrello_vetrina.append(p); st.toast("Aggiunto!")
 
+# --- 12. ADMIN ---
 elif scelta == "🔐 Admin":
     if st.session_state.autenticato == "admin":
         st.title("Admin 🔐")
-        st.write(f"Utente: {st.session_state.user_data['nome']} {st.session_state.user_data['cognome']}")
+        u = st.session_state.user_data
+        if u.get('nome'):
+            st.write(f"**Utente:** {u['nome']} {u['cognome']} | **Tel:** {u['cellulare']}")
+            msg = urllib.parse.quote(f"Buongiorno {u['nome']}, sono di LoopBaby...")
+            st.markdown(f'[![WA](https://shields.io)](https://wa.me{u["cellulare"]}?text={msg})', unsafe_allow_html=True)
     else: st.error("Solo Admin")

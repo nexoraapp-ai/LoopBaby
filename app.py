@@ -28,7 +28,7 @@ def invia_codice_mail(destinatario, codice, nome_mamma):
     except:
         return False
 
-# --- 3. STILE GRAFICO COMPLETO ---
+# --- 3. STILE GRAFICO ---
 st.markdown("""
     <style>
     header { visibility: visible !important; }
@@ -50,11 +50,10 @@ st.markdown("""
 
 # --- 4. SESSIONE ---
 if "autenticato" not in st.session_state: st.session_state.autenticato = False
-if "iscritti" not in st.session_state: st.session_state.iscritti = 38
 if "user_data" not in st.session_state: 
     st.session_state.user_data = {"nome": "Mamma", "email": "", "cellulare": "", "bimbo": "", "taglia": "0-1m"}
 
-# --- 5. ACCESSO ---
+# --- 5. LOGICA ACCESSO ---
 if not st.session_state.autenticato:
     t1, t2 = st.tabs(["Accedi", "Registrati"])
     with t2:
@@ -75,7 +74,7 @@ with st.sidebar:
     scelta = st.sidebar.radio("Naviga:", ["🏠 Home", "📝 Profilo", "📦 Box Standard", "💎 Box Premium", "🛍️ Vetrina", "🔐 Admin", "✉️ Contatti"])
     if st.button("Esci"): st.session_state.autenticato = False; st.rerun()
 
-# --- 7. HOME (TUTTO QUELLO CHE CI SIAMO DETTI) ---
+# --- 7. HOME ---
 if scelta == "🏠 Home":
     st.title("Benvenuta su LoopBaby ✨")
     
@@ -90,9 +89,9 @@ if scelta == "🏠 Home":
     </div>
     <div class="card">
         <h4 style="text-align: center;">🚚 Spedizioni e Resi</h4>
-        <div class="highlight-box">📦 <b>Etichetta Gratis:</b> La spedizione di andata è sempre inclusa.</div>
-        <div class="highlight-box">🔄 <b>Ritorno Gratuito:</b> Se prendi un'altra box, l'etichetta per il reso della vecchia è gratis!</div>
-        <div class="highlight-box">🏷️ <b>Reso Singolo:</b> Se vuoi solo rendere senza nuova box, paghi 7,90€ e ti mandiamo noi l'etichetta.</div>
+        <div class="highlight-box">📦 <b>Spedizione Gratuita:</b> La consegna della tua Box è sempre inclusa.</div>
+        <div class="highlight-box">🔄 <b>Reso Gratuito:</b> Se ordini una nuova Box, il ritiro di quella vecchia è gratuito!</div>
+        <div class="highlight-box">🏷️ <b>Etichetta di Reso:</b> Se vuoi solo restituire i capi senza prendere una nuova Box, il costo è di 7,90€ e ti inviamo noi l'etichetta.</div>
     </div>
     <div class="promo-card">
         <h2>🚀 PROMO FONDATRICI</h2>
@@ -124,16 +123,16 @@ elif scelta == "📦 Box Standard":
 # --- 10. BOX PREMIUM ---
 elif scelta == "💎 Box Premium":
     st.title("💎 Box Premium")
-    st.write("Vestiti **nuovi o seminuovi** dei migliori brand.")
+    st.write("Vestiti **nuovi o seminuovi** dei migliori brand, selezionati e igienizzati.")
     if st.button("ORDINA PREMIUM (89€)"): st.success("Ordine Premium ricevuto!")
 
 # --- 11. VETRINA ---
 elif scelta == "🛍️ Vetrina":
     st.title("🛍️ Vetrina")
-    st.info("I capi qui acquistati rimangono a te.")
+    st.info("I capi acquistati in questa sezione rimangono a te.")
     st.markdown("""
     <div class="highlight-box">
-    🚛 <b>Spedizione:</b> Gratis sopra i 50€ o se acquistati insieme a una Box Mensile.
+    🚛 <b>Spedizione Gratuita:</b> Per ordini superiori a 50€ o se acquistati insieme a una Box.
     </div>
     """, unsafe_allow_html=True)
     st.write("---")
@@ -153,8 +152,7 @@ elif scelta == "✉️ Contatti":
 
 # --- 13. ADMIN ---
 elif scelta == "🔐 Admin":
-    if st.session_state.autenticato == "admin" or True: # Accesso rapido per te
-        st.title("Admin 🔐")
-        st.write(f"Contatta: {u['nome']} ({u['cellulare']})")
-        wa = urllib.parse.quote(f"Ciao {u['nome']}, sono LoopBaby...")
-        st.markdown(f'[📲 WHATSAPP](https://wa.me{u["cellulare"]}?text={wa})')
+    st.title("Admin 🔐")
+    st.write(f"Contatta: {u['nome']} ({u['cellulare']})")
+    wa = urllib.parse.quote(f"Ciao {u['nome']}, sono LoopBaby...")
+    st.markdown(f'[📲 WHATSAPP](https://wa.me{u["cellulare"]}?text={wa})')

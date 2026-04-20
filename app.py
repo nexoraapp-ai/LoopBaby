@@ -80,6 +80,10 @@ if scelta == "🏠 Home":
     
     st.markdown("""
     <div class="story-card">
+        <h4>Chi Siamo? 👨‍👩‍👧</h4>
+        <p>Siamo <b>genitori</b> che capiscono la necessità di cambiare i vestiti ogni mese. Abbiamo creato <b>LoopBaby</b> per eliminare lo stress e i costi eccessivi.</p>
+    </div>
+    <div class="story-card">
         <h4>Come funziona LoopBaby? 🔄</h4>
         <p>LoopBaby è l'economia circolare per il tuo bambino. Quando i vestiti diventano piccoli, li sostituiamo con la taglia successiva senza sprechi.</p>
     </div>

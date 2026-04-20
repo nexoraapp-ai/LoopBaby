@@ -3,12 +3,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# --- CONFIGURAZIONE CREDENZIALI ---
+# --- CONFIGURAZIONE CREDENZIALI (AGGIORNATE) ---
 GMAIL_USER = "assistenza.loopbaby@gmail.com"
 GMAIL_PASS = "sqpw gpto jovf dlox"
 DESTINATARIO_ORDINI = "xxmanuelvalente@gmail.com"
 
-# --- FUNZIONE INVIO MAIL ---
 def invia_email_ordine(dettagli_ordine):
     msg = MIMEMultipart()
     msg['From'] = GMAIL_USER
@@ -16,7 +15,7 @@ def invia_email_ordine(dettagli_ordine):
     msg['Subject'] = f"NUOVO ORDINE - {dettagli_ordine['cliente']}"
     
     corpo = f"""
-    Nuovo ordine ricevuto su Loop Baby!
+    Nuovo ordine ricevuto!
     
     Cliente: {dettagli_ordine['cliente']}
     Prodotto: {dettagli_ordine['prodotto']}
@@ -27,79 +26,63 @@ def invia_email_ordine(dettagli_ordine):
     msg.attach(MIMEText(corpo, 'plain'))
     
     try:
-        server = smtplib.SMTP_SSL('://gmail.com', 465)
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.login(GMAIL_USER, GMAIL_PASS)
         server.send_message(msg)
         server.quit()
         return True
-    except Exception as e:
+    except:
         return False
 
-# --- CONFIGURAZIONE PAGINA ---
+# --- INTERFACCIA APP LOOP BABY ---
 st.set_page_config(page_title="Loop Baby - Shop", page_icon="🍼")
 
-# --- MENU LATERALE (NAVIGAZIONE) ---
-st.sidebar.title(f"Ciao {st.session_state.get('username', '!')} 🧸")
-scelta = st.sidebar.radio("Naviga:", [
-    "🏠 Home", 
-    "👤 Profilo", 
-    "📦 Box Standard", 
-    "💎 Box Premium", 
-    "🛍️ Vetrina", 
-    "🔐 Admin",
-    "✉️ Contatti"
-])
+st.title("🍼 Loop Baby")
+st.subheader("Selezione Capi Esclusivi")
 
-# --- LOGICA DELLE PAGINE ---
+# Esempio Prodotto nel magazzino
+col1, col2 = st.columns(2)
 
-if scelta == "🏠 Home":
-    st.title("Benvenuta! ✨")
-    st.write("---")
-    st.info("**Chi Siamo?** Siamo genitori che capiscono la necessità di cambiare i vestiti ogni mese. Abbiamo creato LoopBaby per eliminare lo stress e i costi eccessivi.")
+with col1:
+    st.image("https://placeholder.com", caption="Tutina Bio Cotton") # Qui andranno le tue foto
+    prezzo = "29.90€"
+    st.write(f"**Prezzo:** {prezzo}")
 
-elif scelta == "🛍️ Vetrina":
-    st.title("🛍️ Vetrina Alta Gamma")
-    st.success("I capi acquistati qui rimarranno a te!")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.image("https://placeholder.com", caption="Cappottino Firmato")
-        prezzo_capo = "45.00€"
-        st.write(f"**Prezzo:** {prezzo_capo}")
+with col2:
+    taglia = st.selectbox("Seleziona Taglia", ["0-3 mesi", "3-6 mesi", "6-9 mesi", "9-12 mesi"])
+    consegna = st.radio("Metodo di consegna", ["Ritiro in Locker (Gratis)", "Spedizione a casa (+5€)"])
+    nome_cliente = st.text_input("Il tuo Nome per l'ordine")
 
-    with col2:
-        taglia = st.selectbox("Seleziona Taglia", ["0-3 mesi", "3-6 mesi", "6-9 mesi"])
-        consegna = st.radio("Metodo consegna", ["Locker (Gratis)", "Spedizione (+5€)"])
-        nome = st.text_input("Nome per l'ordine")
-        
-        if st.button("ACQUISTA"):
-            if nome:
-                dati = {"cliente": nome, "prodotto": "Cappottino Firmato", "taglia": taglia, "prezzo": prezzo_capo, "consegna": consegna}
-                if invia_email_ordine(dati):
-                    st.success("Ordine inviato! Controlla la tua mail.")
-                    st.balloons()
-                else:
-                    st.error("Errore nell'invio. Riprova.")
+    if st.button("CONFERMA ORDINE"):
+        if nome_cliente:
+            dati = {
+                "cliente": nome_cliente,
+                "prodotto": "Tutina Bio Cotton",
+                "taglia": taglia,
+                "prezzo": prezzo,
+                "consegna": consegna
+            }
+            if invia_email_ordine(dati):
+                st.success(f"Grazie {nome_cliente}! Ordine inviato con successo.")
+                st.balloons()
             else:
-                st.warning("Inserisci il tuo nome.")
+                st.error("Errore nell'invio dell'ordine. Riprova.")
+        else:
+            st.warning("Inserisci il tuo nome prima di confermare.")
 
-elif scelta == "✉️ Contatti":
-    st.title("✉️ Contatti & Assistenza")
-    st.write("Hai domande sui nostri capi o sul tuo ordine? Siamo qui per aiutarti!")
-    
-    # TASTO ROSSO MAILTO
-    st.markdown(f"""
-    <a href="mailto:{GMAIL_USER}" style="text-decoration: none;">
-        <button style="background-color: #ff4b4b; color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px;">
-            📩 Inviaci un'email ora
-        </button>
-    </a>
-    <br><br>
-    <p>Indirizzo email ufficiale: <b>{GMAIL_USER}</b></p>
-    """, unsafe_allow_html=True)
-    
-    st.info("Servizio clienti attivo dal Lunedì al Venerdì.")
+st.divider()
 
-else:
-    st.title(scelta)
-    st.write("Sezione in fase di caricamento... A domani per i 50 capi! 🚀")
+# --- SEZIONE CONTATTI & ASSISTENZA ---
+st.subheader("✉️ Contatti & Assistenza")
+st.write("Hai bisogno di aiuto o vuoi informazioni sui capi?")
+
+# Tasto Rosso Mailto (Cliccabile)
+st.markdown(f"""
+<a href="mailto:{GMAIL_USER}" style="text-decoration: none;">
+    <button style="background-color: #ff4b4b; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+        📩 Inviaci un'email: {GMAIL_USER}
+    </button>
+</a>
+""", unsafe_allow_html=True)
+
+st.info("Servizio clienti Loop Baby attivo dal Lunedì al Venerdì.")

@@ -3,7 +3,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# --- CONFIGURAZIONE CREDENZIALI (AGGIORNATE) ---
+# --- CONFIGURAZIONE CREDENZIALI (BLINDATE) ---
 GMAIL_USER = "assistenza.loopbaby@gmail.com"
 GMAIL_PASS = "sqpw gpto jovf dlox"
 DESTINATARIO_ORDINI = "xxmanuelvalente@gmail.com"
@@ -34,17 +34,17 @@ def invia_email_ordine(dettagli_ordine):
     except:
         return False
 
-# --- INTERFACCIA APP LOOP BABY ---
+# --- INTERFACCIA APP ---
 st.set_page_config(page_title="Loop Baby - Shop", page_icon="🍼")
 
 st.title("🍼 Loop Baby")
 st.subheader("Selezione Capi Esclusivi")
 
-# Esempio Prodotto nel magazzino
 col1, col2 = st.columns(2)
 
 with col1:
-    st.image("https://placeholder.com", caption="Tutina Bio Cotton") # Qui andranno le tue foto
+    # Immagine temporanea
+    st.image("https://placehold.co", caption="Tutina Bio Cotton")
     prezzo = "29.90€"
     st.write(f"**Prezzo:** {prezzo}")
 
@@ -53,6 +53,7 @@ with col2:
     consegna = st.radio("Metodo di consegna", ["Ritiro in Locker (Gratis)", "Spedizione a casa (+5€)"])
     nome_cliente = st.text_input("Il tuo Nome per l'ordine")
 
+    # IL TASTO APPARE QUI SOTTO
     if st.button("CONFERMA ORDINE"):
         if nome_cliente:
             dati = {
@@ -63,23 +64,23 @@ with col2:
                 "consegna": consegna
             }
             if invia_email_ordine(dati):
-                st.success(f"Grazie {nome_cliente}! Ordine inviato con successo.")
+                st.success(f"Grazie {nome_cliente}! Ordine inviato correttamente.")
                 st.balloons()
             else:
-                st.error("Errore nell'invio dell'ordine. Riprova.")
+                st.error("Errore nell'invio. Verifica la connessione.")
         else:
-            st.warning("Inserisci il tuo nome prima di confermare.")
+            st.warning("Inserisci il tuo nome per ordinare.")
 
 st.divider()
 
-# --- SEZIONE CONTATTI & ASSISTENZA ---
+# --- SEZIONE CONTATTI ---
 st.subheader("✉️ Contatti & Assistenza")
-st.write("Hai bisogno di aiuto o vuoi informazioni sui capi?")
+st.write("Hai bisogno di aiuto o informazioni sui capi?")
 
-# Tasto Rosso Mailto (Cliccabile)
+# Tasto Rosso Mailto
 st.markdown(f"""
 <a href="mailto:{GMAIL_USER}" style="text-decoration: none;">
-    <button style="background-color: #ff4b4b; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+    <button style="background-color: #ff4b4b; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">
         📩 Inviaci un'email: {GMAIL_USER}
     </button>
 </a>

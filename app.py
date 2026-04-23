@@ -1,143 +1,136 @@
 import streamlit as st
-import os
 
-# --- 1. CONFIGURAZIONE ---
+# --- CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", page_icon="logo.png", layout="centered")
 
-# --- 2. LOGICA DI NAVIGAZIONE ---
+# --- DATABASE TEMPORANEO ---
 if "pagina" not in st.session_state:
     st.session_state.pagina = "Home"
 
-def vai_a(nome_pagina):
-    st.session_state.pagina = nome_pagina
+# --- LOGICA DI NAVIGAZIONE ---
+query_params = st.query_params
+if "p" in query_params:
+    st.session_state.pagina = query_params["p"]
 
-# --- 3. CSS PER APP IDENTICA ---
+# --- STILE CSS TOTALE (IDENTICO ALLA FOTO) ---
 st.markdown("""
     <style>
-    /* Nascondi menu Streamlit */
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    .stApp { background-color: #FFFFFF !important; max-width: 450px; margin: 0 auto; }
-    
-    /* Colori e Font */
-    h1, h2, h3, b { color: #0d9488 !important; font-family: 'Helvetica', sans-serif; }
-    
-    /* Card come da foto */
-    .card-loop {
-        background: #f9fafb;
-        border-radius: 20px;
+    /* Reset totale per sembrare un'app */
+    [data-testid="stAppViewContainer"] { background-color: #FFFFFF; }
+    [data-testid="stHeader"], [data-testid="stToolbar"] { visibility: hidden !important; }
+    .main .block-container { padding: 20px; max-width: 450px; }
+
+    /* Font e Titoli */
+    h1, h2, h3, .titolo-verde { color: #0d9488 !important; font-family: 'Helvetica Neue', sans-serif; font-weight: 800; }
+    p { color: #475569; font-size: 14px; }
+
+    /* CARD DELLE BOX (3 STANDARD + 1 PREMIUM) */
+    .card {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 24px;
         padding: 20px;
         margin-bottom: 15px;
-        border: 1px solid #e5e7eb;
         text-align: center;
     }
-    .prezzo { color: #ec4899 !important; font-weight: bold; font-size: 1.4em; }
-
-    /* Tasto Rosa Call to Action */
-    .stButton>button {
-        background: #ec4899 !important;
+    .prezzo-rosa { color: #ec4899 !important; font-size: 22px; font-weight: 900; margin: 10px 0; }
+    
+    /* BOTTONE ROSA IDENTICO */
+    .stButton > button {
+        background-color: #ec4899 !important;
         color: white !important;
-        border-radius: 12px !important;
-        font-weight: bold !important;
-        width: 100% !important;
-        height: 3.5em !important;
+        border-radius: 16px !important;
         border: none !important;
+        width: 100% !important;
+        height: 55px !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        text-transform: uppercase;
+        margin-top: 5px;
     }
 
-    /* BARRA NAVIGAZIONE FISSA IN BASSO */
+    /* BARRA DI NAVIGAZIONE IN BASSO (FISSA E CLICCABILE) */
     .nav-bar {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
+        height: 75px;
         background: white;
+        border-top: 1px solid #E2E8F0;
         display: flex;
         justify-content: space-around;
-        padding: 10px 0;
-        border-top: 2px solid #f0fdfa;
-        z-index: 999;
+        align-items: center;
+        z-index: 9999;
     }
+    .nav-item {
+        text-align: center;
+        color: #0d9488;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: bold;
+        flex: 1;
+    }
+    .nav-icon { font-size: 22px; display: block; margin-bottom: 2px; }
+    
+    /* FIX PER NON FAR COPRIRE IL CONTENUTO DALLA BARRA */
+    .spacer { height: 100px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. CONTENUTO DELLE PAGINE ---
+# --- CONTENUTO PAGINE ---
 
-# --- HOME ---
+# 1. HOME
 if st.session_state.pagina == "Home":
-    if os.path.exists("logo.png"): st.image("logo.png", width=140)
-    st.title("Vestiamo il tuo bambino con amore e qualità.")
-    st.write("Risparmia, riusa e rispetta il pianeta con LoopBaby.")
-    if st.button("SCEGLI LA TUA BOX"): vai_a("Box")
-    
-    st.markdown("### Novità Shop")
-    c1, c2 = st.columns(2)
-    with c1: st.markdown('<div class="card-loop">👕<br>Body Bio<br><span class="prezzo">9,90€</span></div>', unsafe_allow_html=True)
-    with c2: st.markdown('<div class="card-loop">👖<br>Salopette<br><span class="prezzo">19,90€</span></div>', unsafe_allow_html=True)
+    st.image("logo.png", width=140) if st.session_state.pagina == "Home" else None
+    st.markdown("<h1 style='font-size: 32px;'>Vestiamo il tuo bambino con amore e qualità.</h1>", unsafe_allow_html=True)
+    st.write("Scegli il noleggio circolare: risparmi tempo, spazio e aiuti l'ambiente.")
+    if st.button("SCEGLI LA TUA BOX ➔"):
+        st.session_state.pagina = "Box"
+        st.rerun()
 
-# --- BOX (3 STANDARD + 1 PREMIUM) ---
+# 2. BOX (IDENTICHE A FOTO)
 elif st.session_state.pagina == "Box":
-    st.title("Le nostre Box 📦")
-    
-    st.subheader("Box Standard")
-    stili = [
-        {"n": "LUNA", "d": "Colori neutri e delicati", "p": "19,90€"},
-        {"n": "SOLE", "d": "Colori vivaci e stampe", "p": "19,90€"},
-        {"n": "NUVOLA", "d": "Casual e denim Style", "p": "19,90€"}
-    ]
-    for s in stili:
-        st.markdown(f'<div class="card-loop"><h3>{s["n"]}</h3><p>{s["d"]}</p><span class="prezzo">{s["p"]}</span></div>', unsafe_allow_html=True)
-        st.button(f"Scegli {s['n']}", key=s['n'])
+    st.markdown("<h2 class='titolo-verde'>Le nostre Box</h2>", unsafe_allow_html=True)
+    st.write("10 capi per 90 giorni. Scegli lo stile che preferisci.")
 
-    st.subheader("Box Premium")
-    st.markdown('<div class="card-loop" style="border: 2px solid #0d9488;"><h3>DIAMANTE 💎</h3><p>Grandi firme selezionate</p><span class="prezzo">29,90€</span></div>', unsafe_allow_html=True)
-    st.button("Scegli Premium")
+    # BOX STANDARD - LUNA
+    st.markdown('<div class="card"><h3>LUNA 🌙</h3><p>Colori neutri, panna e grigio</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+    if st.button("SCEGLI LUNA"): st.success("Luna aggiunta!")
 
-# --- SHOP (VETRINA) ---
+    # BOX STANDARD - SOLE
+    st.markdown('<div class="card"><h3>SOLE ☀️</h3><p>Colori vivaci e fantasie</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+    if st.button("SCEGLI SOLE"): st.success("Sole aggiunta!")
+
+    # BOX STANDARD - NUVOLA
+    st.markdown('<div class="card"><h3>NUVOLA ☁️</h3><p>Casual e Denim style</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+    if st.button("SCEGLI NUVOLA"): st.success("Nuvola aggiunta!")
+
+    # BOX PREMIUM
+    st.markdown('<div class="card" style="border: 2px solid #0d9488;"><h3>PREMIUM 💎</h3><p>Grandi firme selezionate</p><div class="prezzo-rosa">29,90€</div></div>', unsafe_allow_html=True)
+    if st.button("SCEGLI PREMIUM"): st.success("Premium aggiunta!")
+
+# 3. SHOP
 elif st.session_state.pagina == "Shop":
-    st.title("Vetrina Shop 🛍️")
-    st.write("Spedizione gratis sopra i 50€")
-    # Qui aggiungeremo i prodotti singoli
+    st.markdown("<h2 class='titolo-verde'>Vetrina Shop</h2>", unsafe_allow_html=True)
+    st.info("Spedizione GRATIS sopra i 50€")
+    # Qui andranno i capi singoli come nel codice precedente
 
-# --- CHI SIAMO ---
+# 4. CHI SIAMO
 elif st.session_state.pagina == "ChiSiamo":
-    st.title("Chi Siamo ❤️")
-    st.write("Siamo genitori che credono nel futuro circolare.")
+    st.markdown("<h2 class='titolo-verde'>Chi Siamo</h2>", unsafe_allow_html=True)
+    st.write("Siamo genitori che hanno creato LoopBaby per semplificare la vita alle famiglie.")
 
-# --- 5. BARRA DI NAVIGAZIONE FUNZIONANTE ---
-# Usiamo i widget di Streamlit dentro una riga fissa
-st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True) # Spazio per non coprire il contenuto
-cols = st.columns(4)
-with cols[0]: 
-    if st.button("🏠\nHome"): vai_a("Home")
-with cols[1]: 
-    if st.button("📦\nBox"): vai_a("Box")
-with cols[2]: 
-    if st.button("🛍️\nShop"): vai_a("Shop")
-with cols[3]: 
-    if st.button("👋\nChi Siamo"): vai_a("ChiSiamo")
+# Spaziatore finale per la barra
+st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 
-# CSS extra per posizionare i tasti in basso come una barra vera
-st.markdown("""
-    <style>
-    [data-testid="stHorizontalBlock"] {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: white;
-        padding: 10px;
-        z-index: 1000;
-        border-top: 1px solid #ddd;
-    }
-    [data-testid="stHorizontalBlock"] button {
-        height: 50px !important;
-        font-size: 10px !important;
-        background: transparent !important;
-        color: #0d9488 !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# --- BARRA DI NAVIGAZIONE IN BASSO (HTML PURO) ---
+# Usiamo i link con parametri per far funzionare i click
+st.markdown(f"""
+    <div class="nav-bar">
+        <a class="nav-item" href="/?p=Home" target="_self"><span class="nav-icon">🏠</span>Home</a>
+        <a class="nav-item" href="/?p=Box" target="_self"><span class="nav-icon">📦</span>Box</a>
+        <a class="nav-item" href="/?p=Shop" target="_self"><span class="nav-icon">🛍️</span>Shop</a>
+        <a class="nav-item" href="/?p=ChiSiamo" target="_self"><span class="nav-icon">👋</span>Chi Siamo</a>
+    </div>
+    """, unsafe_allow_html=True)

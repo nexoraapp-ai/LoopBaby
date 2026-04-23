@@ -55,8 +55,8 @@ st.markdown("""
     /* Pulsante Rosa */
     div.stButton > button {
         background-color: #f43f5e !important; color: white !important;
-        border-radius: 15px !important; width: 85% !important; height: 55px !important;
-        font-size: 17px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
+        border-radius: 15px !important; width: 85% !important; height: 50px !important;
+        font-size: 16px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
     }
 
     /* Barra Navigazione Fissa */
@@ -93,7 +93,7 @@ elif st.session_state.pagina == "Info":
         st.markdown(f'<div style="display:flex; gap:15px; padding:10px 20px;"><b style="font-size:20px;">{n}</b><div style="font-size:14px;">{t}</div></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="sez-titolo">Regole importanti</div>', unsafe_allow_html=True)
-    st.markdown('<div style="padding:15px 20px; font-size:13px; color:#475569; line-height:1.6; background:#fff1f2; border-radius:20px; margin:0 20px;">• Se rinnovi la Box, ritiro e consegna sono <b>GRATUITI</b>.<br>• Se restituisci senza cambiare, il costo è di 7,90€.<br>• Penale di 5€ per ogni capo mancante o danneggiato.<br>• Controlla tutto entro 48 ore dal ritiro.</div>', unsafe_allow_html=True)
+    st.markdown('<div style="padding:15px 20px; font-size:13px; color:#475569; line-height:1.6; background:#fff1f2; border-radius:20px; margin:0 20px;">• Se rinnovi la Box, ritiro e consegna sono <b>GRATUITI</b>.<br>• Se restituisci senza cambiare, il costo è di 7,90€.<br>• Regola del 10 o 5 euro a capo mancante.<br>• Controlla tutto entro 48 ore dal ritiro.</div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Box":
     st.markdown('<div class="sez-titolo">Scegli la tua Box</div>', unsafe_allow_html=True)
@@ -135,7 +135,7 @@ elif st.session_state.pagina == "ChiSiamo":
         </div>
     """, unsafe_allow_html=True)
 
-# --- 4. BARRA NAVIGAZIONE FISSA (CORRETTA) ---
+# --- 4. BARRA NAVIGAZIONE FISSA ---
 st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
 c1, c2, c3, c4, c5, c6 = st.columns(6)
 with c1: 

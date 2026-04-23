@@ -21,7 +21,7 @@ def vai(nome_pag):
     st.session_state.pagina = nome_pag
     st.rerun()
 
-# --- 2. CSS "SCHELETRO IDENTICO" ---
+# --- 2. CSS "SCHELETRO IDENTICO" (COPIA ESATTA FOTO) ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
@@ -36,17 +36,20 @@ st.markdown("""
     .heart { color: #f43f5e; font-size: 34px; }
     .slogan { font-size: 13px; color: #64748b; margin-top: -5px; padding-left: 5px; }
 
-    /* Home Grid */
+    /* Layout Home */
     .home-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 15px; align-items: center; padding: 0 20px; margin-top: 10px; }
     .ciao { font-size: 28px; font-weight: 800; color: #1e293b; }
     .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; }
     .item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 500; }
     .baby-photo { width: 100%; border-radius: 25px; object-fit: cover; }
 
-    /* Info Steps & Boxes */
-    .step-box { padding: 10px 20px; font-size: 13px; color: #475569; line-height: 1.5; }
-    .icon-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px 20px; }
-    .icon-card { background: #f8fafc; border: 1px solid #eee; border-radius: 15px; padding: 10px; text-align: center; font-size: 10px; color: #475569; }
+    /* SEZIONE 3 ICONE (TRIPLO BOX) */
+    .icon-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px 20px; margin-top: 5px; }
+    .icon-card { background: #f8fafc; border: 1px solid #eee; border-radius: 15px; padding: 12px 5px; text-align: center; font-size: 10px; color: #475569; }
+    .icon-card b { display: block; color: #1e293b; margin: 4px 0; font-size: 11px; }
+
+    /* REGOLE E PUNTI */
+    .step-text { padding: 8px 20px; font-size: 13px; color: #475569; line-height: 1.6; }
     .regola-line { display: flex; gap: 12px; padding: 8px 20px; align-items: flex-start; font-size: 12px; color: #475569; }
 
     /* Card Box / Vetrina */
@@ -62,7 +65,7 @@ st.markdown("""
         font-size: 17px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
     }
 
-    /* Barra Navigazione Bassa */
+    /* BARRA FISSA IN BASSO */
     [data-testid="stHorizontalBlock"] {
         position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important;
         background: white !important; border-top: 1px solid #f1f5f9 !important; z-index: 99999; padding: 8px 0 !important;
@@ -73,7 +76,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# HEADER VISSIBILE IN TUTTE LE PAGINE
+# HEADER COSTANTE
 st.markdown('<div class="header-box"><div class="logo-h"><span class="heart">💗</span> LoopBaby</div><div class="slogan">Vestiamo il tuo bambino, rispettiamo il futuro.</div></div>', unsafe_allow_html=True)
 
 # --- 3. PAGINE ---
@@ -88,16 +91,17 @@ if st.session_state.pagina == "Home":
 # -- INFO --
 elif st.session_state.pagina == "Info":
     st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Come funziona</div>', unsafe_allow_html=True)
+    
     st.markdown("""
-        <div class="step-box">
-            <b>1. Le nostre opzioni:</b> Box <b>Standard</b> (capi usati ancora ottimi), Box <b>Premium</b> (capi nuovi o seminuovi). Nella sezione <b>Vetrina</b>, ciò che acquisti rimane a te per sempre.<br><br>
+        <div class="step-text">
+            <b>1. Le nostre opzioni:</b> Box <b>Standard</b> (capi usati ancora ottimi), Box <b>Premium</b> (nuovi o seminuovi). Nella sezione <b>Vetrina</b>, ciò che acquisti rimane a te per sempre.<br><br>
             <b>2. Scegli e ricevi:</b> Seleziona lo stile e ricevi la Box nel locker più vicino a te.<br><br>
-            <b>3. Usa senza stress:</b> Goditi i capi per 90 giorni. Se si macchiano, non preoccuparti!<br><br>
+            <b>3. Controllo 48h:</b> Controlla i capi entro 48h dalla ricezione, per qualsiasi problema contattaci (info su Chi Siamo).<br><br>
             <b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia (ti ricordiamo 10gg. prima noi).
         </div>
     """, unsafe_allow_html=True)
     
-    st.markdown('<div style="padding:10px 20px 5px 20px; font-weight:800; font-size:18px; text-align:center;">Vuoi cambiare prima?</div>', unsafe_allow_html=True)
+    st.markdown('<div style="padding:15px 20px 0 20px; font-weight:800; font-size:18px; text-align:center;">Vuoi cambiare prima?</div>', unsafe_allow_html=True)
     st.markdown('<div class="icon-row">'
                 '<div class="icon-card">📦<br><b>Cambio Box</b>Scegli una nuova Box e ricevi subito!</div>'
                 '<div class="icon-card">🔄<br><b>Cambio taglia</b>Se cresce prima, contattaci! (vedi Chi Siamo).</div>'
@@ -109,8 +113,8 @@ elif st.session_state.pagina == "Info":
         ("💰", "La Box costa 19,90€ (Standard) o 29,90€ (Premium)."),
         ("🚚", "Se prendi una nuova Box, ritiro e consegna sono <b>GRATUITI</b>."),
         ("€", "Se restituisci senza nuova Box, il ritiro costa 7,90€."),
-        ("🕒", "Controlla i capi entro 48h dalla ricezione."),
-        ("💡", "<b>Regola del 10:</b> Rendi 10 capi per riceverne 10. Se rompi o perdi un capo, vale lo scambio <b>'Jeans x Jeans'</b> (capo simile) o 5€ a capo mancante.")
+        ("🕒", "Controlla i capi entro 48h dalla ricezione, per qualsiasi problema contattaci (info su Chi Siamo)."),
+        ("💡", "<b>Regola del 10:</b> Rendi 10 capi per riceverne 10. Se rompi o perdi un capo, vale lo scambio <b>'Jeans x Jeans'</b> (capo simile) o 5 euro a capo mancante.")
     ]
     for icon, txt in regole:
         st.markdown(f'<div class="regola-line"><div style="font-size:18px; min-width:25px;">{icon}</div><div>{txt}</div></div>', unsafe_allow_html=True)
@@ -118,10 +122,16 @@ elif st.session_state.pagina == "Info":
 # -- BOX --
 elif st.session_state.pagina == "Box":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 22px; text-align:center;">Scegli la tua Box</div>', unsafe_allow_html=True)
+    
     st.markdown('<div class="card box-luna"><h3>LUNA 🌙</h3><p>Neutro (Usato ottimo)</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
     st.button("Scegli LUNA", key="l")
+    
     st.markdown('<div class="card box-sole"><h3>SOLE ☀️</h3><p>Vivace (Usato ottimo)</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
     st.button("Scegli SOLE", key="s")
+    
+    st.markdown('<div class="card box-nuvola"><h3>NUVOLA ☁️</h3><p>Casual (Usato ottimo)</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+    st.button("Scegli NUVOLA", key="n")
+
     st.markdown('<div class="card box-premium"><h3>PREMIUM 💎</h3><p>Capi nuovi o seminuovi</p><div style="color:white; font-size:24px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
     st.button("Scegli PREMIUM", key="p")
 
@@ -141,7 +151,7 @@ elif st.session_state.pagina == "Vetrina":
 
 # -- PROFILO --
 elif st.session_state.pagina == "Profilo":
-    st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px;">Il tuo profilo 👤</div>', unsafe_allow_html=True)
+    st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center;">Il tuo profilo 👤</div>', unsafe_allow_html=True)
     st.text_input("Nome Mamma", "Giulia Rossi")
     st.text_input("Cellulare", "333 1234567")
     st.text_input("Email", "giulia@email.it")
@@ -150,11 +160,9 @@ elif st.session_state.pagina == "Profilo":
     st.date_input("Data di nascita", date(2024, 5, 12))
     
     st.markdown("<b>📍 Il tuo Locker di fiducia</b>", unsafe_allow_html=True)
-    col_pos, col_manual = st.columns([1,1])
-    with col_pos:
-        if st.button("🔍 Trova il più vicino"):
-            st.toast("Ricerca Locker in corso...")
-    st.text_input("Indirizzo Locker o Posizione", placeholder="Scrivi l'indirizzo del Locker")
+    if st.button("🔍 Trova il più vicino tramite posizione"):
+        st.toast("Ricerca Locker in corso...")
+    st.text_input("Indirizzo Locker o Posizione", placeholder="Scrivi l'indirizzo del tuo Locker")
     
     st.button("SALVA PROFILO")
 

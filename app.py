@@ -6,7 +6,6 @@ from datetime import date
 # --- 1. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
-# Funzione per fissare la foto bimbo.jpg
 def get_base64(file_path):
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
@@ -22,7 +21,7 @@ def vai(nome_pag):
     st.session_state.pagina = nome_pag
     st.rerun()
 
-# --- 2. CSS "IDENTICO ALLA FOTO" ---
+# --- 2. CSS IDENTICO ALLA FOTO ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
@@ -44,18 +43,21 @@ st.markdown("""
     .item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 500; }
     .baby-photo { width: 100%; border-radius: 25px; }
 
+    /* Sezioni Titoli */
+    .sez-titolo { padding: 25px 20px 5px 20px; color: #1e293b; font-weight: 800; font-size: 24px; text-align: center; }
+    .sez-sub { text-align: center; font-size: 14px; color: #64748b; margin-bottom: 20px; padding: 0 20px; }
+
+    /* Chi Siamo Specifico */
+    .testo-emozionale { padding: 20px; font-size: 14px; color: #475569; line-height: 1.6; text-align: center; }
+    .obiettivo-box { background-color: #fff1f2; padding: 20px; border-radius: 20px; margin: 0 20px; text-align: center; border: 1px solid #fecdd3; color: #1e293b; }
+    .contatto-card { text-align: center; padding: 20px; color: #475569; font-size: 14px; }
+
     /* Pulsante Rosa */
     div.stButton > button {
         background-color: #f43f5e !important; color: white !important;
-        border-radius: 15px !important; width: 85% !important; height: 50px !important;
-        font-size: 16px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
+        border-radius: 15px !important; width: 85% !important; height: 55px !important;
+        font-size: 17px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
     }
-
-    /* Chi Siamo */
-    .chi-siamo-title { font-size: 24px; font-weight: 800; color: #1e293b; text-align: center; margin-top: 20px; }
-    .testo-emozionale { padding: 20px; font-size: 14px; color: #475569; line-height: 1.6; text-align: center; }
-    .obiettivo-box { background-color: #fff1f2; padding: 20px; border-radius: 20px; margin: 0 20px; text-align: center; border: 1px solid #fecdd3; }
-    .contatto-item { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px; color: #475569; margin-bottom: 10px; }
 
     /* Barra Navigazione Fissa */
     [data-testid="stHorizontalBlock"] {
@@ -79,6 +81,40 @@ if st.session_state.pagina == "Home":
     if st.button("Scegli la tua Box"): vai("Box")
     st.markdown('<p style="text-align:center; color:#94a3b8; font-size:11px;">❤️ Creato da genitori, per genitori.</p>', unsafe_allow_html=True)
 
+elif st.session_state.pagina == "Info":
+    st.markdown('<div class="sez-titolo">Come funziona</div><div class="sez-sub">Semplice, comodo e pensato per te.</div>', unsafe_allow_html=True)
+    steps = [
+        ("1", "<b>Scegli la tua Box:</b> Scegli lo stile e la qualità che preferisci."),
+        ("2", "<b>Ritira al locker:</b> Ricevi la tua Box nel locker più vicino a te."),
+        ("3", "<b>Controlla entro 48h:</b> Segnalaci qualsiasi problema entro 48 ore."),
+        ("4", "<b>Dopo 3 mesi, scegli tu:</b> Riceverai un promemoria su WhatsApp.")
+    ]
+    for n, t in steps:
+        st.markdown(f'<div style="display:flex; gap:15px; padding:10px 20px;"><b style="font-size:20px;">{n}</b><div style="font-size:14px;">{t}</div></div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="sez-titolo">Regole importanti</div>', unsafe_allow_html=True)
+    st.markdown('<div style="padding:15px 20px; font-size:13px; color:#475569; line-height:1.6; background:#fff1f2; border-radius:20px; margin:0 20px;">• Se rinnovi la Box, ritiro e consegna sono <b>GRATUITI</b>.<br>• Se restituisci senza cambiare, il costo è di 7,90€.<br>• Penale di 5€ per ogni capo mancante o danneggiato.<br>• Controlla tutto entro 48 ore dal ritiro.</div>', unsafe_allow_html=True)
+
+elif st.session_state.pagina == "Box":
+    st.markdown('<div class="sez-titolo">Scegli la tua Box</div>', unsafe_allow_html=True)
+    for s in ["LUNA 🌙", "SOLE ☀️", "NUVOLA ☁️"]:
+        st.markdown(f'<div style="background:#f8fafc; border-radius:20px; padding:20px; margin:10px 20px; border:1px solid #eee; text-align:center;"><h3>{s}</h3><div style="color:#ec4899; font-size:22px; font-weight:800;">19,90€</div></div>', unsafe_allow_html=True)
+        st.button(f"Scegli {s}", key=s)
+
+elif st.session_state.pagina == "Shop":
+    st.markdown('<div class="sez-titolo">Vetrina Shop</div>', unsafe_allow_html=True)
+    st.markdown('<div style="background:#f8fafc; border-radius:20px; padding:20px; margin:10px 20px; border:1px solid #eee; text-align:center;">👕 <b>Body cotone bio</b><br><div style="color:#ec4899; font-size:20px; font-weight:800;">9,90€</div></div>', unsafe_allow_html=True)
+    st.button("Aggiungi al carrello")
+
+elif st.session_state.pagina == "Profilo":
+    st.markdown('<div class="sez-titolo">Il tuo profilo</div>', unsafe_allow_html=True)
+    st.text_input("Nome Mamma", "Giulia Rossi")
+    st.text_input("Cellulare", "333 1234567")
+    st.text_input("Email", "giulia.rossi@email.it")
+    st.text_input("Nome bambino", "Leonardo")
+    st.date_input("Data di nascita", date(2024, 5, 12))
+    st.button("Salva Profilo")
+
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<div class="chi-siamo-title">Chi siamo? <span style="color:#f43f5e;">❤️</span></div>', unsafe_allow_html=True)
     st.markdown('<div style="text-align:center; font-weight:800; font-size:18px; color:#1e293b; margin-top:10px;">Siamo genitori, come te.</div>', unsafe_allow_html=True)
@@ -92,36 +128,16 @@ elif st.session_state.pagina == "ChiSiamo":
             Offrirti vestiti di qualità, farti risparmiare di più di 1000€ l'anno e lasciare un mondo migliore ai nostri figli.
         </div>
         <div style="text-align:center; font-weight:800; font-size:20px; color:#1e293b; margin-top:30px;">Contatti</div>
-        <div style="text-align:center; font-size:13px; color:#64748b; margin-bottom:15px;">Siamo sempre qui per te!</div>
-        <div class="contatto-item">💬 WhatsApp: 333 1234567</div>
-        <div class="contatto-item">📧 Email: hello@loopbaby.it</div>
-        <div class="contatto-item">🕒 Orari: Lun - Ven 9:00 - 18:00</div>
+        <div class="contatto-card">
+            💬 WhatsApp: 333 1234567<br>
+            📧 Email: hello@loopbaby.it<br>
+            🕒 Lun - Ven 9:00 - 18:00
+        </div>
     """, unsafe_allow_html=True)
 
-elif st.session_state.pagina == "Info":
-    st.markdown('<div style="padding:20px; font-weight:800; font-size:22px;">Come funziona</div>', unsafe_allow_html=True)
-    st.markdown('<div style="padding:0 20px; font-size:14px; color:#475569; line-height:1.8;">1. <b>Scegli la Box:</b> Stile e qualità.<br>2. <b>Ritira al locker:</b> Vicino a te.<br>3. <b>Controlla entro 48h:</b> Segnalaci problemi.<br>4. <b>Dopo 3 mesi scegli:</b> Cambia o rendi.</div>', unsafe_allow_html=True)
-
-elif st.session_state.pagina == "Box":
-    st.markdown('<div style="padding:20px; font-weight:800; font-size:22px;">Scegli la tua Box</div>', unsafe_allow_html=True)
-    for stile in ["LUNA 🌙", "SOLE ☀️", "NUVOLA ☁️"]:
-        st.markdown(f'<div style="background:#f8fafc; border-radius:20px; padding:20px; margin:10px; border:1px solid #eee; text-align:center;"><h3>{stile}</h3><p>19,90€</p></div>', unsafe_allow_html=True)
-        st.button(f"Scegli {stile}", key=stile)
-
-elif st.session_state.pagina == "Shop":
-    st.markdown('<div style="padding:20px; font-weight:800; font-size:22px;">Vetrina</div>', unsafe_allow_html=True)
-    st.markdown('<div style="background:#f8fafc; border-radius:20px; padding:20px; margin:10px; border:1px solid #eee; text-align:center;">👕 Body Bio<br><b>9,90€</b></div>', unsafe_allow_html=True)
-    st.button("Compra ora", key="buy")
-
-elif st.session_state.pagina == "Profilo":
-    st.markdown('<div style="padding:20px; font-weight:800; font-size:22px;">Il tuo profilo</div>', unsafe_allow_html=True)
-    st.text_input("Nome Mamma", "Giulia Rossi")
-    st.text_input("Cellulare", "333 1234567")
-    st.button("Salva Profilo")
-
-# --- 4. BARRA NAVIGAZIONE FISSA ---
+# --- 4. BARRA NAVIGAZIONE FISSA (CORRETTA) ---
 st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
-c1, c2, c3, c4, c5 = st.columns(5)
+c1, c2, c3, c4, c5, c6 = st.columns(6)
 with c1: 
     if st.button("🏠\nHome"): vai("Home")
 with c2: 
@@ -131,4 +147,6 @@ with c3:
 with c4: 
     if st.button("🛍️\nShop"): vai("Shop")
 with c5: 
+    if st.button("👤\nProfilo"): vai("Profilo")
+with c6: 
     if st.button("👋\nChi Siamo"): vai("ChiSiamo")

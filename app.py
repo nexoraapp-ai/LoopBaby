@@ -3,30 +3,30 @@ import streamlit as st
 # --- 1. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
-# --- 2. IL CODICE "MAGICO" (UNICO BLOCCO) ---
+# --- 2. IL CODICE DEFINITIVO (NON TOCCARE I TAG) ---
 st.markdown("""
     <style>
     /* Nascondi tutto lo sporco di Streamlit */
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
     .stApp {background-color: #FFFFFF !important; max-width: 450px !important; margin: 0 auto !important;}
     
-    /* Font Professionale */
     @import url('https://googleapis.com');
     * { font-family: 'Lexend', sans-serif !important; }
 
-    /* Logo */
-    .logo-h { font-size: 35px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 10px; margin-bottom: 0; }
+    /* Logo e Header */
+    .logo-h { font-size: 35px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 10px; margin: 20px 0 0 20px; }
     .heart { color: #f43f5e; }
-    .slogan { font-size: 14px; color: #64748b; margin-bottom: 30px; }
+    .slogan { font-size: 14px; color: #64748b; margin-bottom: 30px; padding-left: 25px; }
 
     /* Layout a due colonne (Bimbo a destra) */
     .main-grid {
-        display: grid;
-        grid-template-columns: 1.6fr 1fr;
-        gap: 15px;
-        align-items: start;
-        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        gap: 10px;
     }
+    .col-left { flex: 1.6; }
+    .col-right { flex: 1; }
 
     .ciao { font-size: 28px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
     .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; margin-bottom: 15px; }
@@ -40,7 +40,7 @@ st.markdown("""
     /* PULSANTE ROSA IDENTICO ALLA FOTO */
     .btn-rosa {
         background-color: #f43f5e;
-        color: white;
+        color: white !important;
         text-align: center;
         padding: 18px;
         border-radius: 20px;
@@ -51,16 +51,13 @@ st.markdown("""
         margin-top: 25px;
         box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
     }
-
-    .footer-text { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 40px; }
+    .footer-text { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 40px; padding-bottom: 20px; }
     </style>
 
     <div class="app-container">
-        <!-- Logo -->
         <div class="logo-h"><span class="heart">💗</span> LoopBaby</div>
         <div class="slogan">Vestiamo il tuo bambino, rispettiamo il futuro.</div>
 
-        <!-- Layout Colonne -->
         <div class="main-grid">
             <div class="col-left">
                 <div class="ciao">Ciao Mamma! 👋</div>
@@ -78,8 +75,9 @@ st.markdown("""
             </div>
         </div>
 
-        <!-- Pulsante Rosa -->
-        <button class="btn-rosa">Scegli la tua Box</button>
+        <div style="padding: 0 20px;">
+            <button class="btn-rosa">Scegli la tua Box</button>
+        </div>
 
         <div class="footer-text">❤️ Creato da genitori, per genitori.</div>
     </div>

@@ -1,4 +1,4 @@
-import streamlit st
+import streamlit as st
 import os
 import base64
 from datetime import date
@@ -6,6 +6,7 @@ from datetime import date
 # --- 1. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
+# Funzione per fissare la foto bimbo.jpg
 def get_base64(file_path):
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
@@ -14,12 +15,14 @@ def get_base64(file_path):
 
 img_data = get_base64("bimbo.jpg")
 
-if "pagina" not in st.session_state: st.session_state.pagina = "Home"
+if "pagina" not in st.session_state: 
+    st.session_state.pagina = "Home"
+
 def vai(nome_pag): 
     st.session_state.pagina = nome_pag
     st.rerun()
 
-# --- 2. CSS "IDENTICO ALLA FOTO" (COPIA ESATTA) ---
+# --- 2. CSS "IDENTICO ALLA FOTO" ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
@@ -48,7 +51,7 @@ st.markdown("""
         font-size: 16px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
     }
 
-    /* Sezioni Chi Siamo */
+    /* Chi Siamo */
     .chi-siamo-title { font-size: 24px; font-weight: 800; color: #1e293b; text-align: center; margin-top: 20px; }
     .testo-emozionale { padding: 20px; font-size: 14px; color: #475569; line-height: 1.6; text-align: center; }
     .obiettivo-box { background-color: #fff1f2; padding: 20px; border-radius: 20px; margin: 0 20px; text-align: center; border: 1px solid #fecdd3; }
@@ -116,7 +119,7 @@ elif st.session_state.pagina == "Profilo":
     st.text_input("Cellulare", "333 1234567")
     st.button("Salva Profilo")
 
-# --- 4. BARRA NAVIGAZIONE FISSA (ICONE + TESTO CORRETTO) ---
+# --- 4. BARRA NAVIGAZIONE FISSA ---
 st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
 c1, c2, c3, c4, c5 = st.columns(5)
 with c1: 

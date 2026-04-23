@@ -1,154 +1,167 @@
 import streamlit as st
 
-# --- 1. CONFIGURAZIONE ---
+# --- 1. CONFIGURAZIONE ZERO-UI (Elimina tutto lo stile Streamlit) ---
 st.set_page_config(page_title="LoopBaby", page_icon="logo.png", layout="centered")
 
-# --- 2. STATO DELLA PAGINA ---
 if "pagina" not in st.session_state:
     st.session_state.pagina = "Home"
 
-def cambia_pag(nome):
-    st.session_state.pagina = nome
+def nav(target):
+    st.session_state.pagina = target
     st.rerun()
 
-# --- 3. DESIGN IDENTICO (CSS CUSTOM) ---
+# --- 2. CSS TOTALE (IDENTICO AL DESIGN) ---
 st.markdown("""
     <style>
-    /* Nascondi tutto ciò che è Streamlit */
-    #MainMenu, header, footer { visibility: hidden !important; }
-    .stApp { background-color: #FFFFFF !important; max-width: 450px; margin: 0 auto; }
+    /* Reset radicale */
+    [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
+    .main .block-container {padding: 0 !important; max-width: 420px !important; margin: 0 auto;}
+    .stApp {background-color: #FFFFFF !important;}
+
+    /* Font e Titoli Moodboard */
+    @import url('https://googleapis.com');
+    * {font-family: 'Outfit', sans-serif !important;}
     
-    /* Font e Colori Moodboard */
-    h1 { color: #0d9488 !important; font-family: 'Helvetica', sans-serif; font-size: 28px !important; font-weight: 800; line-height: 1.2; }
-    h3 { color: #0d9488 !important; font-size: 20px; font-weight: 700; margin-bottom: 5px; }
-    p { color: #64748b !important; font-size: 15px; }
+    .titolo-grande {
+        color: #0d9488;
+        font-size: 34px;
+        font-weight: 900;
+        line-height: 1.1;
+        padding: 20px;
+        margin-top: -10px;
+    }
 
-    /* Immagine Bambino */
-    .img-hero { width: 100%; border-radius: 25px; margin-bottom: 20px; }
+    /* Immagine Bambino Full Width */
+    .hero-img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-bottom-left-radius: 40px;
+        border-bottom-right-radius: 40px;
+    }
 
-    /* Card delle Box */
-    .box-card {
-        background: #f8fafc;
-        border-radius: 24px;
+    /* Card Box Pulite */
+    .card-box {
+        background: #F1F5F9;
+        border-radius: 30px;
         padding: 25px;
-        margin-bottom: 20px;
-        border: 1px solid #e2e8f0;
+        margin: 15px 20px;
         text-align: center;
+        border: none;
     }
-    .prezzo-rosa { color: #ec4899 !important; font-size: 24px; font-weight: 900; margin: 10px 0; }
+    .box-title { color: #0d9488; font-size: 22px; font-weight: 800; margin-bottom: 5px; }
+    .box-price { color: #ec4899; font-size: 26px; font-weight: 900; }
 
-    /* Tasto Rosa Identico alla Foto */
+    /* Pulsanti Call-to-Action Rosa */
     div.stButton > button {
-        background-color: #ec4899 !important;
+        background: #ec4899 !important;
         color: white !important;
-        border-radius: 18px !important;
+        border-radius: 20px !important;
         border: none !important;
-        width: 100% !important;
-        height: 60px !important;
+        width: 85% !important;
+        height: 65px !important;
         font-size: 18px !important;
-        font-weight: bold !important;
-        text-transform: uppercase;
-        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+        font-weight: 800 !important;
+        display: block;
+        margin: 0 auto !important;
+        box-shadow: 0 10px 20px rgba(236, 72, 153, 0.2) !important;
     }
 
-    /* BARRA DI NAVIGAZIONE IN BASSO FISSA */
-    .footer-nav {
+    /* BARRA NAVIGAZIONE INFERIORE (STILE APP NATIVA) */
+    .nav-bar-container {
         position: fixed;
         bottom: 0;
-        left: 0;
         width: 100%;
-        background: white;
-        border-top: 1px solid #eee;
-        padding: 10px 0;
-        z-index: 1000;
+        max-width: 420px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid #E2E8F0;
+        padding: 15px 0;
+        z-index: 9999;
         display: flex;
         justify-content: space-around;
     }
+    
+    /* Spazio finale per non coprire i contenuti */
+    .footer-spacer { height: 120px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. CONTENUTO PAGINE ---
+# --- 3. LOGICA PAGINE ---
 
-# -- PAGINA: HOME --
+# -- HOME --
 if st.session_state.pagina == "Home":
-    st.image("logo.png", width=130)
-    
-    # Immagine Bambino (Hero)
-    st.markdown('<img src="https://unsplash.com" class="img-hero">', unsafe_allow_html=True)
-    
-    st.markdown("<h1>Vestiamo il tuo bambino con amore e qualità.</h1>", unsafe_allow_html=True)
-    st.write("Entra nel mondo di LoopBaby: il noleggio che cresce con il tuo bebè, facendoti risparmiare tempo e rispettando il pianeta.")
-    
+    st.markdown('<img src="https://unsplash.com" class="hero-img">', unsafe_allow_html=True)
+    st.markdown('<div style="padding: 20px;"><img src="https://vostro-sito.com" width="120"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="titolo-grande">Vestiamo il tuo bambino con amore e qualità.</div>', unsafe_allow_html=True)
+    st.markdown('<p style="padding: 0 20px; color: #64748b;">Il noleggio circolare intelligente: capi bio, grandi firme e cambio taglia senza stress.</p>', unsafe_allow_html=True)
+    st.write("")
     if st.button("SCEGLI LA TUA BOX ➔"):
-        cambia_pag("Box")
+        nav("Box")
 
-# -- PAGINA: BOX --
+# -- BOX --
 elif st.session_state.pagina == "Box":
-    st.markdown("<h1 style='color:#0d9488;'>Le nostre Box</h1>", unsafe_allow_html=True)
-    st.write("Scegli lo stile che preferisci per il tuo bebè.")
+    st.markdown('<div style="padding: 40px 20px 10px 20px;"><h2 style="color:#0d9488; font-weight:900; font-size:32px;">Le nostre Box</h2><p>10 capi selezionati per 90 giorni.</p></div>', unsafe_allow_html=True)
+    
+    # 3 STANDARD
+    for stile, icona, desc in [("LUNA", "🌙", "Neutro e Panna"), ("SOLE", "☀️", "Colori e Allegria"), ("NUVOLA", "☁️", "Casual e Jeans")]:
+        st.markdown(f'''
+            <div class="card-box">
+                <div class="box-title">{stile} {icona}</div>
+                <p style="margin-bottom:10px;">{desc}</p>
+                <div class="box-price">19,90€</div>
+            </div>
+        ''', unsafe_allow_html=True)
+        st.button(f"PRENDI {stile}", key=stile)
 
-    # 3 BOX STANDARD
-    st.markdown('<div class="box-card"><h3>LUNA 🌙</h3><p>Colori neutri e rilassanti</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
-    if st.button("Scegli LUNA"): st.toast("Luna selezionata!")
+    # 1 PREMIUM
+    st.markdown('''
+        <div class="card-box" style="background: #0d9488; color: white;">
+            <div class="box-title" style="color:white;">PREMIUM 💎</div>
+            <p style="color:white; opacity:0.8;">Capi Grandi Firme</p>
+            <div class="box-price" style="color:white;">29,90€</div>
+        </div>
+    ''', unsafe_allow_html=True)
+    st.button("PRENDI PREMIUM", key="premium")
 
-    st.markdown('<div class="box-card"><h3>SOLE ☀️</h3><p>Energia, colori e allegria</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
-    if st.button("Scegli SOLE"): st.toast("Sole selezionata!")
-
-    st.markdown('<div class="box-card"><h3>NUVOLA ☁️</h3><p>Casual e Denim quotidiano</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
-    if st.button("Scegli NUVOLA"): st.toast("Nuvola selezionata!")
-
-    # 1 BOX PREMIUM
-    st.markdown('<div class="box-card" style="border: 2px solid #0d9488;"><h3>DIAMANTE 💎</h3><p>Grandi firme e lusso</p><div class="prezzo-rosa">29,90€</div></div>', unsafe_allow_html=True)
-    if st.button("Scegli PREMIUM"): st.toast("Premium selezionata!")
-
-# -- PAGINA: SHOP --
+# -- SHOP --
 elif st.session_state.pagina == "Shop":
-    st.markdown("<h1 style='color:#0d9488;'>Vetrina Shop</h1>", unsafe_allow_html=True)
-    st.info("Spedizione GRATIS sopra i 50€")
-    # Qui andranno i capi singoli come visti in foto
+    st.markdown('<div style="padding: 40px 20px;"><h2 style="color:#0d9488; font-weight:900;">Vetrina Shop</h2><p>Spedizione gratis sopra i 50€</p></div>', unsafe_allow_html=True)
+    # Esempio prodotto
+    st.markdown('<div class="card-box"><div class="box-title">Body Bio 🌱</div><div class="box-price">9,90€</div></div>', unsafe_allow_html=True)
+    st.button("COMPRA ORA")
 
-# -- PAGINA: PROFILO --
-elif st.session_state.pagina == "Profilo":
-    st.markdown("<h1 style='color:#0d9488;'>Il mio Profilo</h1>", unsafe_allow_html=True)
-    st.write("Gestisci i tuoi ordini e i tuoi dati.")
+# --- 4. BARRA DI NAVIGAZIONE FISSA (LOGICA STREAMLIT) ---
+st.markdown('<div class="footer-spacer"></div>', unsafe_allow_html=True)
 
-# --- 5. BARRA DI NAVIGAZIONE IN BASSO FUNZIONANTE ---
-st.markdown('<div style="height: 80px;"></div>', unsafe_allow_html=True) # Spazio per non coprire il contenuto
-
-# Container fisso per i bottoni
-st.markdown('<div class="footer-nav">', unsafe_allow_html=True)
-c1, c2, c3, c4 = st.columns(4)
-
-with c1:
-    if st.button("🏠\nHome", key="n1"): cambia_pag("Home")
-with c2:
-    if st.button("📦\nBox", key="n2"): cambia_pag("Box")
-with c3:
-    if st.button("🛍️\nShop", key="n3"): cambia_pag("Shop")
-with c4:
-    if st.button("👤\nProfilo", key="n4"): cambia_pag("Profilo")
-
-# Stile extra per i bottoni della barra (trasparenti e piccoli)
-st.markdown("""
-    <style>
+# Iniezione dei bottoni della barra
+st.markdown("""<style>
     [data-testid="stHorizontalBlock"] {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
         background: white !important;
-        padding: 10px 0 !important;
-        border-top: 1px solid #ddd;
-        z-index: 9999;
+        padding: 10px !important;
+        z-index: 10000 !important;
+        border-top: 1px solid #eee !important;
     }
     [data-testid="stHorizontalBlock"] button {
         background: transparent !important;
         color: #0d9488 !important;
         border: none !important;
-        font-size: 11px !important;
-        height: auto !important;
         box-shadow: none !important;
-        text-transform: none !important;
+        font-size: 12px !important;
+        height: auto !important;
     }
-    </style>
-""", unsafe_allow_html=True)
+</style>""", unsafe_allow_html=True)
+
+cols = st.columns(4)
+with cols[0]:
+    if st.button("🏠\nHome"): nav("Home")
+with cols[1]:
+    if st.button("📦\nBox"): nav("Box")
+with cols[2]:
+    if st.button("🛍️\nShop"): nav("Shop")
+with cols[3]:
+    if st.button("👤\nProfilo"): nav("Home") # Placeholder per ora

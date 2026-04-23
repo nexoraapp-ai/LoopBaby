@@ -3,34 +3,45 @@ import streamlit as st
 # --- 1. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
-# --- 2. CSS PER COPIARE LA FOTO IDENTICA ---
+# --- 2. CSS TOTALE (FORZA IL LAYOUT AFFIANCATO) ---
 st.markdown("""
     <style>
-    /* Nascondi tutto lo sporco di Streamlit */
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
     .stApp {background-color: #FFFFFF !important; max-width: 450px !important; margin: 0 auto !important;}
     
-    /* Font */
-    @import url('https://googleapis.com');
-    * { font-family: 'Lexend', sans-serif !important; }
+    /* Layout a due colonne che non crolla */
+    .home-flex {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        gap: 15px;
+    }
+    .col-testo { flex: 1.5; }
+    .col-bimbo { flex: 1; }
 
-    /* Logo e Slogan */
-    .header-box { padding: 10px 20px; text-align: left; }
-    .logo-title { font-size: 32px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 10px; }
-    .logo-heart { color: #f43f5e; }
-    .slogan { font-size: 14px; color: #64748b; margin-top: -5px; }
+    /* Stile Testi */
+    .logo-h { font-size: 32px; font-weight: 800; color: #1e293b; margin: 0; }
+    .heart { color: #f43f5e; }
+    .ciao { font-size: 26px; font-weight: 800; color: #1e293b; margin-top: 10px; }
+    .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; }
+    
+    /* Lista icone */
+    .list-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #475569; margin-top: 8px; }
 
-    /* Layout Home: Testo e Bimbo */
-    .row { display: flex; align-items: center; padding: 0 20px; gap: 10px; margin-top: 10px; }
-    .col-left { flex: 1.5; }
-    .col-right { flex: 1; }
-
-    .ciao { font-size: 28px; font-weight: 800; color: #1e293b; }
-    .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; margin-bottom: 15px; }
-
-    /* Lista con icone */
-    .list-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 500; }
-    .baby-img { width: 100%; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    /* SEGNAPOSTO IMMAGINE (Questo apparirà sicuramente) */
+    .baby-placeholder {
+        width: 100%;
+        height: 180px;
+        background-color: #f1f5f9;
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 12px;
+        border: 2px dashed #cbd5e1;
+    }
 
     /* Pulsante Rosa FULL WIDTH */
     div.stButton > button {
@@ -38,32 +49,26 @@ st.markdown("""
         color: white !important;
         border-radius: 15px !important;
         border: none !important;
-        width: 100% !important;
+        width: 90% !important;
         height: 60px !important;
         font-size: 18px !important;
         font-weight: 700 !important;
-        margin-top: 20px !important;
-        box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3) !important;
+        margin: 20px auto !important;
+        display: block !important;
     }
-
-    /* Footer */
-    .footer-note { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 30px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. HEADER ---
-st.markdown("""
-    <div class="header-box">
-        <div class="logo-title"><span class="logo-heart">💗</span> LoopBaby</div>
-        <div class="slogan">Vestiamo il tuo bambino, rispettiamo il futuro.</div>
-    </div>
-    """, unsafe_allow_html=True)
+# --- 3. CONTENUTO ---
 
-# --- 4. CORPO CENTRALE (TESTO + BIMBO AFFIANCATI) ---
-# Usiamo HTML puro per essere sicuri che rimangano affiancati
-st.markdown("""
-    <div class="row">
-        <div class="col-left">
+# Logo
+st.markdown('<h1 class="logo-h"><span class="heart">💗</span> LoopBaby</h1>', unsafe_allow_html=True)
+st.markdown('<p style="color:#64748b; padding-left:25px;">Vestiamo il tuo bambino, rispettiamo il futuro.</p>', unsafe_allow_html=True)
+
+# Layout Affiancato
+st.markdown(f"""
+    <div class="home-flex">
+        <div class="col-testo">
             <div class="ciao">Ciao Mamma! 👋</div>
             <div class="headline">Vestiamo il tuo bambino con amore e qualità, senza sprechi e senza stress.</div>
             <div class="list-item">👕 Capi di qualità selezionati</div>
@@ -72,20 +77,14 @@ st.markdown("""
             <div class="list-item">📍 Scegli il locker più vicino</div>
             <div class="list-item">✨ Zero stress per te</div>
         </div>
-        <div class="col-right">
-            <!-- Questa foto è GRATIS e caricherà sempre -->
-            <img src="https://unsplash.com" class="baby-img">
+        <div class="col-bimbo">
+            <div class="baby-placeholder">FOTO <br> BIMBO</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 5. PULSANTE ---
+# Pulsante
 if st.button("Scegli la tua Box"):
-    st.toast("Aprendo le Box...")
+    st.toast("Aprendo...")
 
-# --- 6. FOOTER ---
-st.markdown("""
-    <div class="footer-note">
-        ❤️ Creato da genitori, per genitori.
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown('<p style="text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;">❤️ Creato da genitori, per genitori.</p>', unsafe_allow_html=True)

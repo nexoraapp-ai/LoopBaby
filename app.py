@@ -3,13 +3,14 @@ import streamlit as st
 # --- 1. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
-# --- 2. CODICE COMPLETO (STILE + CONTENUTO) ---
-# Usiamo un unico blocco st.markdown per non far uscire scritte di codice
+# --- 2. IL CODICE "MAGICO" (UNICO BLOCCO) ---
 st.markdown("""
     <style>
-    /* Reset e Stile */
+    /* Nascondi tutto lo sporco di Streamlit */
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
     .stApp {background-color: #FFFFFF !important; max-width: 450px !important; margin: 0 auto !important;}
+    
+    /* Font Professionale */
     @import url('https://googleapis.com');
     * { font-family: 'Lexend', sans-serif !important; }
 
@@ -18,7 +19,7 @@ st.markdown("""
     .heart { color: #f43f5e; }
     .slogan { font-size: 14px; color: #64748b; margin-bottom: 30px; }
 
-    /* Layout a due colonne che NON CROLLA */
+    /* Layout a due colonne (Bimbo a destra) */
     .main-grid {
         display: grid;
         grid-template-columns: 1.6fr 1fr;
@@ -49,7 +50,6 @@ st.markdown("""
         width: 100%;
         margin-top: 25px;
         box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
-        cursor: pointer;
     }
 
     .footer-text { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 40px; }
@@ -78,7 +78,7 @@ st.markdown("""
             </div>
         </div>
 
-        <!-- Pulsante Rosa (Solo Estetico per ora) -->
+        <!-- Pulsante Rosa -->
         <button class="btn-rosa">Scegli la tua Box</button>
 
         <div class="footer-text">❤️ Creato da genitori, per genitori.</div>

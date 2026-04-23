@@ -1,97 +1,108 @@
 import streamlit as st
 
-# --- 1. CONFIGURAZIONE ---
-st.set_page_config(page_title="LoopBaby", layout="centered")
+st.set_page_config(page_title="LoopBaby", layout="wide")
 
-# --- 2. CSS PER COPIARE LA FOTO IDENTICA ---
-st.markdown("""
-    <style>
-    /* Nascondi tutto lo sporco di Streamlit */
-    [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
-    .stApp {background-color: #FFFFFF !important; max-width: 450px !important; margin: 0 auto !important;}
-    
-    /* Font */
-    @import url('https://googleapis.com');
-    * { font-family: 'Lexend', sans-serif !important; }
+# --- HEADER ---
+st.title("👶 LoopBaby")
+st.subheader("Vestiamo il tuo bambino senza sprechi e senza stress 💚")
 
-    /* Logo e Slogan */
-    .header-box { padding: 10px 20px; text-align: left; }
-    .logo-title { font-size: 32px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 10px; }
-    .logo-heart { color: #f43f5e; }
-    .slogan { font-size: 14px; color: #64748b; margin-top: -5px; }
+# --- MENU ---
+menu = st.sidebar.selectbox("Menu", [
+    "Home",
+    "Box Standard",
+    "Box Premium",
+    "Vetrina",
+    "Profilo"
+])
 
-    /* Layout Home: Testo e Bimbo affiancati */
-    .container-home { 
-        display: flex; 
-        align-items: center; 
-        padding: 0 20px; 
-        gap: 15px; 
-        margin-top: 10px; 
-    }
-    .col-testo { flex: 1.6; }
-    .col-bimbo { flex: 1; }
+# --- HOME ---
+if menu == "Home":
+    st.markdown("## Ciao Mamma 👋")
+    st.markdown("Risparmia fino a **1000€ all'anno** vestendo il tuo bambino.")
 
-    .ciao { font-size: 28px; font-weight: 800; color: #1e293b; margin: 0; }
-    .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; margin-top: 10px; margin-bottom: 15px; }
+    st.image("https://images.unsplash.com/photo-1519681393784-d120267933ba", use_column_width=True)
 
-    /* Lista con icone */
-    .list-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; margin-bottom: 8px; font-weight: 500; }
-    .baby-img { width: 100%; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); object-fit: cover; }
+    st.markdown("### Come funziona")
+    st.write("1. Scegli la Box")
+    st.write("2. Ritira al locker vicino a te")
+    st.write("3. Dopo 3 mesi decidi cosa fare")
 
-    /* Pulsante Rosa FULL WIDTH */
-    div.stButton > button {
-        background-color: #f43f5e !important;
-        color: white !important;
-        border-radius: 20px !important;
-        border: none !important;
-        width: 100% !important;
-        height: 60px !important;
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        margin-top: 25px !important;
-        box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3) !important;
-    }
+    st.button("👉 Scegli la tua Box")
 
-    /* Footer */
-    .footer-note { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 30px; padding-bottom: 20px; }
-    </style>
-    """, unsafe_allow_html=True)
+# --- BOX STANDARD ---
+elif menu == "Box Standard":
+    st.header("📦 Box Standard - 19,90€ + spedizione")
 
-# --- 3. CONTENUTO ---
+    scelta = st.radio("Scegli stile", ["🌙 LUNA", "☀️ SOLE", "☁️ NUVOLA"])
 
-# Logo e Header
-st.markdown("""
-    <div class="header-box">
-        <div class="logo-title"><span class="logo-heart">💗</span> LoopBaby</div>
-        <div class="slogan">Vestiamo il tuo bambino, rispettiamo il futuro.</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("### Esempio capi inclusi")
 
-# Corpo Centrale con Immagine che CARICA SICURAMENTE
-st.markdown("""
-    <div class="container-home">
-        <div class="col-testo">
-            <div class="ciao">Ciao Mamma! 👋</div>
-            <div class="headline">Vestiamo il tuo bambino con amore e qualità, senza sprechi e senza stress.</div>
-            <div class="list-item">👕 Capi di qualità selezionati</div>
-            <div class="list-item">🔄 Cambi quando cresce</div>
-            <div class="list-item">💰 Risparmi più di 1000€ l'anno</div>
-            <div class="list-item">📍 Scegli il locker più vicino</div>
-            <div class="list-item">✨ Zero stress per te</div>
-        </div>
-        <div class="col-bimbo">
-            <img src="https://unsplash.com" class="baby-img">
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
 
-# Pulsante (Sopra il footer)
-if st.button("Scegli la tua Box"):
-    st.toast("Caricamento Box...")
+    with col1:
+        st.image("https://images.unsplash.com/photo-1600180758890-6b94519a8ba4")
+    with col2:
+        st.image("https://images.unsplash.com/photo-1596464716127-f2a82984de30")
+    with col3:
+        st.image("https://images.unsplash.com/photo-1585386959984-a4155224a1ad")
 
-# Footer
-st.markdown("""
-    <div class="footer-note">
-        ❤️ Creato da genitori, per genitori.
-    </div>
-    """, unsafe_allow_html=True)
+    st.write("10 capi selezionati e igienizzati")
+
+    if st.button("Attiva Box Standard"):
+        st.success(f"Hai scelto {scelta}")
+
+# --- BOX PREMIUM ---
+elif menu == "Box Premium":
+    st.header("💎 Box Premium - 29,90€ + spedizione")
+
+    st.markdown("### Capi premium selezionati")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.image("https://images.unsplash.com/photo-1588776814546-ec7e03c6f9c3")
+    with col2:
+        st.image("https://images.unsplash.com/photo-1593032465175-481ac7f4019c")
+    with col3:
+        st.image("https://images.unsplash.com/photo-1600185365483-26d7d0a3c8c1")
+
+    st.write("Qualità superiore e outfit curati")
+
+    if st.button("Attiva Box Premium"):
+        st.success("Box Premium attivata")
+
+# --- VETRINA ---
+elif menu == "Vetrina":
+    st.header("🛍️ Vetrina")
+
+    st.write("I capi acquistati rimangono a te.")
+
+    st.info("🚚 Spedizione gratuita sopra 50€ o se abbinata a una Box")
+
+    prodotti = [
+        {"nome": "Body cotone", "prezzo": 9.90, "img": "https://images.unsplash.com/photo-1588776814546-ec7e03c6f9c3"},
+        {"nome": "Tutina baby", "prezzo": 14.90, "img": "https://images.unsplash.com/photo-1593032465175-481ac7f4019c"},
+        {"nome": "Jeans baby", "prezzo": 19.90, "img": "https://images.unsplash.com/photo-1600185365483-26d7d0a3c8c1"}
+    ]
+
+    for p in prodotti:
+        col1, col2 = st.columns([1,2])
+        with col1:
+            st.image(p["img"])
+        with col2:
+            st.write(f"### {p['nome']}")
+            st.write(f"{p['prezzo']}€")
+            st.button("Compra", key=p["nome"])
+
+# --- PROFILO ---
+elif menu == "Profilo":
+    st.header("👤 Il tuo profilo")
+
+    nome = st.text_input("Nome mamma")
+    telefono = st.text_input("Cellulare")
+    email = st.text_input("Email")
+    bambino = st.text_input("Nome bambino")
+    nascita = st.date_input("Data di nascita")
+
+    if st.button("Salva profilo"):
+        st.success("Profilo salvato 💚")

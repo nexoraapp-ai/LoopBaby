@@ -1,108 +1,132 @@
 import streamlit as st
 
-st.set_page_config(page_title="LoopBaby", layout="wide")
+# --- 1. CONFIGURAZIONE (Elimina i margini di Streamlit) ---
+st.set_page_config(page_title="LoopBaby", layout="centered")
 
-# --- HEADER ---
-st.title("👶 LoopBaby")
-st.subheader("Vestiamo il tuo bambino senza sprechi e senza stress 💚")
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "Home"
 
-# --- MENU ---
-menu = st.sidebar.selectbox("Menu", [
-    "Home",
-    "Box Standard",
-    "Box Premium",
-    "Vetrina",
-    "Profilo"
-])
+def vai(nome):
+    st.session_state.pagina = nome
+    st.rerun()
 
-# --- HOME ---
-if menu == "Home":
-    st.markdown("## Ciao Mamma 👋")
-    st.markdown("Risparmia fino a **1000€ all'anno** vestendo il tuo bambino.")
+# --- 2. CSS PROFESSIONALE (IDENTICO AL TUO DESIGN) ---
+st.markdown("""
+    <style>
+    /* Nascondi header e menu Streamlit */
+    [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
+    .stApp {background-color: #FFFFFF !important; max-width: 450px !important; margin: 0 auto !important;}
+    
+    @import url('https://googleapis.com');
+    * { font-family: 'Lexend', sans-serif !important; }
 
-    st.image("https://images.unsplash.com/photo-1519681393784-d120267933ba", use_column_width=True)
+    /* Logo e Slogan */
+    .header-box { padding: 10px 20px; text-align: left; }
+    .logo-title { font-size: 32px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+    .logo-heart { color: #f43f5e; }
+    .slogan { font-size: 14px; color: #64748b; margin-top: -5px; }
 
-    st.markdown("### Come funziona")
-    st.write("1. Scegli la Box")
-    st.write("2. Ritira al locker vicino a te")
-    st.write("3. Dopo 3 mesi decidi cosa fare")
+    /* Layout Home: Testo a Sinistra, Bimbo a Destra */
+    .home-flex { display: flex; align-items: center; padding: 0 20px; gap: 15px; margin-top: 10px; }
+    .col-left { flex: 1.6; }
+    .col-right { flex: 1; }
+    .ciao { font-size: 28px; font-weight: 800; color: #1e293b; margin: 0; }
+    .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; }
+    .list-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #475569; margin-bottom: 8px; }
+    .baby-img { width: 100%; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-    st.button("👉 Scegli la tua Box")
+    /* CARD BOX COLORATE */
+    .card { border-radius: 25px; padding: 20px; margin: 15px 20px; text-align: center; border: 1px solid #eee; }
+    .box-luna { background-color: #f8fafc; border-color: #cbd5e1; } 
+    .box-sole { background-color: #fffbeb; border-color: #fef3c7; } 
+    .box-nuvola { background-color: #f1f5f9; border-color: #e2e8f0; } 
+    .box-premium { background: linear-gradient(135deg, #0d9488 0%, #065f46 100%); color: white !important; border: none; }
+    .prezzo-rosa { color: #ec4899; font-size: 24px; font-weight: 900; }
 
-# --- BOX STANDARD ---
-elif menu == "Box Standard":
-    st.header("📦 Box Standard - 19,90€ + spedizione")
+    /* Pulsante Rosa GIGANTE */
+    div.stButton > button {
+        background-color: #f43f5e !important;
+        color: white !important;
+        border-radius: 18px !important;
+        border: none !important;
+        width: 100% !important;
+        height: 60px !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        margin-top: 10px !important;
+        box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3) !important;
+    }
 
-    scelta = st.radio("Scegli stile", ["🌙 LUNA", "☀️ SOLE", "☁️ NUVOLA"])
+    /* BARRA INFERIORE FISSA */
+    [data-testid="stHorizontalBlock"] {
+        position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important;
+        background: white !important; border-top: 1px solid #eee !important; z-index: 99999; padding: 5px 0 !important;
+    }
+    [data-testid="stHorizontalBlock"] button {
+        background: transparent !important; color: #0d9488 !important; border: none !important;
+        box-shadow: none !important; font-size: 11px !important; height: 50px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-    st.markdown("### Esempio capi inclusi")
+# --- 3. LOGICA PAGINE ---
 
-    col1, col2, col3 = st.columns(3)
+if st.session_state.pagina == "Home":
+    st.markdown('<div class="header-box"><div class="logo-title"><span class="logo-heart">💗</span> LoopBaby</div><div class="slogan">Vestiamo il tuo bambino, rispettiamo il futuro.</div></div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+        <div class="home-flex">
+            <div class="col-left">
+                <div class="ciao">Ciao Mamma! 👋</div>
+                <div class="headline">Vestiamo il tuo bambino con amore e qualità, senza sprechi e senza stress.</div>
+                <div class="list-item">👕 Capi di qualità selezionati</div>
+                <div class="list-item">🔄 Cambi quando cresce</div>
+                <div class="list-item">💰 Risparmi più di 1000€ l'anno</div>
+                <div class="list-item">📍 Scegli il locker più vicino</div>
+            </div>
+            <div class="col-right">
+                <img src="https://unsplash.com" class="baby-img">
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("SCEGLI LA TUA BOX ➔"): vai("Box")
 
-    with col1:
-        st.image("https://images.unsplash.com/photo-1600180758890-6b94519a8ba4")
-    with col2:
-        st.image("https://images.unsplash.com/photo-1596464716127-f2a82984de30")
-    with col3:
-        st.image("https://images.unsplash.com/photo-1585386959984-a4155224a1ad")
+elif st.session_state.pagina == "Box":
+    st.markdown('<h1 style="color:#0d9488; padding:20px;">Le nostre Box 📦</h1>', unsafe_allow_html=True)
+    
+    # 3 Standard
+    st.markdown('<div class="card box-luna"><h3>LUNA 🌙</h3><p>Neutro e Delicato (Usato)</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+    st.button("Scegli LUNA", key="l")
+    
+    st.markdown('<div class="card box-sole"><h3>SOLE ☀️</h3><p>Colori e Allegria (Usato)</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+    st.button("Scegli SOLE", key="s")
+    
+    st.markdown('<div class="card box-premium"><h3>PREMIUM 💎</h3><p>Grandi Firme (Nuovi/Seminuovi)</p><div style="color:white; font-size:24px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
+    st.button("Scegli PREMIUM", key="p")
 
-    st.write("10 capi selezionati e igienizzati")
+elif st.session_state.pagina == "Shop":
+    st.markdown('<h1 style="color:#0d9488; padding:20px;">Vetrina 🛍️</h1>', unsafe_allow_html=True)
+    st.info("I capi acquistati qui rimangono a te per sempre!")
+    
+    prodotti = [("Body Bio", "9,90€", "🌱"), ("Salopette", "19,90€", "👖")]
+    for nome, prezzo, icona in prodotti:
+        st.markdown(f'<div class="card">{icona}<br><b>{nome}</b><br><span class="prezzo-rosa">{prezzo}</span></div>', unsafe_allow_html=True)
+        st.button(f"Compra {nome}")
 
-    if st.button("Attiva Box Standard"):
-        st.success(f"Hai scelto {scelta}")
+elif st.session_state.pagina == "Profilo":
+    st.markdown('<h1 style="color:#0d9488; padding:20px;">Il tuo Profilo 👤</h1>', unsafe_allow_html=True)
+    st.text_input("Nome Mamma")
+    st.text_input("Cellulare")
+    st.button("SALVA PROFILO")
 
-# --- BOX PREMIUM ---
-elif menu == "Box Premium":
-    st.header("💎 Box Premium - 29,90€ + spedizione")
-
-    st.markdown("### Capi premium selezionati")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.image("https://images.unsplash.com/photo-1588776814546-ec7e03c6f9c3")
-    with col2:
-        st.image("https://images.unsplash.com/photo-1593032465175-481ac7f4019c")
-    with col3:
-        st.image("https://images.unsplash.com/photo-1600185365483-26d7d0a3c8c1")
-
-    st.write("Qualità superiore e outfit curati")
-
-    if st.button("Attiva Box Premium"):
-        st.success("Box Premium attivata")
-
-# --- VETRINA ---
-elif menu == "Vetrina":
-    st.header("🛍️ Vetrina")
-
-    st.write("I capi acquistati rimangono a te.")
-
-    st.info("🚚 Spedizione gratuita sopra 50€ o se abbinata a una Box")
-
-    prodotti = [
-        {"nome": "Body cotone", "prezzo": 9.90, "img": "https://images.unsplash.com/photo-1588776814546-ec7e03c6f9c3"},
-        {"nome": "Tutina baby", "prezzo": 14.90, "img": "https://images.unsplash.com/photo-1593032465175-481ac7f4019c"},
-        {"nome": "Jeans baby", "prezzo": 19.90, "img": "https://images.unsplash.com/photo-1600185365483-26d7d0a3c8c1"}
-    ]
-
-    for p in prodotti:
-        col1, col2 = st.columns([1,2])
-        with col1:
-            st.image(p["img"])
-        with col2:
-            st.write(f"### {p['nome']}")
-            st.write(f"{p['prezzo']}€")
-            st.button("Compra", key=p["nome"])
-
-# --- PROFILO ---
-elif menu == "Profilo":
-    st.header("👤 Il tuo profilo")
-
-    nome = st.text_input("Nome mamma")
-    telefono = st.text_input("Cellulare")
-    email = st.text_input("Email")
-    bambino = st.text_input("Nome bambino")
-    nascita = st.date_input("Data di nascita")
-
-    if st.button("Salva profilo"):
-        st.success("Profilo salvato 💚")
+# --- 4. BARRA DI NAVIGAZIONE FISSA ---
+st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
+c1, c2, c3, c4 = st.columns(4)
+with c1: 
+    if st.button("🏠\nHome"): vai("Home")
+with c2: 
+    if st.button("📦\nBox"): vai("Box")
+with c3: 
+    if st.button("🛍️\nShop"): vai("Shop")
+with c4: 
+    if st.button("👤\nProfilo"): vai("Profilo")

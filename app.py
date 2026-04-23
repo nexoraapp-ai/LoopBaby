@@ -1,138 +1,128 @@
 import streamlit as st
 import os
 
-# --- 1. CONFIGURAZIONE E ICONE ---
-st.set_page_config(
-    page_title="LoopBaby", 
-    page_icon="logo.png", 
-    layout="centered"
-)
+# --- 1. CONFIGURAZIONE ---
+st.set_page_config(page_title="LoopBaby", page_icon="logo.png", layout="centered")
 
-# --- 2. CSS PERSONALIZZATO (Stile Moodboard) ---
+# --- 2. CSS PER BARRA IN BASSO E COLORI MOODBOARD ---
 st.markdown("""
     <style>
     /* Sfondo e Font */
-    .stApp { background-color: #FFFFFF !important; max-width: 450px; margin: 0 auto; }
-    h1, h2, h3 { color: #0d9488 !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .stApp { background-color: #FFFFFF !important; max-width: 450px; margin: 0 auto; padding-bottom: 80px; }
     
-    /* Card Prodotti Vetrina */
+    /* Colori Titoli e Testi */
+    h1, h2, h3, b { color: #0d9488 !important; }
+    p { color: #64748b !important; }
+
+    /* Card Box e Prodotti */
     .product-card {
         background: #f8fafc;
-        border-radius: 15px;
-        padding: 15px;
+        border-radius: 20px;
+        padding: 20px;
         margin-bottom: 20px;
         border: 1px solid #e2e8f0;
         text-align: center;
-        transition: transform 0.2s;
     }
-    .product-card:hover { transform: scale(1.02); }
-    .product-price { color: #ec4899; font-weight: bold; font-size: 1.2em; margin: 10px 0; }
-    
-    /* Pulsanti Rosa Action */
+    .price-tag { color: #ec4899 !important; font-weight: 900; font-size: 1.3em; margin: 10px 0; }
+
+    /* Pulsante Rosa Identico alla foto */
     .stButton>button {
         background: #ec4899 !important;
         color: white !important;
-        border-radius: 12px !important;
+        border-radius: 15px !important;
         border: none !important;
         font-weight: bold !important;
         width: 100% !important;
-        height: 3em !important;
+        height: 3.5em !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
-    /* Sezione Info/Regole */
-    .rule-box {
-        background: #f0fdfa;
-        padding: 15px;
-        border-radius: 12px;
-        border-left: 5px solid #0d9488;
-        margin-bottom: 10px;
+    /* BARRA DI NAVIGAZIONE IN BASSO */
+    .fixed-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px 0;
+        z-index: 1000;
+        text-align: center;
     }
+    .footer-item { color: #0d9488; font-size: 0.7em; text-decoration: none; font-weight: bold; }
+    .footer-icon { font-size: 1.8em; display: block; }
     </style>
+    
+    <!-- HTML Barra Inferiore -->
+    <div class="fixed-footer">
+        <div class="footer-item"> <span class="footer-icon">🏠</span>Home </div>
+        <div class="footer-item"> <span class="footer-icon">📦</span>Box </div>
+        <div class="footer-item"> <span class="footer-icon">🛍️</span>Shop </div>
+        <div class="footer-item"> <span class="footer-icon">👤</span>Profilo </div>
+    </div>
     """, unsafe_allow_html=True)
 
-# --- 3. NAVIGAZIONE ---
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "Home"
+# --- 3. LOGICA PAGINE ---
+if "pagina" not in st.session_state: st.session_state.pagina = "Home"
+def vai(nome): st.session_state.pagina = nome
 
-def nav(p): st.session_state.pagina = p
+# --- 4. CONTENUTO ---
 
-# Sidebar fissa come nel design
-with st.sidebar:
-    if os.path.exists("logo.png"): st.image("logo.png", width=120)
-    st.markdown("### Menu LoopBaby")
-    if st.button("🏠 Home"): nav("Home")
-    if st.button("📦 Le nostre Box"): nav("Box")
-    if st.button("🛍️ Vetrina Shop"): nav("Vetrina")
-    if st.button("📖 Come Funziona"): nav("Info")
-    if st.button("👋 Chi Siamo"): nav("ChiSiamo")
-
-# --- 4. CONTENUTO PAGINE ---
-
+# PAGINA HOME
 if st.session_state.pagina == "Home":
-    st.title("Benvenuta Mamma! ✨")
-    st.write("Vestiamo il tuo bambino con amore e qualità, rispettando il pianeta.")
-    st.image("https://unsplash.com", caption="Qualità e Sostenibilità")
-    if st.button("Scegli la tua Box ➔"): nav("Box")
-
-elif st.session_state.pagina == "Box":
-    st.title("Scegli il tuo Loop 📦")
+    if os.path.exists("logo.png"): st.image("logo.png", width=150)
+    st.title("Vestiamo il tuo bambino con amore. ❤️")
+    st.write("Qualità, risparmio e sostenibilità in un unico Loop.")
     
-    # Box Standard
-    st.markdown('<div class="product-card">', unsafe_allow_html=True)
-    st.subheader("BOX STANDARD")
-    st.write("10 Capi selezionati (Luna, Sole o Nuvola)")
-    st.markdown('<p class="product-price">19,90 € / 3 mesi</p>', unsafe_allow_html=True)
-    if st.button("Scegli Standard", key="b1"): st.success("Ottima scelta!")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Box Premium
-    st.markdown('<div class="product-card">', unsafe_allow_html=True)
-    st.subheader("BOX PREMIUM")
-    st.write("10 Capi grandi firme per il tuo bebè")
-    st.markdown('<p class="product-price">29,90 € / 3 mesi</p>', unsafe_allow_html=True)
-    if st.button("Scegli Premium", key="b2"): st.success("Lusso e risparmio!")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-elif st.session_state.pagina == "Vetrina":
-    st.title("Vetrina Shop 🛍️")
-    st.info("Spedizione GRATIS sopra i 50€")
+    if st.button("SCEGLI LA TUA BOX ➔"): vai("Box")
     
+    st.markdown("---")
+    st.subheader("Novità in Vetrina")
+    # Anteprima rapida shop
     col1, col2 = st.columns(2)
-    prodotti = [
-        {"n": "Body Bio", "p": "9,90€", "i": "🌱"},
-        {"n": "Salopette", "p": "19,90€", "i": "👖"},
-        {"n": "Felpa", "p": "15,90€", "i": "🧸"},
-        {"n": "Giacchina", "p": "24,90€", "i": "🧥"}
+    with col1:
+        st.markdown('<div class="product-card">🌱<br>Body Bio<br><span class="price-tag">9,90€</span></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="product-card">👖<br>Salopette<br><span class="price-tag">19,90€</span></div>', unsafe_allow_html=True)
+
+# PAGINA BOX (3 STANDARD + 1 PREMIUM)
+elif st.session_state.pagina == "Box":
+    st.title("Scegli il tuo Stile 📦")
+    st.write("Ogni Box contiene 10 capi per 90 giorni.")
+
+    # Loop per le 3 Box Standard
+    st.subheader("Box Standard - 19,90€")
+    stili = [
+        {"nome": "LUNA 🌙", "desc": "Colori neutri, bianco, panna e grigio."},
+        {"nome": "SOLE ☀️", "desc": "Colori vivaci, fantasie e allegria."},
+        {"nome": "NUVOLA ☁️", "desc": "Casual, jeans e comodità quotidiana."}
     ]
     
-    for idx, p in enumerate(prodotti):
-        target_col = col1 if idx % 2 == 0 else col2
-        with target_col:
+    for stile in stili:
+        with st.container():
             st.markdown(f"""
             <div class="product-card">
-                <div style="font-size:3em;">{p['i']}</div>
-                <b>{p['n']}</b>
-                <p class="product-price">{p['p']}</p>
+                <h3>{stile['nome']}</h3>
+                <p>{stile['desc']}</p>
+                <div class="price-tag">19,90 €</div>
             </div>
             """, unsafe_allow_html=True)
-            st.button("Aggiungi", key=f"add_{idx}")
+            st.button(f"SCEGLI {stile['nome']}", key=stile['nome'])
 
-elif st.session_state.pagina == "Info":
-    st.title("Come Funziona? 🔄")
-    steps = [
-        "1. Scegli la tua Box e lo stile.",
-        "2. Ricevi la box al Locker più vicino.",
-        "3. Usa i vestiti per 90 giorni.",
-        "4. Cambia taglia e rendi la vecchia box!"
-    ]
-    for s in steps:
-        st.markdown(f'<div class="rule-box">{s}</div>', unsafe_allow_html=True)
-    
-    st.warning("⚠️ Controlla i capi entro 48h dalla ricezione!")
-
-elif st.session_state.pagina == "ChiSiamo":
-    st.title("La nostra Storia ❤️")
-    st.write("LoopBaby nasce da genitori per i genitori. Crediamo nel consumo circolare per garantire un futuro migliore ai nostri figli.")
     st.divider()
-    st.markdown("📧 **Email:** info@loopbaby.it")
-    st.markdown("💬 **WhatsApp:** +39 333 1234567")
+    
+    # Box Premium
+    st.subheader("Box Premium - 29,90€")
+    st.markdown("""
+    <div class="product-card" style="border: 2px solid #0d9488;">
+        <h3>DIAMANTE 💎</h3>
+        <p>I migliori brand e tessuti pregiati.</p>
+        <div class="price-tag">29,90 €</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.button("SCEGLI PREMIUM", key="premium")
+
+# --- FINE CODICE ---

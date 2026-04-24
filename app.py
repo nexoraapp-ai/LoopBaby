@@ -26,7 +26,7 @@ def vai(nome_pag):
     st.session_state.pagina = nome_pag
     st.rerun()
 
-# --- 2. CSS TOTALE (BEIGE + LINK IN LINEA + COLORI ACCESI) ---
+# --- 2. CSS TOTALE (BEIGE + COLORI BOX + VETRINA) ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
@@ -55,25 +55,12 @@ st.markdown("""
     .item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 500; }
     .baby-photo { width: 100%; border-radius: 25px; object-fit: cover; }
 
-    /* CARD COLORATE BOX - NUOVI COLORI */
+    /* CARD BOX */
     .card { border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; }
-    
     .box-luna { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #1e293b !important; }
-    
-    .box-sole { 
-        background-color: #FFD600 !important; /* Giallo Acceso */
-        border-color: #EAB308 !important; 
-        color: #000000 !important; 
-    } 
-    
+    .box-sole { background-color: #FFD600 !important; border-color: #EAB308 !important; color: #000000 !important; } 
     .box-nuvola { background-color: #94A3B8 !important; border-color: #64748b !important; color: white !important; }
-    
-    .box-premium { 
-        background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; /* Indigo Premium */
-        color: white !important; 
-        border: none; 
-        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-    }
+    .box-premium { background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; color: white !important; border: none; }
     
     .prezzo-rosa { color: #ec4899; font-size: 24px; font-weight: 900; }
 
@@ -133,36 +120,33 @@ elif st.session_state.pagina == "Contatti":
 
 elif st.session_state.pagina == "Box":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center; color:#1e293b;">Scegli la tua Box 📦</div>', unsafe_allow_html=True)
-    
     qualita = st.radio("Seleziona la qualità:", ["Standard", "Premium"], horizontal=True)
-    
     if qualita == "Standard":
-        st.markdown('<div style="text-align:center; color:#64748b; margin-bottom:10px;">Capi usati selezionati in ottimo stato</div>', unsafe_allow_html=True)
-        for stile, classe, desc in [
-            ("LUNA 🌙", "box-luna", "Neutro (Bianco, Panna, Grigio)"),
-            ("SOLE ☀️", "box-sole", "Vivace (Colori e Fantasie)"),
-            ("NUVOLA ☁️", "box-nuvola", "Grigio nuvola (Denim e Sportivo)")
-        ]:
+        for stile, classe, desc in [("LUNA 🌙", "box-luna", "Neutro (Bianco, Panna, Grigio)"), ("SOLE ☀️", "box-sole", "Vivace (Colori e Fantasie)"), ("NUVOLA ☁️", "box-nuvola", "Grigio nuvola (Denim e Sportivo)")]:
             st.markdown(f'<div class="card {classe}"><h3>{stile}</h3><p style="font-size:12px;">{desc}</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
-            if st.button(f"Scegli {stile}", key=f"std_{stile}"): st.success(f"{stile} Standard aggiunta!")
-    
+            if st.button(f"Scegli {stile}", key=f"std_{stile}"): st.success(f"{stile} aggiunta!")
     else:
-        st.markdown('<div style="text-align:center; color:#64748b; margin-bottom:10px;">Capi nuovi o seminuovi - Il meglio per il tuo bimbo</div>', unsafe_allow_html=True)
-        st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p style="font-size:14px;">Qualità superiore e capi mai usati</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
-        if st.button("Scegli Box Premium", key="prem_unique"): st.success("Box Premium aggiunta al carrello!")
+        st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p style="font-size:14px;">Il meglio per il tuo bimbo: capi nuovi o seminuovi</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
+        if st.button("Scegli Box Premium", key="prem_unique"): st.success("Premium aggiunta!")
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center; color:#1e293b;">Vetrina Shop 🛍️</div>', unsafe_allow_html=True)
-    st.markdown('<div style="text-align:center; padding: 0 20px; color:#475569; font-size:14px; margin-bottom:15px;">Ciò che acquisti rimane a te. Spedizione GRATUITA sopra i 50€ o con Box.</div>', unsafe_allow_html=True)
-    st.markdown('<div class="card">👕 <b>Body Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
-    if st.button("Compra"): st.toast("Aggiunto!")
+    
+    # FRASE MIGLIORATA
+    st.markdown("""<div style="text-align:center; padding: 0 20px; color:#475569; font-size:14px; margin-bottom:20px; line-height:1.5;">
+            <b>I capi che acquisti in Vetrina rimarranno a te per sempre.</b><br>
+            🚚 La consegna è <b>GRATUITA</b> per ordini superiori a 50€ o se aggiunta alla tua prossima Box!
+        </div>""", unsafe_allow_html=True)
+    
+    st.markdown('<div class="card">👕 <b>Body Cotone Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
+    if st.button("Aggiungi al carrello"): st.toast("Prodotto aggiunto!")
 
 elif st.session_state.pagina == "Profilo":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center; color:#1e293b;">Il tuo profilo 👤</div>', unsafe_allow_html=True)
     st.text_input("Nome Mamma")
     st.text_input("Dati Bambino")
     st.text_input("Indirizzo Locker di fiducia")
-    if st.button("SALVA PROFILO"): st.success("Profilo aggiornato!")
+    if st.button("SALVA PROFILO"): st.success("Dati salvati!")
 
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<div style="text-align:center; padding:20px;"><h2 style="font-size:24px;">Chi siamo? ❤️</h2><b>Siamo genitori, come te.</b></div>', unsafe_allow_html=True)
@@ -171,15 +155,9 @@ elif st.session_state.pagina == "ChiSiamo":
 # --- 4. BARRA NAVIGAZIONE FISSA ---
 st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
 c1, c2, c3, c4, c5, c6 = st.columns(6)
-with c1:
-    if st.button("🏠\nHome"): vai("Home")
-with c2:
-    if st.button("📖\nInfo"): vai("Info")
-with c3:
-    if st.button("📦\nBox"): vai("Box")
-with c4:
-    if st.button("🛍️\nVetrina"): vai("Vetrina")
-with c5:
-    if st.button("👤\nProfilo"): vai("Profilo")
-with c6:
-    if st.button("👋\nChi Siamo"): vai("ChiSiamo")
+with c1: if st.button("🏠\nHome"): vai("Home")
+with c2: if st.button("📖\nInfo"): vai("Info")
+with c3: if st.button("📦\nBox"): vai("Box")
+with c4: if st.button("🛍️\nVetrina"): vai("Vetrina")
+with c5: if st.button("👤\nProfilo"): vai("Profilo")
+with c6: if st.button("👋\nContatti"): vai("Contatti")

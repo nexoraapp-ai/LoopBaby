@@ -37,12 +37,13 @@ st.markdown("""
     @import url('https://googleapis.com');
     * { font-family: 'Lexend', sans-serif !important; }
 
+    /* Header */
     .header-box { padding: 30px 20px 10px 20px; }
     .logo-h { font-size: 30px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
     .heart { color: #f43f5e; font-size: 34px; }
     .slogan { font-size: 13px; color: #64748b; margin-top: -5px; padding-left: 5px; }
 
-    /* Home Layout (BLINDATA) */
+    /* Layout Home */
     .home-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 15px; align-items: center; padding: 0 20px; margin-top: 10px; }
     .ciao { font-size: 28px; font-weight: 800; color: #1e293b; }
     .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; }
@@ -55,10 +56,11 @@ st.markdown("""
         text-align: center; background-color: #FFFFFF !important;
     }
 
-    /* FIX DEFINITIVO PUNTO 3: Bottone che sembra testo grassetto in linea */
-    .info-line { display: inline; font-size: 13px; color: #475569; line-height: 1.6; }
+    /* FIX DEFINITIVO: PAROLA "CONTATTACI" IN GRASSETTO E IN LINEA */
+    .info-container { padding: 0 20px; font-size: 13px; color: #475569; line-height: 1.6; }
     
-    div.stButton > button.contattaci-inline {
+    /* Trasforma il bottone in un link di testo grassetto */
+    div.stButton > button.inline-btn {
         background: none !important;
         border: none !important;
         padding: 0 !important;
@@ -67,15 +69,15 @@ st.markdown("""
         font-weight: 800 !important;
         font-size: 13px !important;
         display: inline !important;
-        margin: 0 !important;
         vertical-align: baseline !important;
+        margin-left: 4px !important;
     }
 
-    /* Pulsanti Standard Rosa */
+    /* Pulsante Rosa Standard */
     div.stButton > button {
         background-color: #f43f5e !important; color: white !important;
-        border-radius: 18px !important; width: 85% !important; height: 50px !important;
-        font-size: 16px !important; font-weight: 800 !important; margin: 10px auto !important; display: block !important;
+        border-radius: 18px !important; width: 85% !important; height: 55px !important;
+        font-size: 17px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
     }
 
     /* Barra Navigazione */
@@ -84,8 +86,7 @@ st.markdown("""
         background: #FDFBF7 !important; border-top: 1px solid #EAE2D6 !important; z-index: 99999; padding: 8px 0 !important;
     }
     [data-testid="stHorizontalBlock"] button {
-        background: transparent !important; color: #0d9488 !important; border: none !important; font-size: 9px !important; font-weight: 700 !important;
-        width: auto !important; height: auto !important;
+        background: transparent !important; color: #0d9488 !important; border: none !important; font-size: 10px !important; font-weight: 700 !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -118,27 +119,24 @@ if st.session_state.pagina == "Home":
 elif st.session_state.pagina == "Info":
     st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Come funziona</div>', unsafe_allow_html=True)
     
-    # Testo Punti 1 e 2
     st.markdown("""
-        <div style="padding: 0 20px; font-size: 13px; color: #475569; line-height: 1.6;">
+        <div class="info-container">
             <b>1. Le nostre opzioni:</b> Box <b>Standard</b> (capi usati ancora in ottimo stato), Box <b>Premium</b> (nuovi o seminuovi). Nella sezione <b>Vetrina</b>, ciò che acquisti rimane a te per sempre.<br><br>
             <b>2. Scegli e ricevi:</b> Seleziona lo stile e ricevi la Box nel locker più vicino a te.
         </div>
     """, unsafe_allow_html=True)
     
-    # PUNTO 3 RIFATTO PER ESSERE IN LINEA E VISIBILE
+    # RIGA PUNTO 3 CON BOTTONE IN LINEA
     col_punto3 = st.container()
     with col_punto3:
         st.markdown('<div style="padding: 10px 20px 0 20px; font-size: 13px; color: #475569; display: inline;"><b>3. Controllo 48h:</b> Controlla i capi entro 48h dalla ricezione, per qualsiasi problema </div>', unsafe_allow_html=True)
-        if st.button("contattaci", key="btn_contattaci_inline"):
-            vai("Contatti")
-        # Applichiamo lo stile specifico al bottone sopra
+        # Bottone camuffato da link tramite classe specifica nel CSS iniettato
+        if st.button("contattaci", key="btn_contattaci_inline"): vai("Contatti")
         st.markdown('<style>div.stButton > button[key="btn_contattaci_inline"] { background: none !important; border: none !important; padding: 0 !important; color: #475569 !important; text-decoration: underline !important; font-weight: 800 !important; font-size: 13px !important; display: inline !important; margin: 0 !important; vertical-align: baseline !important; }</style>', unsafe_allow_html=True)
 
-    # Punto 4
     st.markdown("""
-        <div style="padding: 10px 20px; font-size: 13px; color: #475569; line-height: 1.6;">
-            <b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: riceverai da noi un promemoria 10 giorni prima.
+        <div class="info-container">
+            <br><b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: riceverai da noi un promemoria 10 giorni prima.
         </div>
     """, unsafe_allow_html=True)
 
@@ -164,7 +162,6 @@ elif st.session_state.pagina == "Box":
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center;">Vetrina Shop 🛍️</div>', unsafe_allow_html=True)
-    st.markdown('<div style="text-align:center; padding: 0 20px; color:#475569; font-size:14px; margin-bottom:15px;">Ciò che acquisti in vetrina <b>rimane a te</b> per sempre. Spedizione <b>GRATUITA</b> sopra i 50€ o con Box.</div>', unsafe_allow_html=True)
     st.markdown('<div class="card">👕 <b>Body Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Profilo":

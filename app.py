@@ -21,7 +21,7 @@ def vai(nome_pag):
     st.session_state.pagina = nome_pag
     st.rerun()
 
-# --- 2. CSS "SCHELETRO IDENTICO" + BEIGE + LINK GRASSETTO ---
+# --- 2. CSS TOTALE (BEIGE + TEXT-LINK IN LINEA) ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
@@ -42,7 +42,7 @@ st.markdown("""
     .heart { color: #f43f5e; font-size: 34px; }
     .slogan { font-size: 13px; color: #64748b; margin-top: -5px; padding-left: 5px; }
 
-    /* Home Blindata */
+    /* Home Layout (BLINDATA) */
     .home-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 15px; align-items: center; padding: 0 20px; margin-top: 10px; }
     .ciao { font-size: 28px; font-weight: 800; color: #1e293b; }
     .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; }
@@ -55,11 +55,10 @@ st.markdown("""
         text-align: center; background-color: #FFFFFF !important;
     }
 
-    /* FIX DEFINITIVO: CONTATTACI IN GRASSETTO NELLA FRASE */
-    .testo-info { font-size: 13px; color: #475569; line-height: 1.6; padding-left: 20px; }
+    /* FIX DEFINITIVO PUNTO 3: Bottone che sembra testo grassetto in linea */
+    .info-line { display: inline; font-size: 13px; color: #475569; line-height: 1.6; }
     
-    /* Bottone invisibile che sembra testo grassetto */
-    div.stButton > button.contatto-link {
+    div.stButton > button.contattaci-inline {
         background: none !important;
         border: none !important;
         padding: 0 !important;
@@ -67,16 +66,16 @@ st.markdown("""
         text-decoration: underline !important;
         font-weight: 800 !important;
         font-size: 13px !important;
-        margin: 0 !important;
         display: inline !important;
+        margin: 0 !important;
         vertical-align: baseline !important;
     }
 
-    /* Pulsante Rosa Standard */
+    /* Pulsanti Standard Rosa */
     div.stButton > button {
         background-color: #f43f5e !important; color: white !important;
-        border-radius: 18px !important; width: 85% !important; height: 55px !important;
-        font-size: 17px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
+        border-radius: 18px !important; width: 85% !important; height: 50px !important;
+        font-size: 16px !important; font-weight: 800 !important; margin: 10px auto !important; display: block !important;
     }
 
     /* Barra Navigazione */
@@ -85,7 +84,8 @@ st.markdown("""
         background: #FDFBF7 !important; border-top: 1px solid #EAE2D6 !important; z-index: 99999; padding: 8px 0 !important;
     }
     [data-testid="stHorizontalBlock"] button {
-        background: transparent !important; color: #0d9488 !important; border: none !important; font-size: 10px !important; font-weight: 700 !important;
+        background: transparent !important; color: #0d9488 !important; border: none !important; font-size: 9px !important; font-weight: 700 !important;
+        width: auto !important; height: auto !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -118,18 +118,29 @@ if st.session_state.pagina == "Home":
 elif st.session_state.pagina == "Info":
     st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Come funziona</div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="testo-info"><b>1. Le nostre opzioni:</b> Box <b>Standard</b> (capi usati ancora in ottimo stato), Box <b>Premium</b> (nuovi o seminuovi). Nella sezione <b>Vetrina</b>, ciò che acquisti rimane a te per sempre.<br><br><b>2. Scegli e ricevi:</b> Seleziona lo stile e ricevi la Box nel locker più vicino a te.</div>', unsafe_allow_html=True)
+    # Testo Punti 1 e 2
+    st.markdown("""
+        <div style="padding: 0 20px; font-size: 13px; color: #475569; line-height: 1.6;">
+            <b>1. Le nostre opzioni:</b> Box <b>Standard</b> (capi usati ancora in ottimo stato), Box <b>Premium</b> (nuovi o seminuovi). Nella sezione <b>Vetrina</b>, ciò che acquisti rimane a te per sempre.<br><br>
+            <b>2. Scegli e ricevi:</b> Seleziona lo stile e ricevi la Box nel locker più vicino a te.
+        </div>
+    """, unsafe_allow_html=True)
     
-    # Punto 3 con parola cliccabile integrata
-    c_txt, c_lnk = st.columns([0.83, 0.17])
-    with c_txt:
-        st.markdown('<div class="testo-info"><b>3. Controllo 48h:</b> Controlla i capi entro 48h dalla ricezione, per qualsiasi problema</div>', unsafe_allow_html=True)
-    with c_lnk:
-        # Questo bottone è stilizzato dal CSS sopra per sembrare solo testo grassetto
-        if st.button("contattaci", key="contatto-link"): vai("Contatti")
-        st.markdown('<style>button[kind="secondary"] { background: none !important; border: none !important; padding: 0 !important; color: #475569 !important; text-decoration: underline !important; font-weight: 800 !important; font-size: 13px !important; margin-left: -25px !important; margin-top: 1px !important; }</style>', unsafe_allow_html=True)
+    # PUNTO 3 RIFATTO PER ESSERE IN LINEA E VISIBILE
+    col_punto3 = st.container()
+    with col_punto3:
+        st.markdown('<div style="padding: 10px 20px 0 20px; font-size: 13px; color: #475569; display: inline;"><b>3. Controllo 48h:</b> Controlla i capi entro 48h dalla ricezione, per qualsiasi problema </div>', unsafe_allow_html=True)
+        if st.button("contattaci", key="btn_contattaci_inline"):
+            vai("Contatti")
+        # Applichiamo lo stile specifico al bottone sopra
+        st.markdown('<style>div.stButton > button[key="btn_contattaci_inline"] { background: none !important; border: none !important; padding: 0 !important; color: #475569 !important; text-decoration: underline !important; font-weight: 800 !important; font-size: 13px !important; display: inline !important; margin: 0 !important; vertical-align: baseline !important; }</style>', unsafe_allow_html=True)
 
-    st.markdown('<div class="testo-info"><br><b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: riceverai da noi un promemoria 10 giorni prima.</div>', unsafe_allow_html=True)
+    # Punto 4
+    st.markdown("""
+        <div style="padding: 10px 20px; font-size: 13px; color: #475569; line-height: 1.6;">
+            <b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: riceverai da noi un promemoria 10 giorni prima.
+        </div>
+    """, unsafe_allow_html=True)
 
     st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Regole importanti</div>', unsafe_allow_html=True)
     st.markdown("""<div class="card" style="text-align:left; font-size:13px; color:#475569; line-height:1.6;">
@@ -143,23 +154,29 @@ elif st.session_state.pagina == "Contatti":
             💬 <b>WhatsApp:</b> 333 1234567<br>
             📧 <b>Email:</b> hello@loopbaby.it<br><br>
             🕒 <b>Orari:</b> Lun - Ven 9:00 - 18:00</div>""", unsafe_allow_html=True)
-    if st.button("Torna indietro", key="contatti_back"): vai("Info")
+    if st.button("Torna alle Info", key="contatti_back"): vai("Info")
 
 elif st.session_state.pagina == "Box":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 22px; text-align:center;">Le nostre Box</div>', unsafe_allow_html=True)
-    # Card box qui...
+    for stile, classe in [("LUNA 🌙", "box-luna"), ("SOLE ☀️", "box-sole"), ("NUVOLA ☁️", "box-nuvola")]:
+        st.markdown(f'<div class="card {classe}"><h3>{stile}</h3><p>Usato ottimo stato</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="card box-premium"><h3>PREMIUM 💎</h3><p>Capi nuovi o seminuovi</p><div style="color:white; font-size:24px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center;">Vetrina Shop 🛍️</div>', unsafe_allow_html=True)
-    # Prodotti shop qui...
+    st.markdown('<div style="text-align:center; padding: 0 20px; color:#475569; font-size:14px; margin-bottom:15px;">Ciò che acquisti in vetrina <b>rimane a te</b> per sempre. Spedizione <b>GRATUITA</b> sopra i 50€ o con Box.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">👕 <b>Body Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Profilo":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center;">Il tuo profilo 👤</div>', unsafe_allow_html=True)
-    # Dati profilo qui...
+    st.text_input("Nome Mamma")
+    st.text_input("Dati Bambino")
+    st.text_input("Locker di fiducia")
+    if st.button("SALVA PROFILO", key="save_profile_btn"): st.success("Salvato!")
 
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<div style="text-align:center; padding:20px;"><h2 style="font-size:24px;">Chi siamo? ❤️</h2><b>Siamo genitori, come te.</b></div>', unsafe_allow_html=True)
-    st.markdown('<div class="card" style="text-align:center; font-size:14px; color:#475569; line-height:1.6;">Abbiamo vissuto sulla nostra pelle quanto sia impegnativo far crescere un bambino. Per questo abbiamo creato LoopBaby.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card" style="text-align:center; font-size:14px; color:#475569; line-height:1.6;">Abbiamo vissuto sulla nostra pelle quanto sia impegnativo far crescere un bambino. Per questo abbiamo creato LoopBaby: per semplificarti la vita e ridurre gli sprechi.</div>', unsafe_allow_html=True)
 
 # --- 4. BARRA NAVIGAZIONE FISSA ---
 st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)

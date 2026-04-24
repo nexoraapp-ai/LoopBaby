@@ -31,11 +31,13 @@ st.markdown("""
     @import url('https://googleapis.com');
     * { font-family: 'Lexend', sans-serif !important; }
 
+    /* Header */
     .header-box { padding: 30px 20px 10px 20px; }
     .logo-h { font-size: 30px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
     .heart { color: #f43f5e; font-size: 34px; }
     .slogan { font-size: 13px; color: #64748b; margin-top: -5px; padding-left: 5px; }
 
+    /* Layout Home */
     .home-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 15px; align-items: center; padding: 0 20px; margin-top: 10px; }
     .ciao { font-size: 28px; font-weight: 800; color: #1e293b; }
     .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; }
@@ -48,21 +50,20 @@ st.markdown("""
     .box-premium { background: linear-gradient(135deg, #0d9488 0%, #065f46 100%); color: white !important; }
     .prezzo-rosa { color: #ec4899; font-size: 24px; font-weight: 900; }
 
-    /* Stile Link/Tasti Testuali */
-    .link-assistenza { color: #f43f5e; font-weight: 800; cursor: pointer; text-decoration: underline; }
-
+    /* Pulsante Rosa */
     div.stButton > button {
         background-color: #f43f5e !important; color: white !important;
         border-radius: 18px !important; width: 85% !important; height: 55px !important;
         font-size: 17px !important; font-weight: 800 !important; margin: 15px auto !important; display: block !important;
     }
 
+    /* Barra Fissa */
     [data-testid="stHorizontalBlock"] {
         position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important;
         background: white !important; border-top: 1px solid #f1f5f9 !important; z-index: 99999; padding: 8px 0 !important;
     }
     [data-testid="stHorizontalBlock"] button {
-        background: transparent !important; color: #0d9488 !important; border: none !important; font-size: 10px !important; font-weight: 700 !important;
+        background: transparent !important; color: #0d9488 !important; border: none !important; font-size: 9px !important; font-weight: 700 !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -97,41 +98,50 @@ elif st.session_state.pagina == "Info":
     
     st.markdown("""
         <div style="padding: 8px 20px; font-size: 13px; color: #475569; line-height: 1.6;">
-            <b>1. Le nostre opzioni:</b> Box <b>Standard</b> (capi usati ancora ottimi), Box <b>Premium</b> (nuovi o seminuovi). Nella sezione <b>Vetrina</b>, ciò che acquisti rimane a te per sempre.<br><br>
+            <b>1. Le nostre opzioni:</b> Box <b>Standard</b> (capi usati ancora in ottimo stato), Box <b>Premium</b> (nuovi o seminuovi). Nella sezione <b>Vetrina</b>, ciò che acquisti rimane a te per sempre.<br><br>
             <b>2. Scegli e ricevi:</b> Seleziona lo stile e ricevi la Box nel locker più vicino a te.<br><br>
             <b>3. Controllo 48h:</b> Controlla i capi entro 48h dalla ricezione, per qualsiasi problema 
         </div>
     """, unsafe_allow_html=True)
     
-    # Bottone di collegamento ai contatti in stile testo cliccabile
-    if st.button("CONTATTACI QUI", key="btn_assistenza"):
-        vai("ChiSiamo")
+    if st.button("contattaci", key="link_contatti"): vai("Assistenza")
 
     st.markdown("""
         <div style="padding: 8px 20px; font-size: 13px; color: #475569; line-height: 1.6;">
-            <br><b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia (ti ricordiamo 10gg. prima noi).
+            <br><b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: <b>Riceverai da noi un promemoria 10 giorni prima.</b>
         </div>
     """, unsafe_allow_html=True)
 
     st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Regole importanti</div>', unsafe_allow_html=True)
-    
     st.markdown("""
         <div style="padding:15px 20px; font-size:13px; color:#475569; line-height:1.6; background:#f8fafc; border-radius:20px; margin:0 20px; border:1px solid #eee;">
             <b>📍 Regola del 10:</b><br>
-            LoopBaby si basa sulla fiducia. Ti consegniamo 10 capi e ci aspettiamo di riceverne 10 indietro per far continuare il ciclo.<br><br>
-            • Se un capo è rovinato o perso, puoi sostituirlo con uno simile (es. <b>Jeans x Jeans</b>).<br>
-            • In alternativa, verrà applicata una penale di <b>5€ a capo mancante</b>.<br><br>
+            Rendi 10 capi per riceverne 10. Se un capo è rovinato o perso, puoi sostituirlo con uno simile (scambio <b>Jeans x Jeans</b>) o applicare una penale di <b>5€ a capo mancante</b>.<br><br>
             <b>Altre regole:</b><br>
-            • Se rinnovi la Box, ritiro e consegna sono <b>GRATUITI</b>.<br>
-            • Se restituisci senza nuova Box, il ritiro costa 7,90€.
+            • Box Standard 19,90€ | Box Premium 29,90€.<br>
+            • Ritiro e consegna <b>GRATUITI</b> se rinnovi la Box.<br>
+            • Ritiro a 7,90€ se restituisci senza nuovo ordine.
         </div>
     """, unsafe_allow_html=True)
 
+elif st.session_state.pagina == "Assistenza":
+    st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Contatti & Assistenza 💬</div>', unsafe_allow_html=True)
+    st.markdown("""
+        <div style="background-color: #fff1f2; padding: 25px; border-radius: 20px; margin: 20px; text-align: center; border: 1px solid #fecdd3;">
+            <b style="color:#f43f5e; font-size:18px;">Siamo qui per te!</b><br><br>
+            💬 <b>WhatsApp:</b> 333 1234567<br>
+            📧 <b>Email:</b> hello@loopbaby.it<br><br>
+            🕒 <b>Orari:</b> Lun - Ven 9:00 - 18:00<br>
+            <i>Ti risponderemo nel minor tempo possibile.</i>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("Torna alle Info"): vai("Info")
+
 elif st.session_state.pagina == "Box":
-    st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 22px; text-align:center;">Scegli la tua Box</div>', unsafe_allow_html=True)
+    st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 22px; text-align:center;">Le nostre Box</div>', unsafe_allow_html=True)
     for stile in ["LUNA 🌙", "SOLE ☀️", "NUVOLA ☁️"]:
         st.markdown(f'<div class="card box-luna"><h3>{stile}</h3><p>Usato ottimo</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
-        if st.button(f"Scegli {stile}", key=stile): st.success(f"Hai scelto {stile}")
+        if st.button(f"Scegli {stile}", key=stile): st.success(f"Scelta: {stile}")
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center;">Vetrina Shop 🛍️</div>', unsafe_allow_html=True)
@@ -140,20 +150,17 @@ elif st.session_state.pagina == "Vetrina":
 
 elif st.session_state.pagina == "Profilo":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center;">Il tuo profilo 👤</div>', unsafe_allow_html=True)
-    st.text_input("Nome Mamma", "Giulia Rossi")
-    st.text_input("Nome Bambino", "Leonardo")
-    st.date_input("Data di nascita", date(2024, 5, 12))
-    st.text_input("Locker di fiducia")
+    st.text_input("Nome Mamma")
+    st.text_input("Dati Bambino")
     if st.button("SALVA PROFILO"): st.success("Salvato!")
 
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<div style="text-align:center; padding:20px;"><h2 style="font-size:24px;">Chi siamo? ❤️</h2><b>Siamo genitori, come te.</b></div>', unsafe_allow_html=True)
     st.markdown("""
-        <div style="background-color: #fff1f2; padding: 20px; border-radius: 20px; margin: 20px; text-align: center; border: 1px solid #fecdd3;">
-            <b style="color:#f43f5e;">Contatti & Assistenza</b><br><br>
-            💬 WhatsApp: 333 1234567<br>
-            📧 Email: hello@loopbaby.it<br>
-            🕒 Lun - Ven 9:00 - 18:00
+        <div style="padding: 0 20px; font-size: 14px; color: #475569; line-height: 1.6; text-align: center;">
+            Abbiamo vissuto sulla nostra pelle quanto sia impegnativo far crescere un bambino. 
+            Per questo abbiamo creato LoopBaby: per semplificarti la vita e ridurre gli sprechi.<br><br>
+            Il nostro obiettivo è offrirti vestiti di qualità, farti risparmiare più di 1000€ l'anno e lasciare un mondo migliore ai nostri figli.
         </div>
     """, unsafe_allow_html=True)
 

@@ -27,25 +27,19 @@ st.markdown("""
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
     .stApp {background-color: #FFFFFF !important; max-width: 450px !important; margin: 0 auto !important;}
     .main .block-container {padding: 0 !important;}
-    
     @import url('https://googleapis.com');
     * { font-family: 'Lexend', sans-serif !important; }
 
-    /* Header */
     .header-box { padding: 30px 20px 10px 20px; }
     .logo-h { font-size: 30px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
     .heart { color: #f43f5e; font-size: 34px; }
     .slogan { font-size: 13px; color: #64748b; margin-top: -5px; padding-left: 5px; }
 
-    /* Layout Home */
     .home-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 15px; align-items: center; padding: 0 20px; margin-top: 10px; }
     .ciao { font-size: 28px; font-weight: 800; color: #1e293b; }
     .headline { font-size: 15px; font-weight: 600; color: #334155; line-height: 1.3; }
     .item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 500; }
     .baby-photo { width: 100%; border-radius: 25px; object-fit: cover; }
-
-    /* Stile Link Sottolineato */
-    .link-fake { color: #475569; text-decoration: underline; font-weight: 600; cursor: pointer; }
 
     /* Card Box / Vetrina */
     .card { border-radius: 20px; padding: 20px; margin: 10px 20px; border: 1px solid #eee; text-align: center; }
@@ -108,23 +102,24 @@ elif st.session_state.pagina == "Info":
     """, unsafe_allow_html=True)
     
     # Parola cliccabile sottolineata
-    if st.button("contattaci", key="link_info"):
-        vai("Assistenza")
-
+    col1, col2 = st.columns([1, 4]) # Per allineare "contattaci" al resto del testo
+    with col1:
+        if st.button("contattaci", key="link_info"):
+            vai("Assistenza")
+    
     st.markdown("""
-        <div style="padding: 8px 20px; font-size: 13px; color: #475569; line-height: 1.6;">
-            <br><b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: riceverai da noi un promemoria 10 giorni prima.
+        <div style="padding: 0 20px; font-size: 13px; color: #475569; line-height: 1.6;">
+            <b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: riceverai da noi un promemoria 10 giorni prima.
         </div>
     """, unsafe_allow_html=True)
 
     st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Regole importanti</div>', unsafe_allow_html=True)
     
-    # Regola del 10 fluida e continuativa
+    # REGOLE APPROVATE (IDENTICHE A QUELLE RICHIESTE)
     st.markdown("""
         <div style="padding:15px 20px; font-size:13px; color:#475569; line-height:1.6; background:#f8fafc; border-radius:20px; margin:0 20px; border:1px solid #eee;">
-            La Box LoopBaby ha un costo di 19,90€ (Standard) o 29,90€ (Premium). Se decidi di rinnovare il servizio prendendo una nuova Box, il ritiro della precedente e la consegna della nuova sono <b>GRATUITI</b>. 
-            Se invece desideri restituire la Box senza effettuare un nuovo ordine, il ritiro tramite Locker ha un costo di 7,90€. <br><br>
-            <b>📍 La Regola del 10:</b> Per far continuare il ciclo, ti chiediamo di rendere lo stesso numero di capi ricevuti (10). Se un capo viene smarrito o si rovina irreparabilmente, vale lo scambio <b>'Jeans x Jeans'</b> (restituisci un capo simile di tua proprietà) oppure verrà applicata una penale di <b>5 euro a capo mancante</b>.
+            La Box LoopBaby ha un costo di 19,90€ (Standard) o 29,90€ (Premium). Se decidi di rinnovare il servizio prendendo una nuova Box, il ritiro della precedente e la consegna della nuova sono GRATUITI. Se invece desideri restituire la Box senza effettuare un nuovo ordine, il ritiro tramite Locker ha un costo di 7,90€.<br><br>
+            <b>📍 La Regola del 10:</b> Per far continuare il ciclo, ti chiediamo di rendere lo stesso numero di capi ricevuti (10). Se un capo viene smarrito o si rovina irreparabilmente, vale lo scambio <b>'Jeans x Jeans'</b> (restituisci un capo simile di tua proprietà) oppure verrà applicata una penale di 5 euro a capo mancante.
         </div>
     """, unsafe_allow_html=True)
 

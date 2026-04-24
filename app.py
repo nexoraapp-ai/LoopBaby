@@ -26,7 +26,7 @@ def vai(nome_pag):
     st.session_state.pagina = nome_pag
     st.rerun()
 
-# --- 2. CSS TOTALE (BEIGE + LINK IN LINEA + COLORI BOX) ---
+# --- 2. CSS TOTALE (BEIGE + LINK IN LINEA + COLORI ACCESI) ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
@@ -55,12 +55,25 @@ st.markdown("""
     .item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 500; }
     .baby-photo { width: 100%; border-radius: 25px; object-fit: cover; }
 
-    /* CARD COLORATE BOX */
+    /* CARD COLORATE BOX - NUOVI COLORI */
     .card { border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; }
-    .box-luna { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; } /* Grigio Luna */
-    .box-sole { background-color: #fffbeb !important; border-color: #fef3c7 !important; } /* Giallo Sole */
-    .box-nuvola { background-color: #94A3B8 !important; color: white !important; } /* Grigio Nuvola */
-    .box-premium { background: linear-gradient(135deg, #0d9488 0%, #065f46 100%) !important; color: white !important; border: none; }
+    
+    .box-luna { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #1e293b !important; }
+    
+    .box-sole { 
+        background-color: #FFD600 !important; /* Giallo Acceso */
+        border-color: #EAB308 !important; 
+        color: #000000 !important; 
+    } 
+    
+    .box-nuvola { background-color: #94A3B8 !important; border-color: #64748b !important; color: white !important; }
+    
+    .box-premium { 
+        background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; /* Indigo Premium */
+        color: white !important; 
+        border: none; 
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+    }
     
     .prezzo-rosa { color: #ec4899; font-size: 24px; font-weight: 900; }
 
@@ -134,9 +147,9 @@ elif st.session_state.pagina == "Box":
             if st.button(f"Scegli {stile}", key=f"std_{stile}"): st.success(f"{stile} Standard aggiunta!")
     
     else:
-        st.markdown('<div style="text-align:center; color:#64748b; margin-bottom:10px;">Capi nuovi o seminuovi delle migliori marche</div>', unsafe_allow_html=True)
-        st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p style="font-size:12px;">Selezione esclusiva di capi nuovi</p><div style="font-size:24px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
-        if st.button("Scegli Box Premium", key="prem_unique"): st.success("Box Premium aggiunta!")
+        st.markdown('<div style="text-align:center; color:#64748b; margin-bottom:10px;">Capi nuovi o seminuovi - Il meglio per il tuo bimbo</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p style="font-size:14px;">Qualità superiore e capi mai usati</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
+        if st.button("Scegli Box Premium", key="prem_unique"): st.success("Box Premium aggiunta al carrello!")
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center; color:#1e293b;">Vetrina Shop 🛍️</div>', unsafe_allow_html=True)
@@ -149,7 +162,7 @@ elif st.session_state.pagina == "Profilo":
     st.text_input("Nome Mamma")
     st.text_input("Dati Bambino")
     st.text_input("Indirizzo Locker di fiducia")
-    if st.button("SALVA PROFILO"): st.success("Salvato!")
+    if st.button("SALVA PROFILO"): st.success("Profilo aggiornato!")
 
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<div style="text-align:center; padding:20px;"><h2 style="font-size:24px;">Chi siamo? ❤️</h2><b>Siamo genitori, come te.</b></div>', unsafe_allow_html=True)
@@ -169,4 +182,4 @@ with c4:
 with c5:
     if st.button("👤\nProfilo"): vai("Profilo")
 with c6:
-    if st.button("👋\nContatti"): vai("Contatti")
+    if st.button("👋\nChi Siamo"): vai("ChiSiamo")

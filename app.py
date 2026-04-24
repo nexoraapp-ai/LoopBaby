@@ -44,6 +44,9 @@ st.markdown("""
     .item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 500; }
     .baby-photo { width: 100%; border-radius: 25px; object-fit: cover; }
 
+    /* Stile Link Sottolineato */
+    .link-fake { color: #475569; text-decoration: underline; font-weight: 600; cursor: pointer; }
+
     /* Card Box / Vetrina */
     .card { border-radius: 20px; padding: 20px; margin: 10px 20px; border: 1px solid #eee; text-align: center; }
     .box-luna { background-color: #f1f5f9; } .box-sole { background-color: #fffbeb; } .box-nuvola { background-color: #e0f2fe; }
@@ -104,23 +107,24 @@ elif st.session_state.pagina == "Info":
         </div>
     """, unsafe_allow_html=True)
     
-    if st.button("contattaci", key="link_contatti"): vai("Assistenza")
+    # Parola cliccabile sottolineata
+    if st.button("contattaci", key="link_info"):
+        vai("Assistenza")
 
     st.markdown("""
         <div style="padding: 8px 20px; font-size: 13px; color: #475569; line-height: 1.6;">
-            <br><b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: <b>Riceverai da noi un promemoria 10 giorni prima.</b>
+            <br><b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: riceverai da noi un promemoria 10 giorni prima.
         </div>
     """, unsafe_allow_html=True)
 
     st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Regole importanti</div>', unsafe_allow_html=True)
+    
+    # Regola del 10 fluida e continuativa
     st.markdown("""
         <div style="padding:15px 20px; font-size:13px; color:#475569; line-height:1.6; background:#f8fafc; border-radius:20px; margin:0 20px; border:1px solid #eee;">
-            <b>📍 Regola del 10:</b><br>
-            Rendi 10 capi per riceverne 10. Se un capo è rovinato o perso, puoi sostituirlo con uno simile (scambio <b>Jeans x Jeans</b>) o applicare una penale di <b>5€ a capo mancante</b>.<br><br>
-            <b>Altre regole:</b><br>
-            • Box Standard 19,90€ | Box Premium 29,90€.<br>
-            • Ritiro e consegna <b>GRATUITI</b> se rinnovi la Box.<br>
-            • Ritiro a 7,90€ se restituisci senza nuovo ordine.
+            La Box LoopBaby ha un costo di 19,90€ (Standard) o 29,90€ (Premium). Se decidi di rinnovare il servizio prendendo una nuova Box, il ritiro della precedente e la consegna della nuova sono <b>GRATUITI</b>. 
+            Se invece desideri restituire la Box senza effettuare un nuovo ordine, il ritiro tramite Locker ha un costo di 7,90€. <br><br>
+            <b>📍 La Regola del 10:</b> Per far continuare il ciclo, ti chiediamo di rendere lo stesso numero di capi ricevuti (10). Se un capo viene smarrito o si rovina irreparabilmente, vale lo scambio <b>'Jeans x Jeans'</b> (restituisci un capo simile di tua proprietà) oppure verrà applicata una penale di <b>5 euro a capo mancante</b>.
         </div>
     """, unsafe_allow_html=True)
 
@@ -132,10 +136,9 @@ elif st.session_state.pagina == "Assistenza":
             💬 <b>WhatsApp:</b> 333 1234567<br>
             📧 <b>Email:</b> hello@loopbaby.it<br><br>
             🕒 <b>Orari:</b> Lun - Ven 9:00 - 18:00<br>
-            <i>Ti risponderemo nel minor tempo possibile.</i>
         </div>
     """, unsafe_allow_html=True)
-    if st.button("Torna alle Info"): vai("Info")
+    if st.button("Torna indietro"): vai("Info")
 
 elif st.session_state.pagina == "Box":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 22px; text-align:center;">Le nostre Box</div>', unsafe_allow_html=True)
@@ -159,8 +162,7 @@ elif st.session_state.pagina == "ChiSiamo":
     st.markdown("""
         <div style="padding: 0 20px; font-size: 14px; color: #475569; line-height: 1.6; text-align: center;">
             Abbiamo vissuto sulla nostra pelle quanto sia impegnativo far crescere un bambino. 
-            Per questo abbiamo creato LoopBaby: per semplificarti la vita e ridurre gli sprechi.<br><br>
-            Il nostro obiettivo è offrirti vestiti di qualità, farti risparmiare più di 1000€ l'anno e lasciare un mondo migliore ai nostri figli.
+            Per questo abbiamo creato LoopBaby: per semplificarti la vita e ridurre gli sprechi.
         </div>
     """, unsafe_allow_html=True)
 

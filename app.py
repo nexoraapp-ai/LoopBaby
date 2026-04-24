@@ -6,6 +6,7 @@ from datetime import date
 # --- 1. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
+# Funzione per fissare la foto
 def get_base64(file_path):
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
@@ -14,6 +15,13 @@ def get_base64(file_path):
 
 img_data = get_base64("bimbo.jpg")
 
+# --- LOGICA NAVIGAZIONE ---
+# Controlliamo subito se il link "contattaci" è stato cliccato tramite l'URL
+if "nav" in st.query_params:
+    st.session_state.pagina = "Contatti"
+    # Puliamo l'URL per evitare loop al ritorno
+    st.query_params.clear()
+
 if "pagina" not in st.session_state: 
     st.session_state.pagina = "Home"
 
@@ -21,7 +29,7 @@ def vai(nome_pag):
     st.session_state.pagina = nome_pag
     st.rerun()
 
-# --- 2. CSS TOTALE (BEIGE + LINK INVISIBILE) ---
+# --- 2. CSS DEFINITIVO (BEIGE + LINK IN LINEA PERFETTO) ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
@@ -56,20 +64,12 @@ st.markdown("""
         text-align: center; background-color: #FFFFFF !important;
     }
 
-    /* FIX DEFINITIVO: IL BOTTONE DIVENTA TESTO IN LINEA */
-    /* Questo codice "uccide" lo stile del bottone e lo rende identico al testo */
-    div.stButton > button.contattaci-inline {
-        background: none !important;
-        border: none !important;
-        padding: 0 !important;
-        color: #475569 !important;
-        text-decoration: underline !important;
-        font-weight: 800 !important;
-        font-size: 13px !important;
-        display: inline !important;
-        margin: 0 !important;
-        vertical-align: baseline !important;
-        box-shadow: none !important;
+    /* CSS PER IL LINK "CONTATTACI" IDENTICO AL TESTO */
+    .p3-testo { font-size: 13px; color: #475569; line-height: 1.6; display: inline; }
+    .link-inline { 
+        color: #475569 !important; 
+        font-weight: 800 !important; 
+        text-decoration: underline !important; 
     }
 
     /* Pulsante Rosa Standard */
@@ -118,22 +118,12 @@ if st.session_state.pagina == "Home":
 elif st.session_state.pagina == "Info":
     st.markdown('<div style="padding:20px; font-weight:800; font-size:22px; text-align:center; color:#1e293b;">Come funziona</div>', unsafe_allow_html=True)
     
+    # PUNTO 3 CON LINK INTEGRATO NELLA FRASE
     st.markdown("""
         <div style="padding: 0 20px; font-size: 13px; color: #475569; line-height: 1.6;">
             <b>1. Le nostre opzioni:</b> Box <b>Standard</b> (capi usati ancora in ottimo stato), Box <b>Premium</b> (nuovi o seminuovi). Nella sezione <b>Vetrina</b>, ciò che acquisti rimane a te per sempre.<br><br>
             <b>2. Scegli e ricevi:</b> Seleziona lo stile e ricevi la Box nel locker più vicino a te.<br><br>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # PUNTO 3 INTEGRATO PERFETTAMENTE
-    st.markdown('<div style="display: inline; padding-left: 20px; font-size: 13px; color: #475569;"><b>3. Controllo 48h:</b> Controlla i capi entro 48h dalla ricezione, per qualsiasi problema </div>', unsafe_allow_html=True)
-    if st.button("contattaci", key="btn_contattaci_inline"):
-        vai("Contatti")
-    # CSS Iniettato specifico per questo bottone per farlo sparire nel testo
-    st.markdown('<style>div.stButton > button[key="btn_contattaci_inline"] { background: none !important; border: none !important; padding: 0 !important; color: #475569 !important; text-decoration: underline !important; font-weight: 800 !important; font-size: 13px !important; display: inline !important; margin: 0 !important; vertical-align: baseline !important; }</style>', unsafe_allow_html=True)
-
-    st.markdown("""
-        <div style="padding: 10px 20px; font-size: 13px; color: #475569; line-height: 1.6;">
+            <b>3. Controllo 48h:</b> Controlla i capi entro 48h dalla ricezione, per qualsiasi problema <a href="/?nav=contatti" target="_self" class="link-inline">contattaci</a>.<br><br>
             <b>4. Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia: riceverai da noi un promemoria 10 giorni prima.
         </div>
     """, unsafe_allow_html=True)
@@ -150,21 +140,21 @@ elif st.session_state.pagina == "Contatti":
             💬 <b>WhatsApp:</b> 333 1234567<br>
             📧 <b>Email:</b> hello@loopbaby.it<br><br>
             🕒 <b>Orari:</b> Lun - Ven 9:00 - 18:00</div>""", unsafe_allow_html=True)
-    if st.button("Torna indietro", key="contatti_back"): vai("Info")
+    if st.button("Torna indietro"): vai("Info")
 
 elif st.session_state.pagina == "Box":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 22px; text-align:center;">Le nostre Box</div>', unsafe_allow_html=True)
-    # Segue logica card box...
+    # Card Box Luna/Sole/Nuvola/Premium...
+    st.info("Seleziona la tua Box preferita dalla sezione acquisti.")
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center;">Vetrina Shop 🛍️</div>', unsafe_allow_html=True)
-    # Segue logica shop...
+    st.markdown('<div class="card">👕 <b>Body Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Profilo":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center;">Il tuo profilo 👤</div>', unsafe_allow_html=True)
     st.text_input("Nome Mamma")
     st.text_input("Dati Bambino")
-    st.button("SALVA PROFILO")
 
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<div style="text-align:center; padding:20px;"><h2 style="font-size:24px;">Chi siamo? ❤️</h2><b>Siamo genitori, come te.</b></div>', unsafe_allow_html=True)

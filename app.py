@@ -26,19 +26,12 @@ def vai(nome_pag):
     st.session_state.pagina = nome_pag
     st.rerun()
 
-# --- 2. CSS TOTALE (BEIGE + COLORI BOX + VETRINA) ---
+# --- 2. CSS TOTALE (BEIGE + LINK IN LINEA + COLORI ACCESI) ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
-    
-    .stApp {
-        background-color: #FDFBF7 !important; 
-        max-width: 450px !important; 
-        margin: 0 auto !important;
-    }
-    
+    .stApp { background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; }
     .main .block-container {padding: 0 !important;}
-    
     @import url('https://googleapis.com');
     * { font-family: 'Lexend', sans-serif !important; }
 
@@ -55,7 +48,7 @@ st.markdown("""
     .item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #475569; margin-bottom: 8px; font-weight: 500; }
     .baby-photo { width: 100%; border-radius: 25px; object-fit: cover; }
 
-    /* CARD BOX */
+    /* CARD COLORATE BOX */
     .card { border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; }
     .box-luna { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #1e293b !important; }
     .box-sole { background-color: #FFD600 !important; border-color: #EAB308 !important; color: #000000 !important; } 
@@ -63,8 +56,6 @@ st.markdown("""
     .box-premium { background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; color: white !important; border: none; }
     
     .prezzo-rosa { color: #ec4899; font-size: 24px; font-weight: 900; }
-
-    /* Link "contattaci" */
     .link-inline { color: #475569 !important; font-weight: 800 !important; text-decoration: underline !important; }
 
     /* Pulsante Rosa */
@@ -92,7 +83,8 @@ st.markdown('<div class="header-box"><div class="logo-h"><span class="heart">�
 if st.session_state.pagina == "Home":
     img_html = f'<img src="data:image/jpeg;base64,{img_data}" class="baby-photo">' if img_data else ""
     st.markdown(f"""<div class="home-grid"><div><div class="ciao">Ciao Mamma! 👋</div><div class="headline">L'armadio circolare che cresce con il tuo bambino: capi scelti con amore, per un futuro senza sprechi.</div><div style="margin-top:15px;"><div class="item">👶 Capi di qualità selezionati</div><div class="item">🔄 Cambi quando cresce</div><div class="item">💰 Risparmi più di 1000€ l’anno</div><div class="item">🏠 Scegli il locker più vicino a te</div><div class="item">🧘 Zero stress per te</div></div></div><div>{img_html}</div></div>""", unsafe_allow_html=True)
-    if st.button("Scegli la tua Box", key="btn_home"): vai("Box")
+    if st.button("Scegli la tua Box", key="btn_home"): 
+        vai("Box")
     st.markdown('<p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:10px;">❤️ Creato da genitori, per genitori.</p>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Info":
@@ -116,7 +108,8 @@ elif st.session_state.pagina == "Contatti":
             💬 <b>WhatsApp:</b> 333 1234567<br>
             📧 <b>Email:</b> hello@loopbaby.it<br><br>
             🕒 <b>Orari:</b> Lun - Ven 9:00 - 18:00</div>""", unsafe_allow_html=True)
-    if st.button("Torna indietro"): vai("Info")
+    if st.button("Torna indietro"): 
+        vai("Info")
 
 elif st.session_state.pagina == "Box":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center; color:#1e293b;">Scegli la tua Box 📦</div>', unsafe_allow_html=True)
@@ -124,29 +117,33 @@ elif st.session_state.pagina == "Box":
     if qualita == "Standard":
         for stile, classe, desc in [("LUNA 🌙", "box-luna", "Neutro (Bianco, Panna, Grigio)"), ("SOLE ☀️", "box-sole", "Vivace (Colori e Fantasie)"), ("NUVOLA ☁️", "box-nuvola", "Grigio nuvola (Denim e Sportivo)")]:
             st.markdown(f'<div class="card {classe}"><h3>{stile}</h3><p style="font-size:12px;">{desc}</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
-            if st.button(f"Scegli {stile}", key=f"std_{stile}"): st.success(f"{stile} aggiunta!")
+            if st.button(f"Scegli {stile}", key=f"std_{stile}"): 
+                st.success(f"{stile} aggiunta!")
     else:
-        st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p style="font-size:14px;">Il meglio per il tuo bimbo: capi nuovi o seminuovi</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
-        if st.button("Scegli Box Premium", key="prem_unique"): st.success("Premium aggiunta!")
+        st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p style="font-size:14px;">Capi nuovi o seminuovi</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
+        if st.button("Scegli Box Premium", key="prem_unique"): 
+            st.success("Premium aggiunta!")
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center; color:#1e293b;">Vetrina Shop 🛍️</div>', unsafe_allow_html=True)
     
-    # FRASE MIGLIORATA
+    # MODIFICA RICHIESTA: TESTO VETRINA SCRITTO MEGLIO
     st.markdown("""<div style="text-align:center; padding: 0 20px; color:#475569; font-size:14px; margin-bottom:20px; line-height:1.5;">
-            <b>I capi che acquisti in Vetrina rimarranno a te per sempre.</b><br>
-            🚚 La consegna è <b>GRATUITA</b> per ordini superiori a 50€ o se aggiunta alla tua prossima Box!
+            I capi acquistati in Vetrina rimarranno nell'armadio del tuo bimbo <b>per sempre</b>.<br>
+            Spedizione <b>GRATUITA</b> raggiungendo i 50€ di spesa o se associata alla consegna della tua prossima Box.
         </div>""", unsafe_allow_html=True)
     
-    st.markdown('<div class="card">👕 <b>Body Cotone Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
-    if st.button("Aggiungi al carrello"): st.toast("Prodotto aggiunto!")
+    st.markdown('<div class="card">👕 <b>Body Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
+    if st.button("Aggiungi al carrello"): 
+        st.toast("Prodotto aggiunto!")
 
 elif st.session_state.pagina == "Profilo":
     st.markdown('<div style="padding: 20px; font-weight: 800; font-size: 24px; text-align:center; color:#1e293b;">Il tuo profilo 👤</div>', unsafe_allow_html=True)
     st.text_input("Nome Mamma")
     st.text_input("Dati Bambino")
     st.text_input("Indirizzo Locker di fiducia")
-    if st.button("SALVA PROFILO"): st.success("Dati salvati!")
+    if st.button("SALVA PROFILO"): 
+        st.success("Profilo aggiornato!")
 
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<div style="text-align:center; padding:20px;"><h2 style="font-size:24px;">Chi siamo? ❤️</h2><b>Siamo genitori, come te.</b></div>', unsafe_allow_html=True)
@@ -155,9 +152,15 @@ elif st.session_state.pagina == "ChiSiamo":
 # --- 4. BARRA NAVIGAZIONE FISSA ---
 st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
 c1, c2, c3, c4, c5, c6 = st.columns(6)
-with c1: if st.button("🏠\nHome"): vai("Home")
-with c2: if st.button("📖\nInfo"): vai("Info")
-with c3: if st.button("📦\nBox"): vai("Box")
-with c4: if st.button("🛍️\nVetrina"): vai("Vetrina")
-with c5: if st.button("👤\nProfilo"): vai("Profilo")
-with c6: if st.button("👋\nContatti"): vai("Contatti")
+with c1: 
+    if st.button("🏠\nHome"): vai("Home")
+with c2: 
+    if st.button("📖\nInfo"): vai("Info")
+with c3: 
+    if st.button("📦\nBox"): vai("Box")
+with c4: 
+    if st.button("🛍️\nVetrina"): vai("Vetrina")
+with c5: 
+    if st.button("👤\nProfilo"): vai("Profilo")
+with c6: 
+    if st.button("👋\nContatti"): vai("Contatti")

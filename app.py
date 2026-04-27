@@ -55,7 +55,7 @@ def get_base64(file_path):
     return None
 
 img_data = get_base64("bimbo.jpg")
-logo_data = get_base64("logo.png")  # 🔥 LOGO
+logo_data = get_base64("logo.png")  # ✅ LOGO
 
 # --- 3. CSS ---
 st.markdown("""
@@ -99,7 +99,9 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# --- HOME ---
+# --- 4. PAGINE ---
+
+# -- HOME --
 if st.session_state.pagina == "Home":
     img_html = f'<img src="data:image/jpeg;base64,{img_data}" class="baby-photo">' if img_data else ""
     user_nome = st.session_state.dati['nome_genitore'].split()[0] if st.session_state.dati['nome_genitore'] else ""

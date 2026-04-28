@@ -46,7 +46,7 @@ def vai(nome_pag):
 
 def aggiungi_al_carrello(nome, prezzo):
     st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
-    st.toast(f"✅ {nome} aggiunto al carrello!")
+    st.toast(f"✅ {nome} aggiunto!")
 
 # Gestione link "contattaci" rapido
 if "nav" in st.query_params:
@@ -63,7 +63,7 @@ def get_base64(file_path):
 img_data = get_base64("bimbo.jpg")
 logo_bg = get_base64("logo.png") 
 
-# --- 3. CSS TOTALE ---
+# --- 3. CSS TOTALE (Design Originale con Colori Box) ---
 st.markdown(f"""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
@@ -84,13 +84,19 @@ st.markdown(f"""
         background-color: #f43f5e !important; color: white !important; border-radius: 18px !important;
         width: 100% !important; font-weight: 800 !important; margin: 10px auto !important;
         display: block !important; white-space: nowrap !important; border: none !important;
-        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
     }}
 
-    .home-grid {{ display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; align-items: start; padding: 0 20px; }}
     .card {{ border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; box-shadow: 0 8px 25px rgba(0,0,0,0.03); }}
+    
+    /* COLORI SPECIFICI BOX */
+    .box-luna {{ background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; }}
+    .box-sole {{ background-color: #FFD600 !important; border-color: #EAB308 !important; color: #000 !important; }} 
+    .box-nuvola {{ background-color: #94A3B8 !important; border-color: #64748b !important; color: white !important; }}
+    .box-premium {{ background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; color: white !important; border: none; }}
+    
     .prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; }}
     .link-inline {{ color: #475569 !important; font-weight: 800 !important; text-decoration: underline !important; cursor: pointer; }}
+    .obiettivo-pink {{ background-color: #fff1f2; padding: 20px; border-radius: 20px; margin: 20px; text-align: center; border: 1px solid #fecdd3; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -102,7 +108,7 @@ if st.session_state.pagina == "Home":
     img_html = f'<img src="data:image/jpeg;base64,{img_data}" style="width:100%; border-radius:25px;">' if img_data else ""
     u_nome = st.session_state.dati['nome_genitore'].split()[0] if st.session_state.dati['nome_genitore'] else ""
     saluto = f"Ciao {u_nome}!" if u_nome else "Ciao!"
-    st.markdown(f"""<div class="home-grid">
+    st.markdown(f"""<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; padding: 0 20px; align-items: start;">
         <div>
             <div style="font-size:28px; font-weight:800; color:#1e293b;">{saluto} 👋</div>
             <div style="font-size:14px; font-weight:600; color:#334155; line-height:1.3;">L'armadio circolare che cresce con il tuo bambino: capi scelti con amore, per un futuro senza sprechi.</div>
@@ -120,7 +126,7 @@ if st.session_state.pagina == "Home":
 
 elif st.session_state.pagina == "PromoDettaglio":
     st.markdown('<h2 style="text-align:center;">Diventa Fondatrice 🌸</h2>', unsafe_allow_html=True)
-    st.markdown('<div class="card" style="text-align:left; font-size:14px;">Preparare il pacco è semplicissimo: mandaci almeno 10 capi in buono stato, noi paghiamo il trasporto e ti regaliamo la tua prima Box!</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card" style="text-align:left; font-size:14px;"><b>Preparare il pacco è semplicissimo:</b> mandaci almeno 10 capi in buono stato, noi paghiamo il trasporto e ti regaliamo la tua prima Box!</div>', unsafe_allow_html=True)
     with st.form("promo_f"):
         p = st.text_input("Peso stimato (kg)")
         d = st.text_input("Dimensioni pacco (es. 30x30x40)")
@@ -143,15 +149,8 @@ elif st.session_state.pagina == "Info":
             <b>🚚 Spedizioni:</b> Se decidi di continuare il ciclo con una nuova Box, <b>paghiamo noi</b> sia la spedizione di andata che quella di ritorno!
         </div>
     """, unsafe_allow_html=True)
-    
     st.markdown('<h2 style="text-align:center;">Il Patto del 10 📍</h2>', unsafe_allow_html=True)
-    st.markdown("""
-        <div class="card" style="text-align:left; font-size:13px; color:#475569; line-height:1.6;">
-            Il nostro è un patto di fiducia per l'ambiente:<br><br>
-            <b>♻️ Equilibrio:</b> Rendi 10 capi per riceverne 10 nuovi della taglia successiva. <br><br>
-            <b>👖 Sostituzione:</b> Se un capo viene smarrito o si rovina, puoi sostituirlo con un tuo capo (scambio "Jeans x Jeans") oppure è prevista una piccola penale di 5€.
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown("""<div class="card" style="text-align:left; font-size:13px; color:#475569; line-height:1.6;">Il nostro è un patto di fiducia per l'ambiente:<br><br><b>♻️ Equilibrio:</b> Rendi 10 capi per riceverne 10 nuovi della taglia successiva. <br><br><b>👖 Sostituzione:</b> Se un capo viene smarrito o si rovina, puoi sostituirlo con un tuo capo (scambio "Jeans x Jeans") oppure pagare una penale di 5€.</div>""", unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Box":
     st.markdown('<h2 style="text-align:center;">Scegli la tua Box 📦</h2>', unsafe_allow_html=True)
@@ -160,17 +159,18 @@ elif st.session_state.pagina == "Box":
     q = st.radio("Seleziona Qualità:", ["Standard", "Premium"], horizontal=True)
     if q == "Standard":
         for s, c, d in [("LUNA 🌙", "box-luna", "Neutro"), ("SOLE ☀️", "box-sole", "Vivace"), ("NUVOLA ☁️", "box-nuvola", "Grigio")]:
-            st.markdown(f'<div class="card"><h3>{s}</h3><p>{d}</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
-            if st.button(f"Scegli {s}", key=s): aggiungi_al_carrello(f"Box {s}", 19.90)
+            st.markdown(f'<div class="card {c}"><h3>{s}</h3><p>{d}</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+            if st.button(f"Scegli {s}", key=s): aggiungi_al_carrello(f"Box {s} ({tg_u})", 19.90)
     else:
-        st.markdown('<div class="card" style="background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%); color:white;"><h3>BOX PREMIUM 💎</h3><p>Capi nuovi o seminuovi</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
-        if st.button(f"Scegli Premium ({tg_u})"): aggiungi_al_carrello("Box Premium", 29.90)
+        st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p>Capi nuovi o seminuovi</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
+        if st.button(f"Scegli Box Premium"): aggiungi_al_carrello(f"Box Premium ({tg_u})", 29.90)
 
 elif st.session_state.pagina == "Vetrina":
-    st.markdown('<h2 style="text-align:center;">Shop 🛍️</h2>', unsafe_allow_html=True)
-    st.selectbox("Taglia (opzionale):", ["Tutte", "50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"], index=0)
-    st.markdown('<div class="card">👕 <b>Body Bio "LoopLove"</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
-    if st.button("Aggiungi al carrello 🎁"): aggiungi_al_carrello("Body Bio", 9.90)
+    st.markdown('<h2 style="text-align:center;">Vetrina Shop 🛍️</h2>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center; padding:0 20px; font-size:13px; color:#475569;">I capi acquistati in Vetrina <b>rimarranno a te per sempre</b>.<br>Spedizione GRATUITA sopra i 50€ o con l\'acquisto di una Box.</p>', unsafe_allow_html=True)
+    st.selectbox("Filtra per taglia (opzionale):", ["Tutte", "50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"], index=0)
+    st.markdown('<div class="card">👕 <b>Body Bio LoopLove</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
+    if st.button("Aggiungi al carrello 🎁"): aggiungi_al_carrello("Body Bio LoopLove", 9.90)
 
 elif st.session_state.pagina == "Profilo":
     st.markdown('<h2 style="text-align:center;">Profilo 👤</h2>', unsafe_allow_html=True)
@@ -181,42 +181,52 @@ elif st.session_state.pagina == "Profilo":
             <b>📞 Tel:</b> {st.session_state.dati['telefono']}<hr>
             <b>👶 Bambino:</b> {st.session_state.dati['nome_bambino']}<br>
             <b>📅 Nascita:</b> {st.session_state.dati['nascita']}<br>
-            <b>📏 Taglia:</b> {st.session_state.dati['taglia']}<hr>
-            <b>📍 Locker:</b> {st.session_state.dati['locker'] if st.session_state.dati['locker'] else 'Da scegliere'}
+            <b>📏 Taglia attuale:</b> {st.session_state.dati['taglia']}<hr>
+            <b>📍 Locker scelto:</b><br><span style="color:#0d9488; font-weight:800;">{st.session_state.dati['locker'] if st.session_state.dati['locker'] else 'Da scegliere'}</span>
         </div>""", unsafe_allow_html=True)
         if st.button("MODIFICA DATI"): st.session_state.edit_mode = True; st.rerun()
     else:
         with st.form("edit_f"):
-            n = st.text_input("Genitore", st.session_state.dati['nome_genitore'])
-            nb = st.text_input("Bambino", st.session_state.dati['nome_bambino'])
+            n = st.text_input("Nome e Cognome", st.session_state.dati['nome_genitore'])
+            nb = st.text_input("Nome Bambino", st.session_state.dati['nome_bambino'])
+            nas = st.date_input("Data Nascita", st.session_state.dati['nascita'])
             tg = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"])
-            lock = st.selectbox("Locker:", ["Locker Esselunga", "Locker InPost", "Poste Italiane"])
-            if st.form_submit_button("SALVA"):
-                st.session_state.dati.update({"nome_genitore": n, "nome_bambino": nb, "taglia": tg, "locker": lock})
+            lock = st.selectbox("Scegli Locker:", ["Locker Esselunga", "Locker InPost", "Poste Italiane"])
+            if st.form_submit_button("SALVA DATI"):
+                st.session_state.dati.update({"nome_genitore": n, "nome_bambino": nb, "nascita": nas, "taglia": tg, "locker": lock})
                 salva_dati_su_file(st.session_state.dati); st.session_state.edit_mode = False; st.rerun()
 
 elif st.session_state.pagina == "Carrello":
-    st.markdown('<h2 style="text-align:center;">Carrello 🛒</h2>', unsafe_allow_html=True)
-    if not st.session_state.carrello: st.write("Vuoto")
+    st.markdown('<h2 style="text-align:center;">Il tuo Carrello 🛒</h2>', unsafe_allow_html=True)
+    if not st.session_state.carrello:
+        st.write("Il carrello è vuoto.")
     else:
-        tot = sum(item['prezzo'] for item in st.session_state.carrello)
-        for i in st.session_state.carrello: st.write(f"✅ {i['nome']} - {i['prezzo']}€")
-        st.markdown(f"### Totale: {tot:.2f}€")
-        if st.button("PAGA ORA"): st.success("Pagamento sicuro..."); st.session_state.carrello = []
-    if st.button("Torna allo shopping"): vai("Home"); st.rerun()
+        totale = sum(item['prezzo'] for item in st.session_state.carrello)
+        for i, item in enumerate(st.session_state.carrello):
+            st.markdown(f"<div style='display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #EEE;'><b>{item['nome']}</b> <span>{item['prezzo']:.2f}€</span></div>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='text-align:right; margin-top:20px;'>Totale: {totale:.2f}€</h3>", unsafe_allow_html=True)
+        if st.button("PROCEDI AL PAGAMENTO"): st.success("Pagamento sicuro..."); st.session_state.carrello = []
+        if st.button("SVUOTA CARRELLO"): st.session_state.carrello = []; st.rerun()
 
 elif st.session_state.pagina == "ChiSiamo":
-    st.markdown('<h2 style="text-align:center;">Chi siamo? ❤️</h2>', unsafe_allow_html=True)
-    st.markdown('<div class="card" style="text-align:left; font-size:14px; line-height:1.6;">'
-                'Siamo genitori come te. Abbiamo vissuto sulla nostra pelle quanto sia impegnativo far crescere un bambino: vestiti che durano poco, costi che aumentano, tempo che non basta mai.<br><br>'
-                'LoopBaby nasce per semplificarti la vita e ridurre gli sprechi: ti offriamo un armadio circolare di qualità che cresce con il tuo bambino.</div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align:center; padding:20px;"><h2 style="font-size:24px;">Chi siamo? ❤️</h2><b>Siamo genitori, come te.</b></div>', unsafe_allow_html=True)
+    st.markdown("""
+        <div style="padding: 0 20px; font-size:14px; color:#475569; line-height:1.6; text-align:center;">
+            Abbiamo vissuto sulla nostra pelle quanto sia impegnativo far crescere un bambino: vestiti che durano poco, costi che aumentano, tempo che non basta mai.<br><br>
+            Per questo abbiamo creato LoopBaby: per semplificarti la vita e ridurre gli sprechi.
+        </div>
+        <div class="obiettivo-pink">
+            <b style="color:#f43f5e; font-weight:800;">Il nostro obiettivo?</b><br>
+            Offrirti vestiti di qualità, farti risparmiare più di 1000€ l'anno e lasciare un mondo migliore ai nostri figli.
+        </div>
+    """, unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Contatti":
     st.markdown('<h2 style="text-align:center;">Contatti 💬</h2>', unsafe_allow_html=True)
     st.markdown('<div class="card"><b>WhatsApp:</b> 333 1234567<br><b>Email:</b> hello@loopbaby.it</div>', unsafe_allow_html=True)
     if st.button("Torna in Home"): vai("Home"); st.rerun()
 
-# --- 5. BARRA NAVIGAZIONE FISSA ---
+# --- 5. BARRA NAVIGAZIONE FISSA (7 COLONNE) ---
 st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
 c = st.columns(7)
 menu = [("🏠", "Home"), ("📖", "Info"), ("📦", "Box"), ("🛍️", "Vetrina"), ("👤", "Profilo"), ("🛒", "Carrello"), ("👋", "ChiSiamo")]

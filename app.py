@@ -18,7 +18,7 @@ def carica_dati():
     return {
         "nome_genitore": "", "email": "", "telefono": "",
         "nome_bambino": "", "nascita": date(2024, 1, 1),
-        "taglia": "50-56 cm (0-3m)", "locker": ""
+        "taglia": "50-56 cm", "locker": ""
     }
 
 def salva_dati_su_file(dati):
@@ -42,7 +42,6 @@ if "locker_lista" not in st.session_state:
 def vai(nome_pag): 
     st.session_state.pagina = nome_pag
 
-# Gestione navigazione da link HTML
 if "nav" in st.query_params:
     st.session_state.pagina = st.query_params["nav"]
     st.query_params.clear()
@@ -99,13 +98,7 @@ st.markdown(f"""
     .box-premium {{ background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; color: white !important; border: none; }}
     .prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; }}
 
-    /* STILE PER IL LINK "CONTATTACI" IN LINEA */
-    .link-inline {{
-        color: #475569 !important;
-        font-weight: 800 !important;
-        text-decoration: underline !important;
-        cursor: pointer;
-    }}
+    .link-inline {{ color: #475569 !important; font-weight: 800 !important; text-decoration: underline !important; cursor: pointer; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -137,7 +130,6 @@ elif st.session_state.pagina == "PromoDettaglio":
 
 elif st.session_state.pagina == "Info":
     st.markdown('<h2 style="text-align:center;">Come funziona</h2>', unsafe_allow_html=True)
-    # MODIFICA: Il link "contattaci" è ora in linea, grassetto e sottolineato
     st.markdown(f"""
         <div style="padding: 0 25px; font-size: 14px; color: #475569; line-height: 1.6;">
             1. <b>Le nostre opzioni:</b> Box Standard o Premium. In <b>Vetrina</b>, ciò che acquisti rimane a te.<br><br>
@@ -146,25 +138,29 @@ elif st.session_state.pagina == "Info":
             4. <b>Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia.
         </div>
     """, unsafe_allow_html=True)
-    
     st.markdown('<h2 style="text-align:center;">Regole importanti</h2>', unsafe_allow_html=True)
     st.markdown("""<div class="card" style="text-align:left; font-size:13px; color:#475569; line-height:1.6;">La Box ha un costo di 19,90€ o 29,90€. Il ritiro è GRATUITO se rinnovi l'ordine. <br><br><b>📍 La Regola del 10:</b> Rendi 10 capi per riceverne 10. Se un capo manca, vale lo scambio <b>'Jeans x Jeans'</b> o penale di 5€.</div>""", unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Box":
     st.markdown('<h2 style="text-align:center;">Scegli la tua Box 📦</h2>', unsafe_allow_html=True)
+    tg_u = st.session_state.dati['taglia']
+    st.markdown(f'<div style="text-align:center; margin-bottom:15px;"><span style="background:#e0f2f1; padding:5px 15px; border-radius:15px; font-size:12px; font-weight:700; color:#00796b;">📍 CONFIGURATA PER TAGLIA: {tg_u}</span></div>', unsafe_allow_html=True)
+    
     q = st.radio("Seleziona Qualità:", ["Standard", "Premium"], horizontal=True)
     if q == "Standard":
         for s, c, d in [("LUNA 🌙", "box-luna", "Neutro"), ("SOLE ☀️", "box-sole", "Vivace"), ("NUVOLA ☁️", "box-nuvola", "Grigio")]:
             st.markdown(f'<div class="card {c}"><h3>{s}</h3><p>{d}</p><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
-            if st.button(f"Scegli {s}", key=s): st.success(f"{s} aggiunta!")
+            if st.button(f"Scegli {s} ({tg_u})", key=s): st.success(f"{s} taglia {tg_u} aggiunta!")
     else:
-        st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p>Capi nuovi o seminuovi</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
-        if st.button("Scegli Box Premium"): st.success("Premium aggiunta!")
+        st.markdown(f'<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><p>Capi nuovi o seminuovi</p><div style="font-size:28px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
+        if st.button(f"Scegli Box Premium ({tg_u})"): st.success(f"Premium taglia {tg_u} aggiunta!")
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<h2 style="text-align:center;">Vetrina Shop 🛍️</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align:center; padding:0 20px; font-size:13px;">I capi acquistati in Vetrina rimarranno a te <b>per sempre</b>.<br>Spedizione GRATUITA sopra i 50€ o con Box.</p>', unsafe_allow_html=True)
-    st.markdown('<div class="card">👕 <b>Body Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center; padding:0 20px; font-size:13px; color:#475569;">Acquista capi da tenere per sempre. Perfetto per il tuo bimbo o per un regalo!</p>', unsafe_allow_html=True)
+    st.selectbox("Filtra per taglia (opzionale):", ["Tutte le taglie", "50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"], index=0)
+    st.markdown('<div class="card">👕 <b>Body Bio "Mamma è la migliore"</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
+    if st.button("Aggiungi al carrello 🎁"): st.toast("Aggiunto!")
 
 elif st.session_state.pagina == "Profilo":
     st.markdown('<h2 style="text-align:center;">Profilo 👤</h2>', unsafe_allow_html=True)
@@ -175,8 +171,8 @@ elif st.session_state.pagina == "Profilo":
             <b>📞 Tel:</b> {st.session_state.dati['telefono']}<hr>
             <b>👶 Bambino:</b> {st.session_state.dati['nome_bambino']}<br>
             <b>📅 Nascita:</b> {st.session_state.dati['nascita']}<br>
-            <b>📏 Taglia:</b> {st.session_state.dati['taglia']}<hr>
-            <b>📍 Locker scelto:</b><br><span style="color:#0d9488; font-weight:800;">{st.session_state.dati['locker'] if st.session_state.dati['locker'] else 'Da scegliere'}</span>
+            <b>📏 Taglia attuale:</b> {st.session_state.dati['taglia']}<hr>
+            <b>📍 Locker:</b> {st.session_state.dati['locker'] if st.session_state.dati['locker'] else 'Da scegliere'}
         </div>""", unsafe_allow_html=True)
         if st.button("MODIFICA DATI"): st.session_state.edit_mode = True; st.rerun()
     else:
@@ -195,7 +191,7 @@ elif st.session_state.pagina == "Profilo":
 
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<h2 style="text-align:center;">Chi siamo? ❤️</h2>', unsafe_allow_html=True)
-    st.markdown('<div style="text-align:center; padding:0 20px; font-size:14px; line-height:1.6;"><b>Siamo genitori, come te.</b><br><br>Abbiamo vissuto quanto sia impegnativo far crescere un bambino: vestiti che durano poco, costi che aumentano, tempo che manca.<br><br>Per questo è nata LoopBaby: per semplificarti la vita.</div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align:center; padding:0 20px; font-size:14px; line-height:1.6;"><b>Siamo genitori, come te.</b><br><br>Abbiamo vissuto quanto sia impegnativo far crescere un bambino. Per questo è nata LoopBaby: per semplificarti la vita.</div>', unsafe_allow_html=True)
     st.markdown('<div class="card" style="background-color: #FFF1F2;"><b style="color:#f43f5e;">Il nostro obiettivo?</b><br>Offrirti qualità, farti risparmiare più di 1000€ l’anno e lasciare un mondo migliore ai nostri figli.</div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Contatti":

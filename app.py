@@ -42,6 +42,12 @@ if "locker_lista" not in st.session_state:
 def vai(nome_pag): 
     st.session_state.pagina = nome_pag
 
+# Gestione navigazione da link HTML
+if "nav" in st.query_params:
+    st.session_state.pagina = st.query_params["nav"]
+    st.query_params.clear()
+    st.rerun()
+
 def get_base64(file_path):
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
@@ -51,7 +57,7 @@ def get_base64(file_path):
 img_data = get_base64("bimbo.jpg")
 logo_bg = get_base64("logo.png") 
 
-# --- 3. CSS TOTALE (BEIGE + NUOVO HEADER + FIX PULSANTI) ---
+# --- 3. CSS TOTALE ---
 st.markdown(f"""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
@@ -60,7 +66,6 @@ st.markdown(f"""
     @import url('https://googleapis.com');
     * {{ font-family: 'Lexend', sans-serif !important; }}
 
-    /* HEADER PANORAMICO */
     .header-custom {{
         background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}");
         background-size: cover; background-position: center; height: 130px;
@@ -69,7 +74,6 @@ st.markdown(f"""
     }}
     .header-text {{ color: white; font-size: 32px; font-weight: 800; letter-spacing: 3px; text-shadow: 2px 2px 8px rgba(0,0,0,0.4); text-transform: uppercase; }}
 
-    /* PULSANTI (Fix per evitare che il testo vada a capo) */
     div.stButton > button {{
         background-color: #f43f5e !important;
         color: white !important;
@@ -79,37 +83,28 @@ st.markdown(f"""
         margin: 10px auto !important;
         display: block !important;
         white-space: nowrap !important;
-        padding: 10px 20px !important;
         border: none !important;
     }}
 
-    /* HOME LAYOUT */
     .home-grid {{ display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; align-items: start; padding: 0 20px; }}
     .ciao {{ font-size: 28px; font-weight: 800; color: #1e293b; }}
     .headline {{ font-size: 14px; font-weight: 600; color: #334155; line-height: 1.3; }}
     .item {{ display: flex; align-items: center; gap: 10px; font-size: 11px; color: #475569; margin-bottom: 8px; font-weight: 500; }}
-    .baby-photo {{ width: 100%; border-radius: 25px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }}
+    .baby-photo {{ width: 100%; border-radius: 25px; object-fit: cover; }}
 
-    /* CARD E PROMO */
     .card {{ border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; }}
     .box-luna {{ background-color: #f1f5f9 !important; }}
     .box-sole {{ background-color: #FFD600 !important; color: #000 !important; }} 
     .box-nuvola {{ background-color: #94A3B8 !important; color: white !important; }}
     .box-premium {{ background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; color: white !important; border: none; }}
-    
     .prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; }}
-    
-    /* STILE LINK CONTATTACI */
-    .btn-link {{
-        background: none !important;
-        border: none !important;
-        padding: 0 !important;
+
+    /* STILE PER IL LINK "CONTATTACI" IN LINEA */
+    .link-inline {{
         color: #475569 !important;
-        text-decoration: underline !important;
         font-weight: 800 !important;
-        cursor: pointer !important;
-        display: inline !important;
-        font-size: 14px !important;
+        text-decoration: underline !important;
+        cursor: pointer;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -142,18 +137,15 @@ elif st.session_state.pagina == "PromoDettaglio":
 
 elif st.session_state.pagina == "Info":
     st.markdown('<h2 style="text-align:center;">Come funziona</h2>', unsafe_allow_html=True)
-    st.markdown('<div style="padding: 0 25px; font-size: 14px; color: #475569; line-height: 1.6;">'
-                '1. <b>Le nostre opzioni:</b> Box Standard o Premium. In <b>Vetrina</b>, ciò che acquisti rimane a te.<br>'
-                '2. <b>Scegli e ricevi:</b> Nel locker più vicino a te.<br>'
-                '3. <b>Controllo 48h:</b> Controlla i capi, per problemi </div>', unsafe_allow_html=True)
-    
-    # Bottone speciale che sembra un link
-    cols = st.columns([1.1, 2, 1])
-    with cols[1]:
-        if st.button("contattaci", key="info_contatti"): vai("Contatti"); st.rerun()
-
-    st.markdown('<div style="padding: 0 25px; font-size: 14px; color: #475569; line-height: 1.6;">'
-                '4. <b>Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia.</div>', unsafe_allow_html=True)
+    # MODIFICA: Il link "contattaci" è ora in linea, grassetto e sottolineato
+    st.markdown(f"""
+        <div style="padding: 0 25px; font-size: 14px; color: #475569; line-height: 1.6;">
+            1. <b>Le nostre opzioni:</b> Box Standard o Premium. In <b>Vetrina</b>, ciò che acquisti rimane a te.<br><br>
+            2. <b>Scegli e ricevi:</b> Nel locker più vicino a te.<br><br>
+            3. <b>Controllo 48h:</b> Controlla i capi, per problemi <a href="/?nav=Contatti" target="_self" class="link-inline"><b>contattaci</b></a>.<br><br>
+            4. <b>Dopo 3 mesi:</b> Scegli se rendere o ricevere la nuova taglia.
+        </div>
+    """, unsafe_allow_html=True)
     
     st.markdown('<h2 style="text-align:center;">Regole importanti</h2>', unsafe_allow_html=True)
     st.markdown("""<div class="card" style="text-align:left; font-size:13px; color:#475569; line-height:1.6;">La Box ha un costo di 19,90€ o 29,90€. Il ritiro è GRATUITO se rinnovi l'ordine. <br><br><b>📍 La Regola del 10:</b> Rendi 10 capi per riceverne 10. Se un capo manca, vale lo scambio <b>'Jeans x Jeans'</b> o penale di 5€.</div>""", unsafe_allow_html=True)
@@ -171,7 +163,7 @@ elif st.session_state.pagina == "Box":
 
 elif st.session_state.pagina == "Vetrina":
     st.markdown('<h2 style="text-align:center;">Vetrina Shop 🛍️</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align:center; padding:0 20px; font-size:13px;">I capi acquistati in Vetrina rimarranno nell\'armadio del tuo bimbo <b>per sempre</b>.<br>Spedizione GRATUITA sopra i 50€ o con Box.</p>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center; padding:0 20px; font-size:13px;">I capi acquistati in Vetrina rimarranno a te <b>per sempre</b>.<br>Spedizione GRATUITA sopra i 50€ o con Box.</p>', unsafe_allow_html=True)
     st.markdown('<div class="card">👕 <b>Body Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Profilo":
@@ -204,7 +196,7 @@ elif st.session_state.pagina == "Profilo":
 elif st.session_state.pagina == "ChiSiamo":
     st.markdown('<h2 style="text-align:center;">Chi siamo? ❤️</h2>', unsafe_allow_html=True)
     st.markdown('<div style="text-align:center; padding:0 20px; font-size:14px; line-height:1.6;"><b>Siamo genitori, come te.</b><br><br>Abbiamo vissuto quanto sia impegnativo far crescere un bambino: vestiti che durano poco, costi che aumentano, tempo che manca.<br><br>Per questo è nata LoopBaby: per semplificarti la vita.</div>', unsafe_allow_html=True)
-    st.markdown('<div class="card" style="background-color: #FFF1F2; border: 1px solid #fecdd3;"><b style="color:#f43f5e;">Il nostro obiettivo?</b><br>Offrirti qualità, farti risparmiare più di 1000€ l’anno e lasciare un mondo migliore ai nostri figli.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card" style="background-color: #FFF1F2;"><b style="color:#f43f5e;">Il nostro obiettivo?</b><br>Offrirti qualità, farti risparmiare più di 1000€ l’anno e lasciare un mondo migliore ai nostri figli.</div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Contatti":
     st.markdown('<h2 style="text-align:center;">Contatti 💬</h2>', unsafe_allow_html=True)

@@ -1,39 +1,21 @@
 import streamlit as st
-import requests
-import json
-import base64
+import pandas as pd
 import os
+import base64
 from datetime import datetime, timedelta
 
-# --- 1. CONNESSIONE DIRETTA (ADDIO 404) ---
-URL_DB = "https://supabase.co"
-API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6eWZ6cXlvcG1wdmlqZHRmcWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTkzMzYsImV4cCI6MjA5Mjk3NTMzNn0.yRrzj1Op5UntjxzXsP1tY7lB3SNn3MICc6d9T0JwDWg"
+# --- 1. DATABASE LOCALE (ADDIO SUPABASE / ADDIO ERRORI 404) ---
+DB_FILE = "database_loop.csv"
 
-HEADERS = {
-    "apikey": API_KEY,
-    "Content-Type": "application/json"
-}
+def carica_db():
+    if os.path.exists(DB_FILE):
+        return pd.read_csv(DB_FILE)
+    return pd.DataFrame(columns=['email', 'password', 'nome', 'taglia', 'scadenza'])
 
-# --- 2. FUNZIONI DI ACCESSO ---
-def login_diretto(email, password):
-    payload = {"email": email, "password": password}
-    res = requests.post(f"{URL_DB}/token?grant_type=password", json=payload, headers=HEADERS)
-    if res.status_code == 200:
-        st.session_state.user = res.json()["user"]
-        st.session_state.pagina = "Home"
-        st.rerun()
-    else:
-        st.error("Credenziali errate o email non confermata.")
+def salva_db(df):
+    df.to_csv(DB_FILE, index=False)
 
-def registra_diretto(email, password):
-    payload = {"email": email, "password": password}
-    res = requests.post(f"{URL_DB}/signup", json=payload, headers=HEADERS)
-    if res.status_code == 200:
-        st.success("📩 REGISTRAZIONE AVVENUTA! Controlla la mail (e lo spam) per attivare l'account.")
-    else:
-        st.error(f"Errore: {res.json().get('msg', 'Riprova più tardi')}")
-
-# --- 3. CONFIGURAZIONE ---
+# --- 2. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 if "user" not in st.session_state: st.session_state.user = None
@@ -43,17 +25,23 @@ def vai(p):
     st.session_state.pagina = p
     st.rerun()
 
-# --- 4. CSS ---
+# --- 3. CSS PROFESSIONALE ---
 st.markdown("""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"] {display: none !important;}
     .stApp { background-color: #FDFBF7; max-width: 450px; margin: 0 auto; }
-    div.stButton > button { background-color: #f43f5e !important; color: white !important; border-radius: 20px !important; width: 100% !important; border: none !important; font-weight: bold; }
-    .card { border-radius: 20px; padding: 20px; background: white; border: 1px solid #EAE2D6; margin-bottom: 20px; }
+    div.stButton > button { 
+        background-color: #f43f5e !important; color: white !important; 
+        border-radius: 20px !important; width: 100% !important; 
+        border: none !important; font-weight: bold; height: 45px;
+    }
+    .card { border-radius: 20px; padding: 20px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #EAE2D6; margin-bottom: 20px; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 5. PAGINE ---
+# --- 4. LOGICA ---
+df = carica_db()
+
 if st.session_state.user is None:
     st.markdown("<h1 style='text-align:center;'>👶 LOOPBABY</h1>", unsafe_allow_html=True)
     
@@ -67,16 +55,42 @@ if st.session_state.user is None:
             with st.form("l"):
                 e = st.text_input("Email")
                 p = st.text_input("Password", type="password")
-                if st.form_submit_button("ENTRA"): login_diretto(e, p)
+                if st.form_submit_button("ENTRA"):
+                    user = df[(df['email'] == e) & (df['password'].astype(str) == str(p))]
+                    if not user.empty:
+                        st.session_state.user = e
+                        vai("Home")
+                    else: st.error("Dati errati")
         with t2:
             with st.form("r"):
                 er = st.text_input("La tua migliore Email")
                 pr = st.text_input("Scegli Password")
-                if st.form_submit_button("CREA ACCOUNT"): registra_diretto(er, pr)
+                if st.form_submit_button("CREA ACCOUNT"):
+                    if er in df['email'].values: st.error("Sei già registrata!")
+                    else:
+                        scad = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d")
+                        nuovo = pd.DataFrame([{"email": er, "password": str(pr), "nome": "Mamma", "taglia": "---", "scadenza": scad}])
+                        salva_db(pd.concat([df, nuovo]))
+                        st.success("REGISTRATA! Ora fai l'accesso dalla scheda 'Accedi'.")
 else:
-    # --- HOME ---
-    st.title("Home 👶")
-    st.write(f"Benvenuta, {st.session_state.user['email']}")
-    if st.button("Logout"):
+    # --- HOME DOPO IL LOGIN ---
+    st.markdown(f"## Ciao! 👋")
+    st.write(f"Account: {st.session_state.user}")
+    
+    st.markdown("""
+    <div class='card'>
+        ✨ <b>Promo Fondatrici</b><br>
+        Dona 10 capi e ricevi una Box OMAGGIO!
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("Esci"):
         st.session_state.user = None
         vai("Welcome")
+
+    # BARRA NAVIGAZIONE FISSA
+    st.markdown("---")
+    c1, c2, c3 = st.columns(3)
+    with c1: st.button("🏠 Home")
+    with c2: st.button("📦 Box")
+    with c3: st.button("👤 Profilo")

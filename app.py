@@ -1,121 +1,184 @@
 import streamlit as st
-from supabase import create_client, Client
-import base64
 import os
+import base64
+import json
+from datetime import date
+from supabase import create_client, Client
 
-# --- 1. CONNESSIONE SUPABASE ---
-URL_PROGETTO = "https://supabase.co"
-CHIAVE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6eWZ6cXlvcG1wdmlqZHRmcWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTkzMzYsImV4cCI6MjA5Mjk3NTMzNn0.yRrzj1Op5UntjxzXsP1tY7lB3SNn3MICc6d9T0JwDWg"
-
-@st.cache_resource
-def get_client():
-    return create_client(URL_PROGETTO, CHIAVE_ANON)
-
-supabase: Client = get_client()
-
-# --- 2. CONFIGURAZIONE ---
+# --- 1. CONFIGURAZIONE E SUPABASE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
-if "user" not in st.session_state: st.session_state.user = None
-if "pagina" not in st.session_state: st.session_state.pagina = "Welcome"
-if "dati" not in st.session_state: st.session_state.dati = {}
-if "edit_mode" not in st.session_state: st.session_state.edit_mode = False
+# Inizializzazione Supabase (Assicurati di aver impostato i Secrets)
+try:
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    supabase: Client = create_client(url, key)
+except:
+    st.error("Configura SUPABASE_URL e SUPABASE_KEY nei Secrets di Streamlit!")
+    st.stop()
 
-def vai(p): 
-    st.session_state.pagina = p
-    st.rerun()
+# --- 2. STATO DELL'APP ---
+if "user" not in st.session_state:
+    st.session_state.user = None
+if "dati" not in st.session_state:
+    st.session_state.dati = {"nome_genitore": "", "email": "", "telefono": "", "nome_bambino": "", "nascita": date(2024, 1, 1), "taglia": "50-56 cm", "locker": ""}
+if "pagina" not in st.session_state: 
+    st.session_state.pagina = "Home"
+if "edit_mode" not in st.session_state:
+    st.session_state.edit_mode = False
+if "carrello" not in st.session_state:
+    st.session_state.carrello = []
 
-# --- 3. FUNZIONI LOGICHE ---
-def login(e, p):
-    try:
-        res = supabase.auth.sign_in_with_password({"email": e, "password": p})
-        st.session_state.user = res.user
-        # Carica dati profilo
-        try:
-            d = supabase.table("profili").select("*").eq("id", res.user.id).execute()
-            if d.data: st.session_state.dati = d.data[0]
-        except: pass
-        vai("Home")
-    except: st.error("Email o Password errati.")
+# --- 3. FUNZIONI LOGICA ---
+def vai(nome_pag): 
+    st.session_state.pagina = nome_pag
 
-def registrazione(e, p):
-    try:
-        supabase.auth.sign_up({"email": e, "password": p})
-        st.success("📩 Mail inviata! Controlla la posta (e lo Spam).")
-    except Exception as err:
-        st.error(f"Errore tecnico: {err}")
+def aggiungi_al_carrello(nome, prezzo):
+    st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
+    st.toast(f"✅ {nome} aggiunto!")
 
-def salva_profilo(d):
-    try:
-        d["id"] = st.session_state.user.id
-        supabase.table("profili").upsert(d).execute()
-        st.session_state.dati = d
-        st.success("✅ Salvato!")
-    except: st.error("Errore nel salvataggio.")
+def carica_profilo_db(user_id):
+    res = supabase.table("profili").select("*").eq("id", user_id).execute()
+    if res.data:
+        d = res.data[0]
+        # Converte la stringa data in oggetto date
+        if d.get("nascita"): d["nascita"] = date.fromisoformat(d["nascita"])
+        st.session_state.dati.update(d)
 
-def get_b64(path):
-    if os.path.exists(path):
-        with open(path, "rb") as f: return base64.b64encode(f.read()).decode()
+def salva_profilo_db():
+    d = st.session_state.dati.copy()
+    d["nascita"] = d["nascita"].isoformat()
+    d["id"] = st.session_state.user.id
+    supabase.table("profili").upsert(d).execute()
+    st.success("Profilo salvato!")
+
+# --- 4. GESTIONE ACCESSO (PUNTO 1) ---
+if st.session_state.user is None:
+    st.markdown("<h2 style='text-align:center;'>LoopBaby 🌸</h2>", unsafe_allow_html=True)
+    t1, t2, t3 = st.tabs(["Accedi", "Registrati", "Password dimenticata"])
+    
+    with t1:
+        em = st.text_input("Email", key="l_em")
+        pw = st.text_input("Password", type="password", key="l_pw")
+        if st.button("ACCEDI", use_container_width=True):
+            try:
+                res = supabase.auth.sign_in_with_password({"email": em, "password": pw})
+                st.session_state.user = res.user
+                carica_profilo_db(res.user.id)
+                st.rerun()
+            except: st.error("Credenziali errate o email non confermata.")
+            
+    with t2:
+        st.write("Crea il tuo account per iniziare il ciclo.")
+        r_em = st.text_input("Email", key="r_em")
+        r_pw = st.text_input("Password (min. 6 car.)", type="password", key="r_pw")
+        r_nome = st.text_input("Il tuo Nome")
+        if st.button("REGISTRATI", use_container_width=True):
+            try:
+                res = supabase.auth.sign_up({"email": r_em, "password": r_pw})
+                supabase.table("profili").insert({"id": res.user.id, "email": r_em, "nome_genitore": r_nome}).execute()
+                st.success("📩 Controlla l'email per confermare l'account!")
+            except Exception as e: st.error(f"Errore: {e}")
+
+    with t3:
+        f_em = st.text_input("Email per il recupero")
+        if st.button("RECUPERA PASSWORD", use_container_width=True):
+            supabase.auth.reset_password_for_email(f_em)
+            st.info("Se l'email è registrata, riceverai un link.")
+    st.stop()
+
+# --- 5. DESIGN E CSS ---
+def get_base64(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
 
-img, logo = get_b64("bimbo.jpg"), get_b64("logo.png")
+img_data = get_base64("bimbo.jpg")
+logo_bg = get_base64("logo.png") 
 
-# --- 4. CSS ---
 st.markdown(f"""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"] {{display: none !important;}}
-    .stApp {{ background-color: #FDFBF7; max-width: 450px; margin: 0 auto; padding-bottom: 100px; }}
-    .header {{ background-image: linear-gradient(rgba(0,0,0,0.1),rgba(0,0,0,0.1)), url("data:image/png;base64,{logo}"); background-size: cover; height: 130px; display: flex; align-items: center; justify-content: center; border-radius: 0 0 30px 30px; margin-bottom: 20px; }}
-    .header-t {{ color: white; font-size: 30px; font-weight: 800; text-transform: uppercase; }}
-    div.stButton > button {{ background: #f43f5e !important; color: white !important; border-radius: 15px; width: 100%; font-weight: 700; border: none; }}
-    .card {{ border-radius: 20px; padding: 20px; margin: 10px; border: 1px solid #EAE2D6; background: white; text-align: center; }}
+    .stApp {{ background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 120px !important; }}
+    * {{ font-family: 'Lexend', sans-serif !important; }}
+    .header-custom {{
+        background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}");
+        background-size: cover; background-position: center; height: 110px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 25px; border-radius: 0 0 30px 30px;
+    }}
+    .header-text {{ color: white; font-size: 28px; font-weight: 800; letter-spacing: 2px; text-shadow: 2px 2px 8px rgba(0,0,0,0.4); }}
+    div.stButton > button {{
+        background-color: #f43f5e !important; color: white !important; border-radius: 18px !important;
+        width: 100% !important; font-weight: 800 !important; border: none !important;
+    }}
+    .card {{ border-radius: 25px; padding: 20px; margin: 10px 15px; background-color: #FFFFFF; box-shadow: 0 8px 25px rgba(0,0,0,0.03); border: 1px solid #EAE2D6; }}
+    .box-luna {{ background-color: #f1f5f9 !important; }}
+    .box-sole {{ background-color: #FFD600 !important; }}
+    .box-premium {{ background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; color: white !important; }}
+    .prezzo-rosa {{ color: #ec4899; font-size: 22px; font-weight: 900; }}
     </style>
+    <div class="header-custom"><div class="header-text">LOOPBABY</div></div>
     """, unsafe_allow_html=True)
 
-# --- 5. PAGINE ---
-if st.session_state.user is None:
-    st.markdown(f'<div class="header"><div class="header-t">LOOPBABY</div></div>', unsafe_allow_html=True)
-    if st.session_state.pagina == "Welcome":
-        st.markdown("<h2 style='text-align:center;'>Benvenuta! 🌸</h2>", unsafe_allow_html=True)
-        if st.button("INIZIA"): vai("Login")
+# --- 6. PAGINE ---
+
+if st.session_state.pagina == "Home":
+    u_nome = st.session_state.dati['nome_genitore'].split()[0] if st.session_state.dati['nome_genitore'] else "Mamma"
+    st.markdown(f"""<div style="padding: 0 20px;">
+        <div style="font-size:26px; font-weight:800; color:#1e293b;">Ciao {u_nome}! 👋</div>
+        <div style="font-size:14px; color:#475569; margin-top:5px;">L'armadio circolare che cresce con il tuo bambino.</div>
+    </div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="card" style="background-color: #FFF1F2; border: 2px dashed #F43F5E;"><b style="color:#E11D48;">✨ Promo Fondatrici</b><br><p style="font-size:12px;">Dona 10 capi e ricevi una <b>BOX OMAGGIO</b>!</p></div>""", unsafe_allow_html=True)
+    if st.button("Partecipa ora"): vai("PromoDettaglio"); st.rerun()
+
+elif st.session_state.pagina == "Box":
+    st.markdown('<h3 style="text-align:center;">Scegli la tua Box 📦</h3>', unsafe_allow_html=True)
+    tg = st.session_state.dati['taglia']
+    st.info(f"Taglia attuale: {tg}")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("LUNA 🌙"): aggiungi_al_carrello(f"Box Luna {tg}", 19.90)
+    with col2:
+        if st.button("SOLE ☀️"): aggiungi_al_carrello(f"Box Sole {tg}", 19.90)
+    if st.button("VERSIONE PREMIUM 💎"): aggiungi_al_carrello(f"Box Premium {tg}", 29.90)
+
+elif st.session_state.pagina == "Profilo":
+    st.markdown('<h3 style="text-align:center;">Il tuo Profilo 👤</h3>', unsafe_allow_html=True)
+    if not st.session_state.edit_mode:
+        st.markdown(f"""<div class="card">
+            <b>Genitore:</b> {st.session_state.dati['nome_genitore']}<br>
+            <b>Bambino:</b> {st.session_state.dati['nome_bambino']}<br>
+            <b>Taglia:</b> {st.session_state.dati['taglia']}<br>
+            <b>Locker:</b> {st.session_state.dati['locker']}
+        </div>""", unsafe_allow_html=True)
+        if st.button("MODIFICA PROFILO"): st.session_state.edit_mode = True; st.rerun()
+        if st.button("LOGOUT", type="secondary"): st.session_state.user = None; st.rerun()
     else:
-        t1, t2 = st.tabs(["Accedi", "Registrati"])
-        with t1:
-            e = st.text_input("Email", key="login_email")
-            p = st.text_input("Password", type="password", key="login_pass")
-            if st.button("ENTRA", key="btn_login"): login(e, p)
-        with t2:
-            er = st.text_input("La tua migliore Email", key="reg_email")
-            pr = st.text_input("Scegli Password", type="password", key="reg_pass")
-            if st.button("CREA ACCOUNT", key="btn_reg"): registrazione(er, pr)
-else:
-    if st.session_state.pagina == "Home":
-        st.markdown(f'<div class="header"><div class="header-t">LOOPBABY</div></div>', unsafe_allow_html=True)
-        nome = st.session_state.dati.get('nome_genitore', 'Mamma')
-        st.markdown(f"### Ciao {nome}! 👋")
-        if img: st.markdown(f'<img src="data:image/jpeg;base64,{img}" style="width:100%; border-radius:20px;">', unsafe_allow_html=True)
-        if st.button("Logout"): 
-            supabase.auth.sign_out()
-            st.session_state.user = None
-            vai("Welcome")
-    
-    elif st.session_state.pagina == "Profilo":
-        st.markdown("## Il tuo Profilo 👤")
-        with st.form("form_profilo"):
-            n = st.text_input("Tuo Nome", st.session_state.dati.get('nome_genitore', ''))
-            nb = st.text_input("Nome Bambino", st.session_state.dati.get('nome_bambino', ''))
-            tg = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm"])
-            if st.form_submit_button("SALVA ONLINE"):
-                salva_profilo({"nome_genitore": n, "nome_bambino": nb, "taglia": tg})
+        with st.form("p_form"):
+            n = st.text_input("Nome", st.session_state.dati['nome_genitore'])
+            nb = st.text_input("Bambino", st.session_state.dati['nome_bambino'])
+            tg = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"])
+            if st.form_submit_button("SALVA"):
+                st.session_state.dati.update({"nome_genitore": n, "nome_bambino": nb, "taglia": tg})
+                salva_profilo_db()
+                st.session_state.edit_mode = False; st.rerun()
 
-    elif st.session_state.pagina == "Info":
-        st.markdown("## Come Funziona 🔄")
-        st.write("Dettagli in arrivo...")
+elif st.session_state.pagina == "Carrello":
+    st.markdown('<h3 style="text-align:center;">Carrello 🛒</h3>', unsafe_allow_html=True)
+    if not st.session_state.carrello: st.write("Vuoto.")
+    else:
+        tot = sum(i['prezzo'] for i in st.session_state.carrello)
+        for i in st.session_state.carrello: st.write(f"• {i['nome']} - {i['prezzo']}€")
+        st.subheader(f"Totale: {tot:.2f}€")
+        if st.button("PAGA ORA"): st.success("Reindirizzamento a Stripe..."); st.session_state.carrello = []
 
-    # Barra Navigazione
-    st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
-    c = st.columns(4)
-    menu = [("🏠", "Home"), ("📖", "Info"), ("👤", "Profilo"), ("👋", "ChiSiamo")]
-    for i, (icon, pag) in enumerate(menu):
-        with c[i]:
-            if st.button(icon, key=f"nav_{pag}"): vai(pag)
+# Pagine mancanti (Info, ChiSiamo, ecc.) seguono lo stesso schema elif...
+
+# --- 7. BARRA DI NAVIGAZIONE FISSA ---
+st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
+nav_cols = st.columns(5)
+btns = [("🏠", "Home"), ("📦", "Box"), ("🛍️", "Vetrina"), ("👤", "Profilo"), ("🛒", "Carrello")]
+for i, (icon, pag) in enumerate(btns):
+    with nav_cols[i]:
+        if st.button(icon, key=f"n_{pag}"): vai(pag); st.rerun()

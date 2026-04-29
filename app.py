@@ -3,49 +3,51 @@ from supabase import create_client, Client
 import base64
 import os
 
-# --- 1. CONNESSIONE (VERSIONE SUPER STABILE) ---
-URL_DB = "https://supabase.co"
-KEY_DB = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6eWZ6cXlvcG1wdmlqZHRmcWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTkzMzYsImV4cCI6MjA5Mjk3NTMzNn0.yRrzj1Op5UntjxzXsP1tY7lB3SNn3MICc6d9T0JwDWg"
+# --- 1. CONNESSIONE (FIX 404 FORZATO) ---
+URL_PROGETTO = "https://supabase.co"
+CHIAVE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6eWZ6cXlvcG1wdmlqZHRmcWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTkzMzYsImV4cCI6MjA5Mjk3NTMzNn0.yRrzj1Op5UntjxzXsP1tY7lB3SNn3MICc6d9T0JwDWg"
 
-# Inizializzazione diretta
-try:
-    supabase: Client = create_client(URL_DB, KEY_DB)
-except Exception as e:
-    st.error(f"Impossibile collegarsi al database: {e}")
+# Inizializzazione che "blinda" l'URL
+@st.cache_resource
+def get_client():
+    return create_client(URL_PROGETTO, CHIAVE_ANON)
 
-# --- 2. SETUP PAGINA ---
+supabase: Client = get_client()
+
+# --- 2. CONFIGURAZIONE ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 if "user" not in st.session_state: st.session_state.user = None
 if "pagina" not in st.session_state: st.session_state.pagina = "Welcome"
 if "dati" not in st.session_state: st.session_state.dati = {}
 
-def vai(nome): 
-    st.session_state.pagina = nome
+def vai(p): 
+    st.session_state.pagina = p
     st.rerun()
 
-# --- 3. FUNZIONI LOGICHE ---
+# --- 3. FUNZIONI ---
 def login(e, p):
     try:
         res = supabase.auth.sign_in_with_password({"email": e, "password": p})
         st.session_state.user = res.user
-        # Carica dati profilo se esistono
         d = supabase.table("profili").select("*").eq("id", res.user.id).execute()
         if d.data: st.session_state.dati = d.data[0]
         vai("Home")
     except: st.error("Email o Password errati.")
 
-def registro(e, p):
+def registrazione(e, p):
     try:
+        # Forziamo l'invio al TUO database
         supabase.auth.sign_up({"email": e, "password": p})
-        st.success("📩 Conferma la mail (controlla lo Spam)!")
-    except Exception as err: st.error(f"Errore: {err}")
+        st.success("📩 Mail inviata! Controlla la posta (e lo Spam).")
+    except Exception as err:
+        st.error(f"Errore tecnico: {err}")
 
 def salva_profilo(d):
     d["id"] = st.session_state.user.id
     supabase.table("profili").upsert(d).execute()
     st.session_state.dati = d
-    st.success("✅ Salvato online!")
+    st.success("✅ Salvato!")
 
 def get_b64(path):
     if os.path.exists(path):
@@ -62,7 +64,6 @@ st.markdown(f"""
     .header {{ background-image: linear-gradient(rgba(0,0,0,0.1),rgba(0,0,0,0.1)), url("data:image/png;base64,{logo}"); background-size: cover; height: 130px; display: flex; align-items: center; justify-content: center; border-radius: 0 0 30px 30px; margin-bottom: 20px; }}
     .header-t {{ color: white; font-size: 30px; font-weight: 800; text-transform: uppercase; }}
     div.stButton > button {{ background: #f43f5e !important; color: white !important; border-radius: 15px; width: 100%; font-weight: 700; border: none; }}
-    .card {{ border-radius: 20px; padding: 20px; margin: 10px; border: 1px solid #EAE2D6; background: white; text-align: center; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -75,15 +76,13 @@ if st.session_state.user is None:
     else:
         t1, t2 = st.tabs(["Accedi", "Registrati"])
         with t1:
-            with st.form("l"):
-                e = st.text_input("Email")
-                p = st.text_input("Password", type="password")
-                if st.form_submit_button("ENTRA"): login(e, p)
+            e = st.text_input("Email")
+            p = st.text_input("Password", type="password")
+            if st.button("ENTRA"): login(e, p)
         with t2:
-            with st.form("r"):
-                er = st.text_input("La tua migliore Email")
-                pr = st.text_input("Password", type="password")
-                if st.form_submit_button("CREA ACCOUNT"): registro(er, pr)
+            er = st.text_input("La tua migliore Email")
+            pr = st.text_input("Password", type="password")
+            if st.button("CREA ACCOUNT"): registrazione(er, pr)
 else:
     if st.session_state.pagina == "Home":
         st.markdown(f'<div class="header"><div class="header-t">LOOPBABY</div></div>', unsafe_allow_html=True)
@@ -95,10 +94,10 @@ else:
             st.session_state.user = None
             vai("Welcome")
     
-    # Barra Navigazione
-    st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
+    # Nav
+    st.markdown('<div style="height: 80px;"></div>', unsafe_allow_html=True)
     c = st.columns(4)
     menu = [("🏠", "Home"), ("📖", "Info"), ("👤", "Profilo"), ("👋", "ChiSiamo")]
     for i, (icon, pag) in enumerate(menu):
         with c[i]:
-            if st.button(icon, key=f"nav_{pag}"): vai(pag)
+            if st.button(icon, key=f"n_{pag}"): vai(pag)

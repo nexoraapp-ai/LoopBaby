@@ -1,67 +1,59 @@
 import streamlit as st
 from supabase import create_client
-import base64
-import os
 
-# -----------------------------
-# 🔐 SUPABASE (METTI QUI LE TUE CHIAVI)
-# -----------------------------
+# =========================
+# 🔐 SUPABASE CONFIG
+# =========================
 SUPABASE_URL = "https://TUO-PROGETTO.supabase.co"
-SUPABASE_ANON_KEY = "LA_TUA_ANON_KEY"
+SUPABASE_KEY = "ANON_KEY"
 
-supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# -----------------------------
-# ⚙️ STATE
-# -----------------------------
+# =========================
+# STATE
+# =========================
 if "user" not in st.session_state:
     st.session_state.user = None
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "login"
-if "profilo" not in st.session_state:
-    st.session_state.profilo = {}
-if "carrello" not in st.session_state:
-    st.session_state.carrello = []
+if "page" not in st.session_state:
+    st.session_state.page = "login"
+if "profile" not in st.session_state:
+    st.session_state.profile = {}
+if "cart" not in st.session_state:
+    st.session_state.cart = []
 
-# -----------------------------
-# 🔁 NAV
-# -----------------------------
-def vai(p):
-    st.session_state.pagina = p
+# =========================
+# NAV
+# =========================
+def go(p):
+    st.session_state.page = p
     st.rerun()
 
-# -----------------------------
-# 🛒 CARRELLO
-# -----------------------------
-def aggiungi(nome, prezzo):
-    st.session_state.carrello.append({
-        "nome": nome,
-        "prezzo": prezzo
-    })
-    st.toast("Aggiunto al carrello")
+def add_cart(name, price):
+    st.session_state.cart.append({"name": name, "price": price})
+    st.toast("Aggiunto ✔")
 
-# -----------------------------
-# 🎨 UI BASE
-# -----------------------------
+# =========================
+# UI BASE
+# =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 st.markdown("""
 <style>
-.stApp {max-width:450px;margin:auto;background:#FDFBF7;}
-button {border-radius:14px !important;}
+.stApp {max-width:450px;margin:auto;}
+button {border-radius:12px !important;}
 </style>
 """, unsafe_allow_html=True)
 
-# =====================================================
-# 🔐 LOGIN / REGISTER
-# =====================================================
+# =========================
+# LOGIN / REGISTER
+# =========================
 if st.session_state.user is None:
 
     st.title("LoopBaby 👶")
 
     tab1, tab2 = st.tabs(["Login", "Registrati"])
 
-    # ---------------- LOGIN ----------------
+    # -------- LOGIN --------
     with tab1:
         with st.form("login"):
             email = st.text_input("Email")
@@ -76,17 +68,20 @@ if st.session_state.user is None:
 
                     st.session_state.user = res.user
 
-                    # carica profilo
-                    prof = supabase.table("profili").select("*").eq("id", res.user.id).execute()
+                    prof = supabase.table("profili") \
+                        .select("*") \
+                        .eq("id", res.user.id) \
+                        .execute()
+
                     if prof.data:
-                        st.session_state.profilo = prof.data[0]
+                        st.session_state.profile = prof.data[0]
 
-                    vai("home")
+                    go("home")
 
-                except Exception as e:
-                    st.error("Login errato")
+                except:
+                    st.error("Errore login")
 
-    # ---------------- REGISTER ----------------
+    # -------- REGISTER --------
     with tab2:
         with st.form("reg"):
             email = st.text_input("Email ")
@@ -102,86 +97,83 @@ if st.session_state.user is None:
                 except Exception as e:
                     st.error(str(e))
 
-# =====================================================
-# 🚀 APP
-# =====================================================
+# =========================
+# APP
+# =========================
 else:
 
-    # ---------------- HOME ----------------
-    if st.session_state.pagina == "home":
+    # -------- HOME --------
+    if st.session_state.page == "home":
         st.title("LoopBaby 👶")
+        st.write("Armadio circolare bambini")
 
-        st.write("Armadio circolare per bambini")
-
-        if st.button("Vai alle Box"):
-            vai("box")
+        if st.button("Box"):
+            go("box")
 
         if st.button("Profilo"):
-            vai("profilo")
+            go("profile")
 
         if st.button("Carrello"):
-            vai("carrello")
+            go("cart")
 
-    # ---------------- BOX ----------------
-    elif st.session_state.pagina == "box":
-        st.title("Box disponibili 📦")
+    # -------- BOX --------
+    elif st.session_state.page == "box":
+        st.title("Box 📦")
 
-        for nome, prezzo in [
-            ("Box Luna 🌙", 19.90),
-            ("Box Sole ☀️", 19.90),
-            ("Box Premium 💎", 29.90)
-        ]:
-            st.markdown(f"### {nome} — {prezzo}€")
+        boxes = [
+            ("Luna", 19.90),
+            ("Sole", 19.90),
+            ("Premium", 29.90)
+        ]
 
-            if st.button(f"Aggiungi {nome}"):
-                aggiungi(nome, prezzo)
+        for name, price in boxes:
+            st.markdown(f"### {name} - {price}€")
+            if st.button(f"Aggiungi {name}"):
+                add_cart(name, price)
 
-    # ---------------- PROFILO ----------------
-    elif st.session_state.pagina == "profilo":
+    # -------- PROFILO --------
+    elif st.session_state.page == "profile":
+        st.title("Profilo")
 
-        st.title("Profilo 👤")
+        p = st.session_state.profile
 
-        d = st.session_state.profilo
-
-        with st.form("profilo"):
-            nome = st.text_input("Nome genitore", d.get("nome_genitore", ""))
-            bambino = st.text_input("Nome bambino", d.get("nome_bambino", ""))
-            taglia = st.selectbox("Taglia", ["50-56", "62-68", "74-80"])
+        with st.form("profile"):
+            name = st.text_input("Genitore", p.get("nome_genitore",""))
+            baby = st.text_input("Bimbo", p.get("nome_bambino",""))
+            size = st.selectbox("Taglia", ["50-56","62-68","74-80"])
 
             if st.form_submit_button("Salva"):
                 supabase.table("profili").upsert({
                     "id": st.session_state.user.id,
-                    "nome_genitore": nome,
-                    "nome_bambino": bambino,
-                    "taglia": taglia
+                    "nome_genitore": name,
+                    "nome_bambino": baby,
+                    "taglia": size
                 }).execute()
 
-                st.success("Profilo salvato")
+                st.success("Salvato ✔")
 
-    # ---------------- CARRELLO ----------------
-    elif st.session_state.pagina == "carrello":
-
+    # -------- CARRELLO --------
+    elif st.session_state.page == "cart":
         st.title("Carrello 🛒")
 
-        if not st.session_state.carrello:
+        if not st.session_state.cart:
             st.write("Vuoto")
         else:
-            totale = 0
+            total = 0
+            for i in st.session_state.cart:
+                st.write(f"{i['name']} - {i['price']}€")
+                total += i["price"]
 
-            for i in st.session_state.carrello:
-                st.write(f"{i['nome']} - {i['prezzo']}€")
-                totale += i["prezzo"]
-
-            st.markdown(f"## Totale: {totale:.2f}€")
+            st.markdown(f"## Totale: {total:.2f}€")
 
             if st.button("Checkout"):
                 st.success("Pagamento (Stripe dopo)")
 
-    # ---------------- NAV ----------------
+    # -------- NAV --------
     st.markdown("---")
     cols = st.columns(4)
 
-    for i, p in enumerate(["home", "box", "profilo", "carrello"]):
+    for i, p in enumerate(["home","box","profile","cart"]):
         with cols[i]:
-            if st.button(p.capitalize()):
-                vai(p)
+            if st.button(p):
+                go(p)

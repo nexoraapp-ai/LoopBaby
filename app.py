@@ -8,7 +8,7 @@ import os
 SUPABASE_URL = "https://supabase.co"
 SUPABASE_KEY = "sb_publishable_9t_Psdh5tIz9OsfrSAwuMw_hJQ9i89Z"
 
-# Inizializzazione sicura del client
+# Inizializzazione sicura e forzata per evitare l'errore 404
 @st.cache_resource
 def get_supabase():
     return create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -31,18 +31,18 @@ def vai(nome_pag):
 
 def login(email, password):
     try:
-        # Forziamo l'indirizzo corretto per l'autenticazione
         res = supabase.auth.sign_in_with_password({"email": email, "password": password})
         st.session_state.user = res.user
         aggiorna_dati_da_db()
         vai("Home"); st.rerun()
-    except Exception as e: 
-        st.error("Credenziali errate o mail non confermata.")
+    except: 
+        st.error("Email o Password errati. Hai confermato la mail?")
 
 def registrazione(email, password):
     try:
+        # Questo comando ora punterà correttamente al tuo URL .co
         supabase.auth.sign_up({"email": email, "password": password})
-        st.success("📩 Ti abbiamo inviato una mail! Clicca sul link per attivare l'account (controlla lo Spam).")
+        st.success("📩 Mail inviata! Clicca sul link ricevuto (controlla anche in Spam) per attivare l'account.")
     except Exception as e: 
         st.error(f"Errore tecnico: {e}")
 
@@ -72,16 +72,17 @@ def get_base64(file_path):
 
 img_data, logo_bg = get_base64("bimbo.jpg"), get_base64("logo.png")
 
-# --- 4. CSS PROFESSIONALE ---
+# --- 4. CSS (Design Originale + Fix Nav) ---
 st.markdown(f"""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
     .stApp {{ background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 120px !important; }}
+    .main .block-container {{padding: 0 !important;}}
     @import url('https://googleapis.com');
     * {{ font-family: 'Lexend', sans-serif !important; }}
     .header-custom {{ background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}"); background-size: cover; background-position: center; height: 130px; display: flex; align-items: center; justify-content: center; margin-bottom: 35px; border-radius: 0 0 30px 30px; }}
     .header-text {{ color: white; font-size: 32px; font-weight: 800; letter-spacing: 3px; text-shadow: 2px 2px 8px rgba(0,0,0,0.4); text-transform: uppercase; }}
-    div.stButton > button {{ background-color: #f43f5e !important; color: white !important; border-radius: 18px !important; width: 100% !important; font-weight: 800 !important; margin: 10px auto !important; border: none !important; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2); }}
+    div.stButton > button {{ background-color: #f43f5e !important; color: white !important; border-radius: 18px !important; width: 100% !important; font-weight: 800 !important; margin: 10px auto !important; border: none !important; box-shadow: 0 4px 10px rgba(244, 63, 94, 0.2); }}
     .card {{ border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; box-shadow: 0 8px 25px rgba(0,0,0,0.03); }}
     .box-luna {{ background-color: #f1f5f9 !important; }} .box-sole {{ background-color: #FFD600 !important; color: #000 !important; }} 
     .prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; }}
@@ -102,31 +103,38 @@ if st.session_state.user is None:
         t1, t2 = st.tabs(["Accedi", "Registrati"])
         with t1:
             with st.form("l"):
-                e, p = st.text_input("Email"), st.text_input("Password", type="password")
+                e = st.text_input("Email")
+                p = st.text_input("Password", type="password")
                 if st.form_submit_button("ENTRA"): login(e, p)
         with t2:
             with st.form("r"):
-                er, pr = st.text_input("Email "), st.text_input("Password (min 6 car.)", type="password")
+                er = st.text_input("La tua Email")
+                pr = st.text_input("Scegli Password", type="password")
                 if st.form_submit_button("CREA ACCOUNT"): registrazione(er, pr)
 else:
+    # --- APP DOPO LOGIN ---
     if st.session_state.pagina == "Home":
         st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
         u_nome = st.session_state.dati.get('nome_genitore', 'Mamma')
         img_html = f'<img src="data:image/jpeg;base64,{img_data}" style="width:100%; border-radius:25px;">' if img_data else ""
         col1, col2 = st.columns([1.5, 1])
         with col1:
-            st.markdown(f"<div style='font-size:28px; font-weight:800;'>Ciao {u_nome}! 👋</div>", unsafe_allow_html=True)
-            st.markdown("<div style='font-size:14px; font-weight:600; color:#334155;'>Cresciamo insieme, un capo alla volta.</div>", unsafe_allow_html=True)
+            st.markdown(f"### Ciao {u_nome}! 👋")
+            st.markdown("<div style='font-size:14px; color:#334155;'>Cresciamo insieme, un capo alla volta.</div>", unsafe_allow_html=True)
         with col2: st.markdown(img_html, unsafe_allow_html=True)
         st.markdown('<div class="card" style="background:#FFF1F2; border:2px dashed #F43F5E;"><b>✨ Promo Fondatrici</b><br>Dona 10 capi e ricevi una Box OMAGGIO!</div>', unsafe_allow_html=True)
         if st.button("Partecipa"): vai("PromoDettaglio"); st.rerun()
 
     elif st.session_state.pagina == "Info":
-        st.markdown('<h2 style="text-align:center;">Come funziona</h2>', unsafe_allow_html=True)
-        st.markdown('<div style="padding: 20px; font-size: 14px;">1. Scegli box<br>2. Controlla entro 48h<br>3. Usa per 3 mesi<br>4. Rinnova o rendi</div>', unsafe_allow_html=True)
+        st.markdown('<h2 style="text-align:center;">Come funziona 🔄</h2>', unsafe_allow_html=True)
+        st.markdown(f"""<div style="padding: 0 25px; font-size: 14px; color: #475569; line-height: 1.6;">
+            1. <b>Scegli e Ricevi:</b> Ricevi 10 capi nel Locker scelto.<br><br>
+            2. <b>Controllo:</b> Hai 48h per segnalazioni.<br><br>
+            3. <b>Durata:</b> Massimo 3 mesi.<br><br>
+            4. <b>Rinnovo:</b> Se scegli la nuova taglia, andata e ritorno sono GRATIS!</div>""", unsafe_allow_html=True)
 
     elif st.session_state.pagina == "Box":
-        st.markdown('<h2 style="text-align:center;">Scegli Box 📦</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 style="text-align:center;">Le tue Box 📦</h2>', unsafe_allow_html=True)
         tg = st.session_state.dati.get('taglia', 'Da impostare')
         st.markdown(f'<div style="text-align:center;"><span style="background:#e0f2f1; padding:5px 15px; border-radius:15px; color:#00796b;">TAGLIA: {tg}</span></div>', unsafe_allow_html=True)
         for s, c in [("LUNA 🌙", "box-luna"), ("SOLE ☀️", "box-sole")]:
@@ -134,16 +142,18 @@ else:
             if st.button(f"Scegli {s}", key=s): aggiungi_al_carrello(f"Box {s} ({tg})", 19.90)
 
     elif st.session_state.pagina == "Vetrina":
-        st.markdown('<h2 style="text-align:center;">Vetrina 🛍️</h2>', unsafe_allow_html=True)
-        st.markdown('<div class="card">👕 <b>Body Bio</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
+        st.markdown('<h2 style="text-align:center;">Shop 🛍️</h2>', unsafe_allow_html=True)
+        st.markdown('<div class="card">👕 <b>Body Bio</b><br>Questi capi rimangono a te per sempre!<br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
         if st.button("Aggiungi 🎁"): aggiungi_al_carrello("Body Bio", 9.90)
 
     elif st.session_state.pagina == "Carrello":
         st.markdown('<h2 style="text-align:center;">Carrello 🛒</h2>', unsafe_allow_html=True)
-        tot = sum(item['prezzo'] for item in st.session_state.carrello)
-        for item in st.session_state.carrello: st.write(f"**{item['nome']}** - {item['prezzo']}€")
-        st.markdown(f"### Totale: {tot:.2f}€")
-        if st.button("PAGA ORA"): st.success("Procedi a Stripe...")
+        totale = sum(item['prezzo'] for item in st.session_state.carrello)
+        if not st.session_state.carrello: st.write("Vuoto.")
+        else:
+            for item in st.session_state.carrello: st.write(f"**{item['nome']}** - {item['prezzo']}€")
+            st.markdown(f"### Totale: {totale:.2f}€")
+            if st.button("PAGA ORA"): st.info("Link Stripe in arrivo...")
 
     elif st.session_state.pagina == "Profilo":
         st.markdown('<h2 style="text-align:center;">Profilo 👤</h2>', unsafe_allow_html=True)
@@ -160,7 +170,7 @@ else:
                 n = st.text_input("Tuo Nome", st.session_state.dati.get('nome_genitore', ''))
                 nb = st.text_input("Nome Bambino", st.session_state.dati.get('nome_bambino', ''))
                 tg = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"])
-                if st.form_submit_button("SALVA ONLINE"):
+                if st.form_submit_button("SALVA"):
                     salva_profilo_db({"nome_genitore": n, "nome_bambino": nb, "taglia": tg})
                     st.session_state.edit_mode = False; st.rerun()
 

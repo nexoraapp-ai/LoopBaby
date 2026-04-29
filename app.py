@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 import base64
 import os
 
-# --- 1. CONFIGURAZIONE DATABASE (IL TUO LINK SHEETDB) ---
-API_URL = "https://sheetdb.io/api/v1/i2g703uwrn9sr"
+# --- 1. CONFIGURAZIONE DATABASE (SHEETDB) ---
+API_URL = "https://sheetdb.io"
 
 def carica_db():
     try:
@@ -14,118 +14,211 @@ def carica_db():
         return pd.DataFrame(res.json()) if res.status_code == 200 else pd.DataFrame()
     except: return pd.DataFrame()
 
-def aggiungi_utente(nuovo_utente):
-    requests.post(API_URL, json={"data": [nuovo_utente]})
+def aggiungi_utente(nuovo):
+    requests.post(API_URL, json={"data": [nuovo]})
 
-def aggiorna_utente(email, dati_nuovi):
-    requests.patch(f"{API_URL}/email/{email}", json={"data": dati_nuovi})
+def aggiorna_utente(email, dati):
+    requests.patch(f"{API_URL}/email/{email}", json={"data": dati})
 
-# --- 2. CONFIGURAZIONE PAGINA ---
+# --- 2. CONFIGURAZIONE E STATO ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 if "user" not in st.session_state: st.session_state.user = None
 if "pagina" not in st.session_state: st.session_state.pagina = "Welcome"
 if "carrello" not in st.session_state: st.session_state.carrello = []
+if "edit_mode" not in st.session_state: st.session_state.edit_mode = False
 
 def vai(p): 
     st.session_state.pagina = p
     st.rerun()
+
+def aggiungi_al_carrello(nome, prezzo):
+    st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
+    st.toast(f"✅ {nome} aggiunto!")
 
 def get_base64(path):
     if os.path.exists(path):
         with open(path, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
 
-img, logo = get_base64("bimbo.jpg"), get_base64("logo.png")
+img_data, logo_bg = get_base64("bimbo.jpg"), get_base64("logo.png")
 
-# --- 3. CSS PROFESSIONALE ---
+# --- 3. CSS TOTALE (Design Originale + Shadows + Colori Box) ---
 st.markdown(f"""
     <style>
-    [data-testid="stHeader"], [data-testid="stToolbar"] {{display: none !important;}}
+    [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
     .stApp {{ background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 120px !important; }}
     @import url('https://googleapis.com');
     * {{ font-family: 'Lexend', sans-serif !important; }}
-    .header-custom {{ background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo}"); background-size: cover; height: 130px; display: flex; align-items: center; justify-content: center; border-radius: 0 0 30px 30px; margin-bottom: 30px; }}
-    .header-text {{ color: white; font-size: 32px; font-weight: 800; text-transform: uppercase; }}
-    div.stButton > button {{ background-color: #f43f5e !important; color: white !important; border-radius: 18px !important; width: 100% !important; font-weight: 800 !important; border: none !important; }}
-    .card {{ border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; background: white; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.03); }}
-    .avviso-scadenza {{ background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 20px; border: 1px solid #f87171; font-weight: 800; margin: 15px; text-align: center; font-size: 14px; }}
+
+    .header-custom {{
+        background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}");
+        background-size: cover; background-position: center; height: 130px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 35px; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }}
+    .header-text {{ color: white; font-size: 32px; font-weight: 800; letter-spacing: 3px; text-shadow: 2px 2px 8px rgba(0,0,0,0.4); text-transform: uppercase; }}
+
+    div.stButton > button {{
+        background-color: #f43f5e !important; color: white !important; border-radius: 18px !important;
+        width: 100% !important; font-weight: 800 !important; margin: 10px auto !important;
+        display: block !important; white-space: nowrap !important; border: none !important;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
+    }}
+
+    .card {{ border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; box-shadow: 0 8px 25px rgba(0,0,0,0.03); }}
+    .box-luna {{ background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; }}
+    .box-sole {{ background-color: #FFD600 !important; border-color: #EAB308 !important; color: #000 !important; }} 
+    .box-premium {{ background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; color: white !important; border: none; }}
+    .prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; }}
+    .avviso-scadenza {{ background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 20px; border: 1px solid #f87171; font-weight: 800; text-align: center; margin: 15px; font-size: 13px; }}
+    .link-inline {{ color: #475569 !important; font-weight: 800 !important; text-decoration: underline !important; cursor: pointer; }}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. LOGICA ---
+# --- 4. LOGICA PAGINE ---
 df = carica_db()
 
+# --- 4.1 LOGIN E REGISTRAZIONE ---
 if st.session_state.user is None:
-    st.markdown(f'<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
     if st.session_state.pagina == "Welcome":
         st.markdown("<h2 style='text-align:center;'>Benvenuta in Famiglia! 🌸</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; padding: 0 20px;'>L'armadio circolare che cresce con il tuo bambino.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; padding:0 30px;'>L'armadio circolare che cresce con il tuo bambino.</p>", unsafe_allow_html=True)
         if st.button("INIZIA ORA"): vai("Login")
     else:
         t1, t2 = st.tabs(["Accedi", "Registrati"])
         with t1:
-            with st.form("l"):
-                e = st.text_input("Email", key="l_e")
-                p = st.text_input("Password", type="password", key="l_p")
+            with st.form("login"):
+                e = st.text_input("Email")
+                p = st.text_input("Password", type="password")
                 if st.form_submit_button("ENTRA"):
-                    user = df[(df['email'] == e) & (df['password'].astype(str) == str(p))]
-                    if not user.empty:
-                        st.session_state.user = user.iloc[0].to_dict()
+                    user_row = df[(df['email'] == e) & (df['password'].astype(str) == str(p))]
+                    if not user_row.empty:
+                        st.session_state.user = user_row.iloc[0].to_dict()
                         vai("Home")
-                    else: st.error("Email o Password errati")
+                    else: st.error("Dati errati")
         with t2:
-            with st.form("r"):
-                er = st.text_input("La tua migliore Email", key="r_e")
-                pr = st.text_input("Scegli Password", key="r_p")
+            with st.form("reg"):
+                er = st.text_input("La tua migliore Email")
+                pr = st.text_input("Scegli Password")
                 if st.form_submit_button("CREA ACCOUNT"):
                     if not df.empty and er in df['email'].values: st.error("Esiste già!")
                     else:
                         scad = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d")
-                        nuovo = {"email": er, "password": str(pr), "nome_genitore": "Mamma", "nome_bambino": "---", "taglia": "---", "data_inizio": datetime.now().strftime("%Y-%m-%d"), "scadenza": scad}
+                        nuovo = {"email": er, "password": str(pr), "nome genitore": "Mamma", "nome bambino": "---", "taglia": "---", "data inizio": datetime.now().strftime("%Y-%m-%d"), "scadenza": scad}
                         aggiungi_utente(nuovo)
-                        st.success("Account creato! Ora fai l'accesso.")
+                        st.success("Creato! Ora fai l'accesso.")
+
+# --- 4.2 APP DOPO LOGIN ---
 else:
-    # --- LOGICA AVVISI SCADENZA ---
+    # AVVISO SCADENZA (Sempre visibile in alto se mancano < 10gg)
     scad_str = str(st.session_state.user.get('scadenza', ''))
     if scad_str != 'nan' and scad_str != '':
-        giorni = (datetime.strptime(scad_str, "%Y-%m-%d") - datetime.now()).days
-        if 0 <= giorni <= 10:
-            st.markdown(f'<div class="avviso-scadenza">⚠️ ATTENZIONE: Mancano {giorni} giorni al termine della tua Box! Prepariamo la nuova taglia?</div>', unsafe_allow_html=True)
+        try:
+            giorni = (datetime.strptime(scad_str, "%Y-%m-%d") - datetime.now()).days
+            if 0 <= giorni <= 10:
+                st.markdown(f'<div class="avviso-scadenza">⚠️ ATTENZIONE: Mancano {giorni} giorni al termine della tua Box! Prepariamo la nuova taglia?</div>', unsafe_allow_html=True)
+        except: pass
 
+    # HOME
     if st.session_state.pagina == "Home":
-        st.markdown(f'<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
-        nome = st.session_state.user['nome_genitore']
-        st.markdown(f"### Ciao {nome}! 👋")
-        if img: st.markdown(f'<img src="data:image/jpeg;base64,{img}" style="width:100%; border-radius:25px;">', unsafe_allow_html=True)
+        st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
+        img_html = f'<img src="data:image/jpeg;base64,{img_data}" style="width:100%; border-radius:25px;">' if img_data else ""
+        nome_u = st.session_state.user.get('nome genitore', 'Mamma')
+        st.markdown(f"""<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; padding: 0 20px; align-items: start;">
+            <div>
+                <div style="font-size:28px; font-weight:800; color:#1e293b;">Ciao {nome_u}! 👋</div>
+                <div style="font-size:14px; font-weight:600; color:#334155; line-height:1.3;">L'armadio circolare che cresce con il tuo bambino.</div>
+            </div>
+            <div>{img_html}</div>
+        </div>""", unsafe_allow_html=True)
         st.markdown('<div class="card" style="background:#FFF1F2; border:2px dashed #F43F5E;"><b>✨ Promo Fondatrici</b><br>Dona 10 capi e ricevi una Box OMAGGIO!</div>', unsafe_allow_html=True)
-        if st.button("Logout"): 
-            st.session_state.user = None
-            vai("Welcome")
+        if st.button("Partecipa ora"): vai("PromoDettaglio")
 
-    elif st.session_state.pagina == "Profilo":
-        st.markdown("## Il tuo Profilo 👤")
-        with st.form("p"):
-            n = st.text_input("Tuo Nome", st.session_state.user['nome_genitore'])
-            nb = st.text_input("Nome Bimbo", st.session_state.user['nome_bambino'])
-            tg = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm"])
-            if st.form_submit_button("SALVA SUL FOGLIO GOOGLE"):
-                aggiorna_utente(st.session_state.user['email'], {"nome_genitore": n, "nome_bambino": nb, "taglia": tg})
-                st.session_state.user.update({"nome_genitore": n, "nome_bambino": nb, "taglia": tg})
-                st.success("Dati aggiornati su Excel!")
+    # PROMO DETTAGLIO
+    elif st.session_state.pagina == "PromoDettaglio":
+        st.markdown('<h2 style="text-align:center;">Diventa Fondatrice 🌸</h2>', unsafe_allow_html=True)
+        with st.form("promo_f"):
+            st.write("📦 **Dettagli del pacco:**")
+            p = st.text_input("Peso stimato (kg)")
+            d = st.text_input("Dimensioni pacco")
+            if st.form_submit_button("INVIA RICHIESTA"): st.success("Richiesta inviata! Ti scriveremo via email.")
+        if st.button("Torna in Home"): vai("Home")
 
+    # INFO
     elif st.session_state.pagina == "Info":
-        st.markdown("## Come Funziona 🔄")
-        st.markdown('<div class="card" style="text-align:left; font-size:14px;">1. <b>Scegli</b> la box.<br>2. <b>Ricevi</b> e controlla qualità in 48h.<br>3. <b>Usa</b> per massimo 3 mesi.<br>4. <b>Decidi:</b> rendi o prendi la nuova taglia.<br>5. <b>Patto del 10:</b> rendi 10 capi per riceverne 10.</div>', unsafe_allow_html=True)
+        st.markdown('<h2 style="text-align:center;">Come funziona LoopBaby 🔄</h2>', unsafe_allow_html=True)
+        st.markdown(f"""<div style="padding: 0 25px; font-size: 14px; color: #475569; line-height: 1.6;">
+            <b>1. Scegli e Ricevi:</b> Scegli la tua Box e ricevila nel Locker.<br><br>
+            <b>2. Controllo Qualità:</b> Hai <b>48 ore</b> per segnalare difetti.<br><br>
+            <b>3. Utilizzo:</b> Tieni la Box per massimo <b>3 mesi</b>.<br><br>
+            <b>4. Rinnovo o Reso:</b> Decidi se prendere la nuova taglia o rendere tutto. Se continui, la spedizione è GRATIS!<br><br>
+            <b>📍 Il Patto del 10:</b> Rendi 10 capi per riceverne 10 nuovi.</div>""", unsafe_allow_html=True)
 
+    # BOX
+    elif st.session_state.pagina == "Box":
+        st.markdown('<h2 style="text-align:center;">Scegli la tua Box 📦</h2>', unsafe_allow_html=True)
+        tg_u = st.session_state.user.get('taglia', 'Da impostare')
+        st.markdown(f'<div style="text-align:center; margin-bottom:15px;"><span style="background:#e0f2f1; padding:5px 15px; border-radius:15px; font-size:12px; font-weight:700; color:#00796b;">📍 TAGLIA: {tg_u}</span></div>', unsafe_allow_html=True)
+        col_q = st.radio("Qualità:", ["Standard", "Premium"], horizontal=True)
+        if col_q == "Standard":
+            for s, c in [("LUNA 🌙", "box-luna"), ("SOLE ☀️", "box-sole")]:
+                st.markdown(f'<div class="card {c}"><h3>{s}</h3><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+                if st.button(f"Scegli {s}", key=s): aggiungi_al_carrello(f"Box {s}", 19.90)
+        else:
+            st.markdown('<div class="card box-premium"><h3>BOX PREMIUM 💎</h3><div style="font-size:26px; font-weight:900;">29,90€</div></div>', unsafe_allow_html=True)
+            if st.button("Scegli Premium"): aggiungi_al_carrello("Box Premium", 29.90)
+
+    # VETRINA
+    elif st.session_state.pagina == "Vetrina":
+        st.markdown('<h2 style="text-align:center;">Shop 🛍️</h2>', unsafe_allow_html=True)
+        st.markdown('<p style="text-align:center; font-size:13px; color:#475569;">Questi capi rimangono a te <b>per sempre</b>.</p>', unsafe_allow_html=True)
+        st.markdown('<div class="card">👕 <b>Body Bio LoopLove</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
+        if st.button("Aggiungi 🎁"): aggiungi_al_carrello("Body Bio", 9.90)
+
+    # PROFILO
+    elif st.session_state.pagina == "Profilo":
+        st.markdown('<h2 style="text-align:center;">Profilo 👤</h2>', unsafe_allow_html=True)
+        if not st.session_state.edit_mode:
+            st.markdown(f"""<div class="card" style="text-align:left; font-size:14px;">
+                <b>👤 Nome:</b> {st.session_state.user.get('nome genitore')}<br>
+                <b>👶 Bambino:</b> {st.session_state.user.get('nome bambino')}<br>
+                <b>📏 Taglia:</b> {st.session_state.user.get('taglia')}<hr>
+                <b>📅 Scadenza Box:</b> {st.session_state.user.get('scadenza')}
+            </div>""", unsafe_allow_html=True)
+            if st.button("MODIFICA DATI"): st.session_state.edit_mode = True; st.rerun()
+            if st.button("LOGOUT"): st.session_state.user = None; vai("Welcome")
+        else:
+            with st.form("edit_p"):
+                n = st.text_input("Tuo Nome", st.session_state.user.get('nome genitore'))
+                nb = st.text_input("Nome Bambino", st.session_state.user.get('nome bambino'))
+                tg = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm"])
+                if st.form_submit_button("SALVA SU EXCEL"):
+                    aggiorna_utente(st.session_state.user['email'], {"nome genitore": n, "nome bambino": nb, "taglia": tg})
+                    st.session_state.user.update({"nome genitore": n, "nome bambino": nb, "taglia": tg})
+                    st.session_state.edit_mode = False; st.rerun()
+
+    # CARRELLO
+    elif st.session_state.pagina == "Carrello":
+        st.markdown('<h2 style="text-align:center;">Carrello 🛒</h2>', unsafe_allow_html=True)
+        if not st.session_state.carrello: st.write("Vuoto")
+        else:
+            tot = sum(i['prezzo'] for i in st.session_state.carrello)
+            for i in st.session_state.carrello: st.write(f"✅ {i['nome']} - {i['prezzo']}€")
+            st.markdown(f"### Totale: {tot:.2f}€")
+            if st.button("PROCEDI AL PAGAMENTO (STRIPE)"): st.info("Link sicuro in arrivo...")
+
+    # CHI SIAMO
     elif st.session_state.pagina == "ChiSiamo":
-        st.markdown("## Chi Siamo ❤️")
-        st.markdown('<div class="card">Siamo genitori come te. LoopBaby nasce per ridurre gli sprechi e far risparmiare le famiglie offrendo capi di qualità.</div>', unsafe_allow_html=True)
+        st.markdown('<div style="text-align:center; padding:20px;"><h2>Chi siamo? ❤️</h2><b>Siamo genitori come te.</b></div>', unsafe_allow_html=True)
+        st.markdown('<div style="padding:0 20px; font-size:14px; color:#475569; text-align:center;">Abbiamo vissuto la fatica di vestiti bellissimi messi due volte. LoopBaby nasce per eliminare lo spreco e farti risparmiare più di 1000€ l\'anno.</div>', unsafe_allow_html=True)
 
-    # --- NAV BAR FISSA ---
+    # BARRA NAVIGAZIONE FISSA (7 COLONNE)
     st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
-    c = st.columns(4)
-    menu = [("🏠", "Home"), ("📖", "Info"), ("👤", "Profilo"), ("👋", "ChiSiamo")]
+    c = st.columns(7)
+    menu = [("🏠", "Home"), ("📖", "Info"), ("📦", "Box"), ("🛍️", "Vetrina"), ("👤", "Profilo"), ("🛒", "Carrello"), ("👋", "ChiSiamo")]
     for i, (icon, pag) in enumerate(menu):
         with c[i]:
-            if st.button(icon, key=f"nav_{pag}"): vai(pag)
+            label = f"{icon}({len(st.session_state.carrello)})" if pag == "Carrello" and len(st.session_state.carrello)>0 else icon
+            if st.button(label, key=f"nav_{pag}"): vai(pag)

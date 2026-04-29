@@ -27,24 +27,32 @@ def carica_db():
 def registra_user(dati):
     requests.post(API_URL, json={"data": [dati]})
 
+def aggiorna_user(email, dati):
+    requests.patch(f"{API_URL}/email/{email}", json={"data": dati})
+
 def hash_password(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
 # ==========================================
-# 2. STATO APP E NAVIGAZIONE
+# 2. CONFIGURAZIONE PAGINA & STATO
 # ==========================================
 st.set_page_config(page_title="LoopBaby", layout="centered", initial_sidebar_state="collapsed")
 
 if "user" not in st.session_state: st.session_state.user = None
 if "pagina" not in st.session_state: st.session_state.pagina = "Welcome"
 if "carrello" not in st.session_state: st.session_state.carrello = []
+if "edit_mode" not in st.session_state: st.session_state.edit_mode = False
 
 def vai(p): 
     st.session_state.pagina = p
     st.rerun()
 
+def aggiungi_al_carrello(nome, prezzo):
+    st.session_state.carrello.append({"n": nome, "p": prezzo})
+    st.toast(f"✅ {nome} aggiunto!")
+
 # ==========================================
-# 3. IMMAGINI E DESIGN CSS (LOOK DI IERI)
+# 3. IMMAGINI E DESIGN CSS (IL LOOK DI IERI)
 # ==========================================
 def get_base64(path):
     if os.path.exists(path):
@@ -58,7 +66,7 @@ st.markdown(f"""
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
     @import url('https://googleapis.com');
     * {{ font-family: 'Lexend', sans-serif !important; }}
-    .stApp {{ background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 100px !important; }}
+    .stApp {{ background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 80px !important; }}
 
     .header-custom {{
         background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}");
@@ -78,24 +86,22 @@ st.markdown(f"""
     .box-luna {{ background: #f1f5f9 !important; border-color: #cbd5e1 !important; }}
     .box-sole {{ background: #FFD600 !important; color: black !important; border: none !important; }}
     .prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; margin-top: 10px; }}
-    .info-box {{ text-align: left; font-size: 14px; color: #475569; line-height: 1.6; padding: 18px; background: #FFFFFF; border-radius: 20px; margin-bottom: 15px; border-left: 6px solid #f43f5e; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }}
+    .info-box {{ text-align: left; font-size: 14px; color: #475569; line-height: 1.6; padding: 18px; background: #FFFFFF; border-radius: 20px; margin-bottom: 15px; border-left: 5px solid #f43f5e; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }}
     .accent {{ color: #f43f5e; font-weight: 800; text-transform: uppercase; font-size: 12px; }}
     </style>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. LOGICA ACCESSO
+# 4. LOGICA DI ACCESSO
 # ==========================================
 df_db = carica_db()
 
 if st.session_state.user is None:
     st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
-    
     if st.session_state.pagina == "Welcome":
         st.markdown("<h2 style='text-align:center;'>L'armadio infinito 🔄</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; padding:0 30px; color:#64748b;'>Niente più sprechi, solo vestiti di qualità che passano di famiglia in famiglia.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; padding:0 30px; color:#64748b;'>Abbigliamento di qualità che cresce con il tuo bambino.</p>", unsafe_allow_html=True)
         if st.button("INIZIA ORA"): vai("Login")
-    
     elif st.session_state.pagina == "Login":
         tab1, tab2 = st.tabs(["Accedi", "Registrati"])
         with tab1:
@@ -105,30 +111,30 @@ if st.session_state.user is None:
                 if st.form_submit_button("ENTRA"):
                     if not df_db.empty:
                         hp = hash_password(p)
-                        m = df_db[(df_db['email'].str.lower() == e) & (df_db['password'] == hp)]
+                        df_db['pass_clean'] = df_db['password'].astype(str).str.replace('.0', '', regex=False).str.strip()
+                        m = df_db[(df_db['email'].str.lower() == e) & (df_db['pass_clean'] == hp)]
                         if not m.empty:
                             st.session_state.user = m.iloc[-1].to_dict()
                             vai("Home")
                         else: st.error("Dati errati")
-                    else: st.error("Database in aggiornamento...")
         with tab2:
             with st.form("r"):
-                re = st.text_input("Tua migliore Email")
+                re = st.text_input("La tua migliore Email")
                 rp = st.text_input("Scegli Password", type="password")
-                rn = st.text_input("Il tuo Nome")
+                rn = st.text_input("Nome Genitore")
                 rb = st.text_input("Nome Bambino")
-                rt = st.selectbox("Taglia Attuale", ["50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"])
-                rl = st.selectbox("Locker preferito", ["InPost", "Esselunga", "Poste Italiane"])
+                rt = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm"])
+                rl = st.selectbox("Locker Preferito", ["InPost", "Esselunga", "Poste Italiane"])
                 if st.form_submit_button("CREA ACCOUNT"):
-                    registra_user({"email": re.strip().lower(), "password": hash_password(rp), "nome_genitore": rn, "nome_bambino": rb, "taglia": rt, "data_inizio": str(date.today()), "scadenza": "", "locker": rl})
+                    nuovo = {"email": re.strip().lower(), "password": hash_password(rp), "nome_genitore": rn, "nome_bambino": rb, "taglia": rt, "data_inizio": str(date.today()), "scadenza": "", "locker": rl}
+                    registra_user(nuovo)
                     st.success("Registrato! Ora fai l'Accedi.")
                     st.balloons()
 
 # ==========================================
-# 5. APP LOGGED IN (IL CUORE DI IERI)
+# 5. APP DOPO LOGIN
 # ==========================================
 else:
-    # --- BARRA NAVIGAZIONE FISSA (7 ICONE) ---
     c_nav = st.columns(7)
     menu = [("🏠", "Home"), ("📖", "Info"), ("📦", "Box"), ("🛍️", "Vetrina"), ("👤", "Profilo"), ("🛒", "Carrello"), ("👋", "ChiSiamo")]
     for i, (icon, pag) in enumerate(menu):
@@ -137,63 +143,54 @@ else:
             if st.button(label, key=f"nav_{pag}"): vai(pag)
     st.divider()
 
-    # --- PAGINE ---
     if st.session_state.pagina == "Home":
         st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
-        nome_m = st.session_state.user.get('nome_genitore', 'Mamma')
-        img_h = f'<img src="data:image/jpeg;base64,{img_data}" style="width:100%; border-radius:30px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">' if img_data else ""
-        
+        n = st.session_state.user.get('nome_genitore', 'Mamma')
+        img_h = f'<img src="data:image/jpeg;base64,{img_data}" style="width:100%; border-radius:30px;">' if img_data else ""
         st.markdown(f"""
         <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 15px; padding: 0 10px; align-items: center;">
             <div>
-                <div style="font-size:30px; font-weight:800; color:#1e293b; line-height:1.1;">Ciao {nome_m}! 👋</div>
+                <div style="font-size:30px; font-weight:800; color:#1e293b;">Ciao {n}! 👋</div>
                 <div style="font-size:15px; color:#475569; margin-top:10px;">Il tuo armadio circolare è pronto.</div>
             </div>
             <div>{img_h}</div>
         </div>""", unsafe_allow_html=True)
-        st.markdown('<div class="card" style="background:#FFF1F2; border:2px dashed #f43f5e; margin-top:20px;">'
-                    '<b>✨ Promo Fondatrici</b><br>Dona 10 capi e ricevi una Box OMAGGIO!</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card" style="background:#FFF1F2; border:2px dashed #f43f5e; margin-top:20px;"><b>✨ Promo Fondatrici</b><br>Dona 10 capi e ricevi una Box OMAGGIO!</div>', unsafe_allow_html=True)
 
     elif st.session_state.pagina == "Info":
         st.markdown("<h2 style='text-align:center;'>Guida 🔄</h2>", unsafe_allow_html=True)
         st.markdown("""
         <div class="info-box"><span class="accent">🚚 CONSEGNA</span><br>Riceverai la Box entro 3-5 giorni nel Locker scelto.</div>
-        <div class="info-box"><span class="accent">🔄 CAMBIO TAGLIA</span><br>Ordina la taglia nuova, ti spediamo la nuova e ritiri la vecchia.</div>
-        <div class="info-box"><span class="accent">🧼 IGIENE</span><br>Capi sanificati ad alte temperature per ogni bambino.</div>
+        <div class="info-box"><span class="accent">🔄 CAMBIO TAGLIA</span><br>Vestiti stretti? Ordina la nuova taglia e rendi la vecchia.</div>
+        <div class="info-box"><span class="accent">🧼 IGIENE</span><br>Sanificazione professionale ad alte temperature.</div>
         """, unsafe_allow_html=True)
 
     elif st.session_state.pagina == "Box":
         st.markdown("<h2 style='text-align:center;'>Scegli la tua Box 📦</h2>", unsafe_allow_html=True)
         for s, c, p in [("LUNA 🌙", "box-luna", 19.90), ("SOLE ☀️", "box-sole", 19.90)]:
             st.markdown(f'<div class="card {c}"><h3>{s}</h3><div class="prezzo-rosa">{p}€</div></div>', unsafe_allow_html=True)
-            if st.button(f"Aggiungi {s}", key=s): st.session_state.carrello.append({"n": s, "p": p}); st.toast("Aggiunto!")
-
-    elif st.session_state.pagina == "Vetrina":
-        st.markdown("<h2 style='text-align:center;'>Vetrina Shop 🛍️</h2>", unsafe_allow_html=True)
-        st.markdown('<div class="card">👕 <b>Body Bio LoopLove</b><br><span class="prezzo-rosa">9,90€</span></div>', unsafe_allow_html=True)
-        if st.button("Aggiungi 🎁"): st.session_state.carrello.append({"n": "Body Bio", "p": 9.90}); st.toast("Aggiunto!")
+            if st.button(f"Scegli {s}", key=s): aggiungi_al_carrello(s, p)
 
     elif st.session_state.pagina == "Profilo":
-        st.markdown("<h2 style='text-align:center;'>Profilo 👤</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center;'>Tuo Profilo 👤</h2>", unsafe_allow_html=True)
         u = st.session_state.user
         st.markdown(f"""<div class="card" style="text-align:left;">
             <b>👤 Nome:</b> {u.get('nome_genitore')}<br>
             <b>👶 Bambino:</b> {u.get('nome_bambino')}<br>
             <b>📏 Taglia:</b> {u.get('taglia')}<br>
-            <b>📍 Locker:</b> {u.get('locker')}<hr>
-            <b>📅 Iscrizione:</b> {u.get('data_inizio')}
+            <b>📍 Locker:</b> {u.get('locker')}
         </div>""", unsafe_allow_html=True)
-        if st.button("Logout"): st.session_state.user = None; vai("Welcome")
+        if st.button("LOGOUT"): st.session_state.user = None; vai("Welcome")
 
     elif st.session_state.pagina == "Carrello":
-        st.markdown("<h2 style='text-align:center;'>Il tuo Ordine 🛒</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center;'>Carrello 🛒</h2>", unsafe_allow_html=True)
         if not st.session_state.carrello: st.write("Vuoto.")
         else:
             tot = sum(i['p'] for i in st.session_state.carrello)
             for i in st.session_state.carrello: st.write(f"✅ {i['n']} - {i['p']}€")
             st.markdown(f"### Totale: {tot:.2f}€")
-            if st.button("PAGA ORA"): st.success("Link Stripe in arrivo!")
+            if st.button("PAGA ORA"): st.info("Link Stripe in arrivo...")
 
     elif st.session_state.pagina == "ChiSiamo":
-        st.markdown("<h2 style='text-align:center;'>La nostra missione ❤️</h2>", unsafe_allow_html=True)
-        st.markdown('<div class="card" style="text-align:left; line-height:1.6;">Siamo genitori che hanno creato LoopBaby per far viaggiare la qualità di famiglia in famiglia.🌿</div>', unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center;'>Chi Siamo ❤️</h2>", unsafe_allow_html=True)
+        st.markdown('<div class="card" style="text-align:left; line-height:1.6;">Siamo genitori che hanno deciso di dire basta allo spreco. LoopBaby fa viaggiare la qualità di famiglia in famiglia.🌿</div>', unsafe_allow_html=True)

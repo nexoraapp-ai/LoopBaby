@@ -23,7 +23,35 @@ def login_user(email, password):
 def registra_user(dati):
     requests.post(API_URL, json={"data": [dati]})
 
-# ================= CONFIG =================
+# ================= 1. FUNZIONI MEMORIA FISSA =================
+DB_FILE = "db_loopbaby.json"
+
+def carica_dati():
+    if os.path.exists(DB_FILE):
+        try:
+            with open(DB_FILE, "r") as f:
+                d = json.load(f)
+                d["nascita"] = date.fromisoformat(d["nascita"])
+                return d
+        except:
+            pass
+    return {
+        "nome_genitore": "",
+        "email": "",
+        "telefono": "",
+        "nome_bambino": "",
+        "nascita": date(2024, 1, 1),
+        "taglia": "50-56 cm",
+        "locker": ""
+    }
+
+def salva_dati_su_file(dati):
+    d_save = dati.copy()
+    d_save["nascita"] = dati["nascita"].isoformat()
+    with open(DB_FILE, "w") as f:
+        json.dump(d_save, f)
+
+# ================= 2. CONFIGURAZIONE E STATO =================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 if "user" not in st.session_state:
@@ -37,6 +65,9 @@ if "edit_mode" not in st.session_state:
 
 if "carrello" not in st.session_state:
     st.session_state.carrello = []
+
+if "locker_lista" not in st.session_state:
+    st.session_state.locker_lista = []
 
 def vai(nome_pag):
     st.session_state.pagina = nome_pag
@@ -59,7 +90,7 @@ def get_base64(file_path):
 img_data = get_base64("bimbo.jpg")
 logo_bg = get_base64("logo.png")
 
-# ================= CSS (TUO) =================
+# ================= 3. CSS (TUO IDENTICO) =================
 st.markdown(f"""
 <style>
 [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
@@ -69,12 +100,17 @@ st.markdown(f"""
 
 .header-custom {{
     background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}");
-    background-size: cover; height: 130px;
-    display:flex; align-items:center; justify-content:center;
+    background-size: cover;
+    height: 130px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }}
 
 .header-text {{
-    color:white; font-size:32px; font-weight:800;
+    color:white;
+    font-size:32px;
+    font-weight:800;
 }}
 
 .card {{
@@ -142,7 +178,7 @@ elif st.session_state.pagina == "Registrazione":
 
             registra_user(nuovo)
 
-            st.success("Account creato!")
+            st.success("Account creato! Ora fai login 👇")
             vai("Login")
             st.rerun()
 
@@ -150,7 +186,7 @@ elif st.session_state.pagina == "Registrazione":
 elif st.session_state.pagina == "Home":
     user = st.session_state.user
 
-    nome = user.get("nome_genitore","")
+    nome = user.get("nome_genitore", "")
 
     st.markdown(f"""
     <div class="card">
@@ -158,10 +194,6 @@ elif st.session_state.pagina == "Home":
         <p>Benvenuto in LoopBaby</p>
     </div>
     """, unsafe_allow_html=True)
-
-# ================= INFO =================
-elif st.session_state.pagina == "Info":
-    st.markdown("## Come funziona LoopBaby 🔄")
 
 # ================= BOX =================
 elif st.session_state.pagina == "Box":
@@ -180,6 +212,17 @@ elif st.session_state.pagina == "Vetrina":
     if st.button("Body Bio"):
         aggiungi_al_carrello("Body Bio", 9.90)
 
+# ================= CARRELLO =================
+elif st.session_state.pagina == "Carrello":
+    st.markdown("## Carrello 🛒")
+
+    totale = sum(x["prezzo"] for x in st.session_state.carrello)
+
+    for item in st.session_state.carrello:
+        st.write(item["nome"], item["prezzo"])
+
+    st.write("Totale:", totale)
+
 # ================= PROFILO =================
 elif st.session_state.pagina == "Profilo":
     user = st.session_state.user
@@ -196,25 +239,6 @@ elif st.session_state.pagina == "Profilo":
         st.session_state.user = None
         vai("Login")
         st.rerun()
-
-# ================= CARRELLO =================
-elif st.session_state.pagina == "Carrello":
-    st.markdown("## Carrello 🛒")
-
-    totale = sum(x["prezzo"] for x in st.session_state.carrello)
-
-    for item in st.session_state.carrello:
-        st.write(item["nome"], item["prezzo"])
-
-    st.write("Totale:", totale)
-
-# ================= CHI SIAMO =================
-elif st.session_state.pagina == "ChiSiamo":
-    st.markdown("## Chi siamo ❤️")
-
-# ================= CONTATTI =================
-elif st.session_state.pagina == "Contatti":
-    st.markdown("## Contatti 💬")
 
 # ================= NAV =================
 st.markdown("---")

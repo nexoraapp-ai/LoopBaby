@@ -6,23 +6,23 @@ from datetime import datetime, timedelta
 import base64
 import os
 
-# --- 1. MOTORE DATABASE (CON REFRESCH FORZATO) ---
+# --- 1. MOTORE DATABASE (CON CACHE BUSTER) ---
 API_URL = "https://sheetdb.io"
 
-def carica_db_fresco():
+def carica_db():
     try:
-        # Il trucco: aggiungiamo un numero casuale all'URL per distruggere la cache di SheetDB
-        flash_url = f"{API_URL}?t={datetime.now().strftime('%H%M%S')}"
-        res = requests.get(flash_url, timeout=10)
+        # Forziamo il caricamento dati freschi per vedere subito le nuove mamme
+        timestamp = datetime.now().strftime('%H%M%S')
+        res = requests.get(f"{API_URL}?t={timestamp}", timeout=10)
         if res.status_code == 200:
             dati = res.json()
             if dati and len(dati) > 0:
                 df = pd.DataFrame(dati)
                 df.columns = [str(c).strip().lower() for c in df.columns]
                 return df
-        return pd.DataFrame()
+        return pd.DataFrame(columns=['email', 'password', 'nome', 'bimbo', 'taglia', 'inizio', 'scadenza', 'locker'])
     except:
-        return pd.DataFrame()
+        return pd.DataFrame(columns=['email', 'password', 'nome', 'bimbo', 'taglia', 'inizio', 'scadenza', 'locker'])
 
 def aggiungi_utente(nuovo):
     headers = {"Content-Type": "application/json"}
@@ -32,15 +32,20 @@ def aggiorna_utente(email, dati):
     return requests.patch(f"{API_URL}/email/{email}", json={"data": dati}).status_code
 
 # --- 2. CONFIGURAZIONE E STATO ---
-st.set_page_config(page_title="LoopBaby", layout="centered")
+st.set_page_config(page_title="LoopBaby", layout="centered", initial_sidebar_state="collapsed")
 
 if "user" not in st.session_state: st.session_state.user = None
 if "pagina" not in st.session_state: st.session_state.pagina = "Welcome"
 if "carrello" not in st.session_state: st.session_state.carrello = []
+if "edit_mode" not in st.session_state: st.session_state.edit_mode = False
 
 def vai(p): 
     st.session_state.pagina = p
     st.rerun()
+
+def aggiungi_al_carrello(nome, prezzo):
+    st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
+    st.toast(f"✅ {nome} aggiunto!")
 
 def get_base64(path):
     if os.path.exists(path):
@@ -56,18 +61,32 @@ st.markdown(f"""
     .stApp {{ background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 120px !important; }}
     @import url('https://googleapis.com');
     * {{ font-family: 'Lexend', sans-serif !important; }}
-    .header-custom {{ background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}"); background-size: cover; height: 130px; display: flex; align-items: center; justify-content: center; border-radius: 0 0 30px 30px; margin-bottom: 35px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }}
+
+    .header-custom {{
+        background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}");
+        background-size: cover; background-position: center; height: 130px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 35px; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }}
     .header-text {{ color: white; font-size: 32px; font-weight: 800; letter-spacing: 3px; text-shadow: 2px 2px 8px rgba(0,0,0,0.4); text-transform: uppercase; }}
-    div.stButton > button {{ background-color: #f43f5e !important; color: white !important; border-radius: 18px !important; width: 100% !important; font-weight: 800 !important; margin: 10px auto !important; border: none !important; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2); height: 45px; }}
+
+    div.stButton > button {{
+        background-color: #f43f5e !important; color: white !important; border-radius: 18px !important;
+        width: 100% !important; font-weight: 800 !important; margin: 10px auto !important; border: none !important;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2); height: 45px;
+    }}
+
     .card {{ border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; box-shadow: 0 8px 25px rgba(0,0,0,0.03); }}
+    .prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; }}
     .info-box {{ text-align: left; font-size: 14px; color: #475569; line-height: 1.5; padding: 15px; background: #f8fafc; border-radius: 15px; margin-bottom: 12px; border-left: 5px solid #f43f5e; }}
     .accent {{ color: #f43f5e; font-weight: 800; text-transform: uppercase; font-size: 12px; }}
     </style>
     """, unsafe_allow_html=True)
 
 # --- 4. LOGICA ---
-df_globale = carica_db_fresco()
+df_globale = carica_db()
 
+# --- LOGIN / REGISTRAZIONE ---
 if st.session_state.user is None:
     st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
     if st.session_state.pagina == "Welcome":
@@ -82,67 +101,89 @@ if st.session_state.user is None:
                 p = st.text_input("Password", type="password").strip()
                 if st.form_submit_button("ENTRA"):
                     if not df_globale.empty:
-                        # Pulizia per sicurezza
-                        df_globale['email_clean'] = df_globale['email'].astype(str).str.strip().str.lower()
-                        df_globale['pass_clean'] = df_globale['password'].astype(str).str.replace('.0', '', regex=False).str.strip()
-                        m = df_globale[(df_globale['email_clean'] == e) & (df_globale['pass_clean'] == p)]
+                        # Pulizia dati Excel (.0 delle password)
+                        df_globale['e_c'] = df_globale['email'].astype(str).str.strip().str.lower()
+                        df_globale['p_c'] = df_globale['password'].astype(str).str.replace('.0', '', regex=False).str.strip()
+                        m = df_globale[(df_globale['e_c'] == e) & (df_globale['p_c'] == p)]
                         if not m.empty:
                             st.session_state.user = m.iloc[-1].to_dict()
                             vai("Home")
                         else: st.error("Email o Password errati.")
-                    else:
-                        st.warning("Il sistema si sta aggiornando. Registrati se non l'hai fatto!")
+                    else: st.warning("Database in aggiornamento... Riprova.")
+            if st.button("🔄 AGGIORNA"): st.rerun()
         with t2:
             with st.form("r"):
-                er, pr = st.text_input("Tua migliore Email"), st.text_input("Scegli Password")
+                er = st.text_input("La tua migliore Email")
+                pr = st.text_input("Scegli Password")
                 if st.form_submit_button("CREA ACCOUNT"):
                     scad = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d")
-                    nuovo = {"email": er.strip(), "password": pr.strip(), "nome": "Mamma", "bimbo": "---", "taglia": "---", "inizio": datetime.now().strftime("%Y-%m-%d"), "scadenza": scad, "locker": "Non impostato"}
+                    nuovo = {"email": er.strip(), "password": pr.strip(), "nome": "Mamma", "bimbo": "---", "taglia": "---", "inizio": datetime.now().strftime("%Y-%m-%d"), "scadenza": scad, "locker": "Da definire"}
                     if aggiungi_utente(nuovo) == 201:
-                        st.success("✅ REGISTRATO! Ora aspetta 5 secondi e fai l'accesso.")
+                        st.success("✅ REGISTRATA! Ora fai l'accesso.")
                         st.balloons()
+
+# --- APP DOPO LOGIN ---
 else:
-    # --- APP DOPO LOGIN ---
+    # --- LOGICA PAGINE ---
     if st.session_state.pagina == "Home":
         st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
-        nome = st.session_state.user.get('nome', 'Mamma')
+        nome_u = st.session_state.user.get('nome', 'Mamma')
         img_h = f'<img src="data:image/jpeg;base64,{img_data}" style="width:100%; border-radius:25px;">' if img_data else ""
-        st.markdown(f"""<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; padding: 0 20px;">
-            <div><div style="font-size:28px; font-weight:800;">Ciao {nome}! 👋</div><div style="font-size:14px; color:#334155;">Il tuo armadio infinito è pronto.</div></div>
+        st.markdown(f"""<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; padding: 0 20px; align-items: start;">
+            <div>
+                <div style="font-size:28px; font-weight:800; color:#1e293b;">Ciao {nome_u}! 👋</div>
+                <div style="font-size:14px; color:#334155;">Il tuo armadio circolare è pronto.</div>
+            </div>
             <div>{img_h}</div></div>""", unsafe_allow_html=True)
         st.markdown('<div class="card" style="background:#FFF1F2; border:2px dashed #F43F5E;"><b>✨ Promo Fondatrici</b><br>Dona 10 capi e ricevi una Box OMAGGIO!</div>', unsafe_allow_html=True)
-        if st.button("Dona ora"): vai("Info")
+        if st.button("Scopri come"): vai("Info")
 
     elif st.session_state.pagina == "Info":
         st.markdown("<h2 style='text-align:center;'>Guida al Servizio 🔄</h2>", unsafe_allow_html=True)
         st.markdown("""
-        <div class="info-box"><span class="accent">🚚 Locker InPost</span><br>Consegna in 3-5 giorni lavorativi. Ritira 24/7 nel Locker più comodo per te.</div>
-        <div class="info-box"><span class="accent">🔄 Cambio Taglia</span><br>Quando i vestiti diventano piccoli, ordina la nuova Box: lo scambio avviene nello stesso momento.</div>
-        <div class="info-box"><span class="accent">🧼 Igiene Professionale</span><br>Ogni capo viene sanificato ad alte temperature con prodotti certificati per neonati.</div>
+        <div class="info-box"><span class="accent">🚚 Locker InPost</span><br>Ritira la Box 24/7 nel locker più vicino. Consegna in 3-5 giorni.</div>
+        <div class="info-box"><span class="accent">🔄 Cambio Taglia</span><br>Quando i vestiti stringono, ordina la nuova taglia. Scambiamo il vecchio col nuovo.</div>
+        <div class="info-box"><span class="accent">🧼 Igiene Professionale</span><br>Ogni capo viene sanificato ad alte temperature prima di ogni viaggio.</div>
         """, unsafe_allow_html=True)
+
+    elif st.session_state.pagina == "Box":
+        st.markdown("<h2 style='text-align:center;'>Scegli la Box 📦</h2>", unsafe_allow_html=True)
+        for s, p in [("LUNA 🌙", 19.90), ("SOLE ☀️", 19.90)]:
+            st.markdown(f'<div class="card"><h3>{s}</h3><div class="prezzo-rosa">{p}€</div></div>', unsafe_allow_html=True)
+            if st.button(f"Scegli {s}", key=s): aggiungi_al_carrello(f"Box {s}", p)
 
     elif st.session_state.pagina == "Profilo":
         st.markdown("## Il tuo Profilo 👤")
-        with st.form("p"):
-            n = st.text_input("Tuo Nome", st.session_state.user.get('nome'))
-            nb = st.text_input("Nome Bambino", st.session_state.user.get('bimbo'))
-            tg = st.selectbox("Taglia Attuale", ["50-56 cm", "62-68 cm", "74-80 cm"])
-            loc = st.text_input("Locker InPost preferito", st.session_state.user.get('locker'))
-            if st.form_submit_button("SALVA"):
-                aggiorna_utente(st.session_state.user['email'], {"nome": n, "bimbo": nb, "taglia": tg, "locker": loc})
-                st.session_state.user.update({"nome": n, "bimbo": nb, "taglia": tg, "locker": loc})
-                st.success("Profilo aggiornato!")
-        if st.button("Logout"): 
-            st.session_state.user = None; vai("Welcome")
+        if not st.session_state.edit_mode:
+            st.markdown(f"""<div class="card" style="text-align:left;">
+                <b>👤 Genitore:</b> {st.session_state.user.get('nome')}<br>
+                <b>👶 Bambino:</b> {st.session_state.user.get('bimbo')}<br>
+                <b>📏 Taglia:</b> {st.session_state.user.get('taglia')}<br>
+                <b>📍 Locker:</b> {st.session_state.user.get('locker')}<hr>
+                <b>📅 Scadenza:</b> {st.session_state.user.get('scadenza')}
+            </div>""", unsafe_allow_html=True)
+            if st.button("MODIFICA DATI"): st.session_state.edit_mode = True; st.rerun()
+            if st.button("Logout"): st.session_state.user = None; vai("Welcome")
+        else:
+            with st.form("p_e"):
+                n = st.text_input("Tuo Nome", st.session_state.user.get('nome'))
+                nb = st.text_input("Nome Bambino", st.session_state.user.get('bimbo'))
+                tg = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm"])
+                loc = st.text_input("Locker Preferito", st.session_state.user.get('locker'))
+                if st.form_submit_button("SALVA"):
+                    aggiorna_utente(st.session_state.user['email'], {"nome": n, "bimbo": nb, "taglia": tg, "locker": loc})
+                    st.session_state.user.update({"nome": n, "bimbo": nb, "taglia": tg, "locker": loc})
+                    st.session_state.edit_mode = False; st.rerun()
 
     elif st.session_state.pagina == "ChiSiamo":
-        st.markdown("<h2 style='text-align:center;'>La nostra storia ❤️</h2>", unsafe_allow_html=True)
-        st.markdown('<div class="card" style="text-align:left; line-height:1.6;"><b>Basta vestiti ammassati in soffitta.</b><br><br>Abbiamo creato LoopBaby per far viaggiare la qualità di famiglia in famiglia. Risparmi spazio, soldi e proteggi il pianeta.</div>', unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center;'>La nostra missione ❤️</h2>", unsafe_allow_html=True)
+        st.markdown('<div class="card" style="text-align:left; line-height:1.6;"><b>Basta vestiti ammassati in soffitta.</b><br><br>Siamo genitori che hanno creato LoopBaby per far viaggiare la qualità di famiglia in famiglia, seguendo la crescita dei piccoli senza sprechi.🌿</div>', unsafe_allow_html=True)
 
-    # BARRA NAVIGAZIONE FISSA
+    # BARRA NAVIGAZIONE FISSA (7 ICONE)
     st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
-    c = st.columns(6)
-    m_list = [("🏠", "Home"), ("📖", "Info"), ("📦", "Box"), ("👤", "Profilo"), ("🛒", "Carrello"), ("👋", "ChiSiamo")]
+    c = st.columns(7)
+    m_list = [("🏠", "Home"), ("📖", "Info"), ("📦", "Box"), ("🛍️", "Shop"), ("👤", "Profilo"), ("🛒", "Carrello"), ("👋", "ChiSiamo")]
     for i, (icon, pag) in enumerate(m_list):
         with c[i]:
-            if st.button(icon, key=f"n_{pag}"): vai(pag)
+            label = f"{icon}({len(st.session_state.carrello)})" if pag=="Carrello" and len(st.session_state.carrello)>0 else icon
+            if st.button(label, key=f"n_{pag}"): vai(pag)

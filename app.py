@@ -1,29 +1,33 @@
 import streamlit as st
 from supabase import create_client
 
-# =========================
-# 🔐 SUPABASE CONFIG
-# =========================
-SUPABASE_URL = "https://TUO-PROGETTO.supabase.co"
-SUPABASE_KEY = "ANON_KEY"
+# =====================================================
+# 🔐 SUPABASE (USA SOLO CHIAVE PUBBLICA)
+# =====================================================
+SUPABASE_URL = "https://izyfzqyopmpvijdtfqfe.supabase.co"
+
+SUPABASE_KEY = "sb_publishable_9t_Psdh5tIz9OsfrSAwuMw_hJQ9i89Z"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# =========================
+# =====================================================
 # STATE
-# =========================
+# =====================================================
 if "user" not in st.session_state:
     st.session_state.user = None
+
 if "page" not in st.session_state:
     st.session_state.page = "login"
+
 if "profile" not in st.session_state:
     st.session_state.profile = {}
+
 if "cart" not in st.session_state:
     st.session_state.cart = []
 
-# =========================
+# =====================================================
 # NAV
-# =========================
+# =====================================================
 def go(p):
     st.session_state.page = p
     st.rerun()
@@ -32,28 +36,28 @@ def add_cart(name, price):
     st.session_state.cart.append({"name": name, "price": price})
     st.toast("Aggiunto ✔")
 
-# =========================
+# =====================================================
 # UI BASE
-# =========================
+# =====================================================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 st.markdown("""
 <style>
-.stApp {max-width:450px;margin:auto;}
-button {border-radius:12px !important;}
+.stApp {max-width:450px;margin:auto;background:#FDFBF7;}
+button {border-radius:14px !important;}
 </style>
 """, unsafe_allow_html=True)
 
-# =========================
-# LOGIN / REGISTER
-# =========================
+# =====================================================
+# 🔐 LOGIN / REGISTER
+# =====================================================
 if st.session_state.user is None:
 
-    st.title("LoopBaby 👶")
+    st.title("👶 LoopBaby")
 
     tab1, tab2 = st.tabs(["Login", "Registrati"])
 
-    # -------- LOGIN --------
+    # ---------------- LOGIN ----------------
     with tab1:
         with st.form("login"):
             email = st.text_input("Email")
@@ -79,9 +83,9 @@ if st.session_state.user is None:
                     go("home")
 
                 except:
-                    st.error("Errore login")
+                    st.error("Login errato")
 
-    # -------- REGISTER --------
+    # ---------------- REGISTER ----------------
     with tab2:
         with st.form("reg"):
             email = st.text_input("Email ")
@@ -97,43 +101,48 @@ if st.session_state.user is None:
                 except Exception as e:
                     st.error(str(e))
 
-# =========================
-# APP
-# =========================
+# =====================================================
+# 🚀 APP
+# =====================================================
 else:
 
-    # -------- HOME --------
+    # ---------------- HOME ----------------
     if st.session_state.page == "home":
         st.title("LoopBaby 👶")
-        st.write("Armadio circolare bambini")
+        st.write("Armadio circolare per bambini")
 
-        if st.button("Box"):
+        if st.button("📦 Box"):
             go("box")
 
-        if st.button("Profilo"):
+        if st.button("👤 Profilo"):
             go("profile")
 
-        if st.button("Carrello"):
+        if st.button("🛒 Carrello"):
             go("cart")
 
-    # -------- BOX --------
+    # ---------------- BOX ----------------
     elif st.session_state.page == "box":
-        st.title("Box 📦")
+        st.title("Box disponibili 📦")
 
         boxes = [
-            ("Luna", 19.90),
-            ("Sole", 19.90),
-            ("Premium", 29.90)
+            ("Luna 🌙", 19.90),
+            ("Sole ☀️", 19.90),
+            ("Premium 💎", 29.90)
         ]
 
         for name, price in boxes:
-            st.markdown(f"### {name} - {price}€")
+            st.markdown(f"### {name}")
+            st.write(f"{price}€")
+
             if st.button(f"Aggiungi {name}"):
                 add_cart(name, price)
 
-    # -------- PROFILO --------
+        if st.button("⬅ Home"):
+            go("home")
+
+    # ---------------- PROFILE ----------------
     elif st.session_state.page == "profile":
-        st.title("Profilo")
+        st.title("Profilo 👤")
 
         p = st.session_state.profile
 
@@ -152,14 +161,18 @@ else:
 
                 st.success("Salvato ✔")
 
-    # -------- CARRELLO --------
+        if st.button("Home"):
+            go("home")
+
+    # ---------------- CART ----------------
     elif st.session_state.page == "cart":
         st.title("Carrello 🛒")
 
         if not st.session_state.cart:
-            st.write("Vuoto")
+            st.info("Vuoto")
         else:
             total = 0
+
             for i in st.session_state.cart:
                 st.write(f"{i['name']} - {i['price']}€")
                 total += i["price"]
@@ -169,11 +182,16 @@ else:
             if st.button("Checkout"):
                 st.success("Pagamento (Stripe dopo)")
 
-    # -------- NAV --------
-    st.markdown("---")
-    cols = st.columns(4)
+        if st.button("Home"):
+            go("home")
 
-    for i, p in enumerate(["home","box","profile","cart"]):
-        with cols[i]:
-            if st.button(p):
-                go(p)
+# =====================================================
+# NAV BAR
+# =====================================================
+st.markdown("---")
+cols = st.columns(4)
+
+for i, p in enumerate(["home","box","profile","cart"]):
+    with cols[i]:
+        if st.button(p.capitalize()):
+            go(p)

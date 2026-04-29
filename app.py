@@ -2,90 +2,47 @@ import streamlit as st
 import pandas as pd
 import requests
 from datetime import datetime, timedelta
-import json
 
 # --- 1. CONFIGURAZIONE ---
 API_URL = "https://sheetdb.io"
 
-def carica_db_chirurgico():
+def carica_dati_nudi():
+    # Aggiungiamo un numero casuale estremo per saltare la cache
+    t = datetime.now().microsecond
     try:
-        # Usiamo un parametro casuale per distruggere la cache di SheetDB
-        res = requests.get(f"{API_URL}?t={datetime.now().microsecond}", timeout=10)
-        if res.status_code == 200:
-            data = res.json()
-            if data and len(data) > 0:
-                df = pd.DataFrame(data)
-                # Pulizia nomi colonne: togliamo spazi e rendiamo tutto minuscolo
-                df.columns = [str(c).strip().lower() for c in df.columns]
-                return df, data
-        return pd.DataFrame(), []
+        res = requests.get(f"{API_URL}?t={t}", timeout=10)
+        return res.json()
     except:
-        return pd.DataFrame(), []
+        return []
 
-def aggiungi_utente(nuovo):
-    return requests.post(API_URL, json={"data": [nuovo]}, timeout=15).status_code
-
-# --- 2. SETUP PAGINA ---
+# --- 2. SETUP ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
+st.title("👶 LOOPBABY - DEBUG")
 
-if "user" not in st.session_state: st.session_state.user = None
-if "pagina" not in st.session_state: st.session_state.pagina = "Welcome"
+# --- 3. COSA VEDE IL SERVER? ---
+raw = carica_dati_nudi()
 
-def vai(p): 
-    st.session_state.pagina = p
-    st.rerun()
-
-# --- 3. DIAGNOSI (VEDI COSA LEGGE L'APP) ---
-df_globale, raw_data = carica_db_chirurgico()
-
-with st.expander("🔍 DIAGNOSI DATABASE (Solo per Manuel)"):
-    st.write("Cosa vede l'app in questo momento:")
-    st.json(raw_data)
-    if not df_globale.empty:
-        st.write("Colonne trovate:", list(df_globale.columns))
-
-# --- 4. LOGICA ACCESSO ---
-st.title("👶 LOOPBABY")
-
-if st.session_state.user is None:
-    t1, t2 = st.tabs(["Accedi", "Registrati"])
-    
-    with t1:
-        e = st.text_input("Email").strip().lower()
-        p = st.text_input("Password", type="password").strip()
-        
-        if st.form_submit_button if False else st.button("ENTRA"):
-            if not df_globale.empty:
-                # Confronto ultra-flessibile per evitare errori di Excel
-                df_globale['email_check'] = df_globale['email'].astype(str).str.strip().str.lower()
-                df_globale['pass_check'] = df_globale['password'].astype(str).str.replace('.0', '', regex=False).str.strip()
-                
-                match = df_globale[(df_globale['email_check'] == e) & (df_globale['pass_check'] == p)]
-                
-                if not match.empty:
-                    st.session_state.user = match.iloc[-1].to_dict()
-                    st.success("Accesso riuscito!")
-                    vai("Home")
-                else:
-                    st.error("Credenziali non trovate nel database.")
-            else:
-                st.warning("Il database sembra ancora vuoto per l'app. Clicca 'Aggiorna' o Registrati.")
-
-        if st.button("🔄 AGGIORNA DATI"):
-            st.rerun()
-
-    with t2:
-        with st.form("r"):
-            er = st.text_input("Email")
-            pr = st.text_input("Scegli Password")
-            if st.form_submit_button("CREA ACCOUNT"):
-                scad = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d")
-                nuovo = {"email": er.strip(), "password": pr.strip(), "nome genitore": "Mamma", "taglia": "---", "scadenza": scad}
-                if aggiungi_utente(nuovo) == 201:
-                    st.success("✅ REGISTRATO! Aspetta 3 secondi e prova ad accedere.")
-                    st.balloons()
+st.subheader("📡 Dati ricevuti da Excel:")
+if not raw:
+    st.error("ATTENZIONE: SheetDB sta inviando un database VUOTO [ ].")
+    st.info("Sblocca premendo 'RELOAD SPREADSHEET' su SheetDB.io")
 else:
-    st.write(f"### Ciao {st.session_state.user.get('nome genitore', 'Mamma')}! 👋")
-    if st.button("Logout"): 
-        st.session_state.user = None
-        vai("Welcome")
+    st.success(f"Trovati {len(raw)} utenti!")
+    st.json(raw) # Ti mostra i dati reali qui!
+
+# --- 4. TASTO DI REGISTRAZIONE EMERGENZA ---
+st.divider()
+st.write("Se sopra vedi [ ], prova a fare una registrazione qui sotto:")
+with st.form("r"):
+    e = st.text_input("Email")
+    p = st.text_input("Password")
+    if st.form_submit_button("REGISTRA E FORZA"):
+        nuovo = {"email": e, "password": p, "nome": "Test"}
+        res = requests.post(API_URL, json={"data": [nuovo]})
+        if res.status_code == 201:
+            st.success("Scrittura riuscita! Ora clicca il tasto sotto.")
+        else:
+            st.error(f"Errore scrittura: {res.text}")
+
+if st.button("🔄 RICARICA TUTTO"):
+    st.rerun()

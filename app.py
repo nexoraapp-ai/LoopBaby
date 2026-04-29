@@ -1,19 +1,22 @@
 import streamlit as st
 import pandas as pd
 import requests
+import json
 from datetime import datetime, timedelta
 import base64
 import os
 
-# --- 1. CONFIGURAZIONE DATABASE (VERIFICATO) ---
+# --- 1. CONFIGURAZIONE DATABASE (PULITA) ---
+# Assicurati che non ci siano spazi vuoti dentro le virgolette
 API_URL = "https://sheetdb.io"
 
 def carica_db():
     try:
-        # Recupero dati freschi
-        res = requests.get(f"{API_URL}?t={datetime.now().timestamp()}")
-        if res.status_code == 200:
-            df = pd.DataFrame(res.json())
+        # Recupero dati con trucco anti-cache
+        t = datetime.now().timestamp()
+        r = requests.get(f"{API_URL}?t={t}", timeout=10)
+        if r.status_code == 200:
+            df = pd.DataFrame(r.json())
             if not df.empty:
                 df.columns = [str(c).strip().lower() for c in df.columns]
                 return df
@@ -22,10 +25,9 @@ def carica_db():
         return pd.DataFrame()
 
 def aggiungi_utente(email, password):
-    # Prepariamo i dati esattamente come abbiamo fatto nel test ReqBin
     scad = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d")
     nuovo_dato = {
-        "email": email.strip(),
+        "email": str(email).strip(),
         "password": str(password).strip(),
         "nome": "Mamma",
         "bimbo": "---",
@@ -34,9 +36,20 @@ def aggiungi_utente(email, password):
         "scadenza": scad
     }
     
-    # Invio identico al test di successo
-    res = requests.post(API_URL, json={"data": [nuovo_dato]})
-    return res.status_code
+    # Headers identici a quelli dei browser/ReqBin per evitare il 405
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0"
+    }
+    
+    payload = {"data": [nuovo_dato]}
+    
+    try:
+        res = requests.post(API_URL, json=payload, headers=headers, timeout=15)
+        return res.status_code
+    except:
+        return 500
 
 # --- 2. CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
@@ -55,10 +68,10 @@ def get_base64(path):
 
 img_data, logo_bg = get_base64("bimbo.jpg"), get_base64("logo.png")
 
-# --- 3. CSS PROFESSIONALE ---
+# --- 3. CSS ---
 st.markdown(f"""
     <style>
-    [data-testid="stHeader"], [data-testid="stToolbar"] {{display: none !important;}}
+    [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
     .stApp {{ background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 100px !important; }}
     @import url('https://googleapis.com');
     * {{ font-family: 'Lexend', sans-serif !important; }}
@@ -81,27 +94,26 @@ if st.session_state.user is None:
         t1, t2 = st.tabs(["Accedi", "Registrati"])
         with t1:
             with st.form("l"):
-                e = st.text_input("Email")
-                p = st.text_input("Password", type="password")
+                e, p = st.text_input("Email"), st.text_input("Password", type="password")
                 if st.form_submit_button("ENTRA"):
                     if not df_globale.empty:
                         m = df_globale[(df_globale['email'].str.lower() == e.lower()) & (df_globale['password'].astype(str) == str(p))]
                         if not m.empty:
                             st.session_state.user = m.iloc[-1].to_dict()
                             vai("Home")
-                        else: st.error("Dati errati o utente non trovato.")
+                        else: st.error("Dati errati")
         with t2:
             with st.form("r"):
-                er = st.text_input("La tua migliore Email")
-                pr = st.text_input("Scegli Password")
+                er, pr = st.text_input("La tua migliore Email"), st.text_input("Scegli Password")
                 if st.form_submit_button("CREA ACCOUNT"):
                     if er and pr:
-                        status = aggiungi_utente(er, pr)
+                        with st.spinner("Creazione in corso..."):
+                            status = aggiungi_utente(er, pr)
                         if status == 201:
                             st.success("✅ REGISTRATO! Ora puoi fare il login.")
                             st.balloons()
-                        else: st.error(f"Errore tecnico ({status}). Riprova.")
-                    else: st.warning("Compila tutti i campi.")
+                        else:
+                            st.error(f"Errore tecnico ({status}). Riprova tra 10 secondi.")
 else:
     # --- HOME DOPO LOGIN ---
     st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)

@@ -6,10 +6,9 @@ from datetime import date
 import requests
 import hashlib
 
-# --- CONFIG API ---
+# --- API SHEETDB ---
 API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
-# --- FUNZIONI UTENTE ---
 def hash_password(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
 
@@ -24,7 +23,7 @@ def login_user(email, password):
 def registra_user(dati):
     requests.post(API_URL, json={"data": [dati]})
 
-# --- CONFIGURAZIONE ---
+# --- CONFIG ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 if "pagina" not in st.session_state:
@@ -32,6 +31,9 @@ if "pagina" not in st.session_state:
 
 if "user" not in st.session_state:
     st.session_state.user = None
+
+if "edit_mode" not in st.session_state:
+    st.session_state.edit_mode = False
 
 if "carrello" not in st.session_state:
     st.session_state.carrello = []
@@ -43,7 +45,7 @@ def aggiungi_al_carrello(nome, prezzo):
     st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
     st.toast(f"✅ {nome} aggiunto!")
 
-# --- BLOCCO ACCESSO ---
+# --- BLOCCO LOGIN ---
 if not st.session_state.user and st.session_state.pagina not in ["Login", "Registrazione"]:
     st.session_state.pagina = "Login"
 
@@ -54,14 +56,16 @@ def get_base64(file_path):
             return base64.b64encode(f.read()).decode()
     return ""
 
+img_data = get_base64("bimbo.jpg")
 logo_bg = get_base64("logo.png")
 
 st.markdown(f"""
 <style>
-.stApp {{ background-color: #FDFBF7; max-width:450px; margin:auto; }}
-.header {{background-image:url("data:image/png;base64,{logo_bg}"); height:120px;
-display:flex; align-items:center; justify-content:center; color:white; font-size:28px; font-weight:800;}}
-button {{background:#f43f5e; color:white; border:none; border-radius:12px; width:100%; padding:10px;}}
+.stApp {{ background-color:#FDFBF7; max-width:450px; margin:auto; }}
+.header {{background-image:url("data:image/png;base64,{logo_bg}"); height:130px;
+display:flex; align-items:center; justify-content:center; color:white; font-size:30px; font-weight:800;}}
+button {{background:#f43f5e; color:white; border:none; border-radius:15px; width:100%; padding:10px; margin-top:10px;}}
+.card {{border-radius:20px; padding:15px; margin:10px; background:white; box-shadow:0 5px 15px rgba(0,0,0,0.05);}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -69,18 +73,16 @@ st.markdown('<div class="header">LOOPBABY</div>', unsafe_allow_html=True)
 
 # --- LOGIN ---
 if st.session_state.pagina == "Login":
-    st.title("Login")
+    st.markdown("## Login 🔐")
 
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
     if st.button("Accedi"):
         user = login_user(email, password)
-
         if user:
             st.session_state.user = user
             vai("Home")
-            st.success("Login riuscito")
             st.rerun()
         else:
             st.error("Credenziali errate")
@@ -91,7 +93,7 @@ if st.session_state.pagina == "Login":
 
 # --- REGISTRAZIONE ---
 elif st.session_state.pagina == "Registrazione":
-    st.title("Registrazione")
+    st.markdown("## Registrati ✨")
 
     with st.form("reg"):
         email = st.text_input("Email")
@@ -112,9 +114,7 @@ elif st.session_state.pagina == "Registrazione":
                 "scadenza": "",
                 "locker": locker
             }
-
             registra_user(nuovo)
-
             st.success("Account creato!")
             vai("Login")
             st.rerun()
@@ -122,36 +122,31 @@ elif st.session_state.pagina == "Registrazione":
 # --- HOME ---
 elif st.session_state.pagina == "Home":
     user = st.session_state.user
-    st.title(f"Ciao {user['nome_genitore']} 👋")
+    nome = user.get("nome_genitore","")
 
-    st.write("Benvenuto in LoopBaby")
+    st.markdown(f"<div class='card'><h2>Ciao {nome} 👋</h2><p>Benvenuto in LoopBaby</p></div>", unsafe_allow_html=True)
 
     if st.button("Vai alle Box"):
-        vai("Box")
-        st.rerun()
+        vai("Box"); st.rerun()
 
 # --- BOX ---
 elif st.session_state.pagina == "Box":
-    st.title("Scegli Box")
+    st.markdown("## Scegli la tua Box 📦")
 
-    if st.button("Box Luna - 19.90€"):
+    if st.button("Box Luna 🌙 - 19,90€"):
         aggiungi_al_carrello("Box Luna", 19.90)
 
-    if st.button("Box Premium - 29.90€"):
+    if st.button("Box Premium 💎 - 29,90€"):
         aggiungi_al_carrello("Box Premium", 29.90)
-
-    if st.button("Vai al carrello"):
-        vai("Carrello")
-        st.rerun()
 
 # --- CARRELLO ---
 elif st.session_state.pagina == "Carrello":
-    st.title("Carrello")
+    st.markdown("## Carrello 🛒")
 
-    totale = 0
+    totale = sum(i["prezzo"] for i in st.session_state.carrello)
+
     for item in st.session_state.carrello:
         st.write(f"{item['nome']} - {item['prezzo']}€")
-        totale += item["prezzo"]
 
     st.write(f"Totale: {totale}€")
 
@@ -163,20 +158,20 @@ elif st.session_state.pagina == "Carrello":
 elif st.session_state.pagina == "Profilo":
     user = st.session_state.user
 
-    st.title("Profilo")
+    st.markdown("## Profilo 👤")
 
-    st.write(user["email"])
-    st.write(user["nome_genitore"])
-    st.write(user["nome_bambino"])
-    st.write(user["taglia"])
-    st.write(user["locker"])
+    st.write("Email:", user.get("email",""))
+    st.write("Nome:", user.get("nome_genitore",""))
+    st.write("Bambino:", user.get("nome_bambino",""))
+    st.write("Taglia:", user.get("taglia",""))
+    st.write("Locker:", user.get("locker",""))
 
     if st.button("Logout"):
         st.session_state.user = None
         vai("Login")
         st.rerun()
 
-# --- NAVBAR ---
+# --- NAV ---
 st.markdown("---")
 c = st.columns(4)
 

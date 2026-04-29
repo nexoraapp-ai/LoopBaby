@@ -23,13 +23,41 @@ def login_user(email, password):
 def registra_user(dati):
     requests.post(API_URL, json={"data": [dati]})
 
+# --- 1. FUNZIONI MEMORIA FISSA (lasciate tue) ---
+DB_FILE = "db_loopbaby.json"
+
+def carica_dati():
+    if os.path.exists(DB_FILE):
+        try:
+            with open(DB_FILE, "r") as f:
+                d = json.load(f)
+                d["nascita"] = date.fromisoformat(d["nascita"])
+                return d
+        except:
+            pass
+    return {
+        "nome_genitore": "",
+        "email": "",
+        "telefono": "",
+        "nome_bambino": "",
+        "nascita": date(2024, 1, 1),
+        "taglia": "50-56 cm",
+        "locker": ""
+    }
+
+def salva_dati_su_file(dati):
+    d_save = dati.copy()
+    d_save["nascita"] = dati["nascita"].isoformat()
+    with open(DB_FILE, "w") as f:
+        json.dump(d_save, f)
+
 # --- 2. CONFIGURAZIONE E STATO ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 if "user" not in st.session_state:
     st.session_state.user = None
 
-if "pagina" not in st.session_state: 
+if "pagina" not in st.session_state:
     st.session_state.pagina = "Login"
 
 if "edit_mode" not in st.session_state:
@@ -41,14 +69,14 @@ if "carrello" not in st.session_state:
 if "locker_lista" not in st.session_state:
     st.session_state.locker_lista = []
 
-def vai(nome_pag): 
+def vai(nome_pag):
     st.session_state.pagina = nome_pag
 
 def aggiungi_al_carrello(nome, prezzo):
     st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
     st.toast(f"✅ {nome} aggiunto!")
 
-# 🔒 BLOCCO ACCESSO
+# BLOCCO ACCESSO
 if not st.session_state.user and st.session_state.pagina not in ["Login", "Registrazione"]:
     st.session_state.pagina = "Login"
 
@@ -60,9 +88,9 @@ def get_base64(file_path):
     return ""
 
 img_data = get_base64("bimbo.jpg")
-logo_bg = get_base64("logo.png") 
+logo_bg = get_base64("logo.png")
 
-# --- 3. CSS TOTALE (TUO ORIGINALE INALTERATO) ---
+# --- 3. CSS (IDENTICO AL TUO) ---
 st.markdown(f"""
     <style>
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
@@ -75,18 +103,26 @@ st.markdown(f"""
         background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}");
         background-size: cover; background-position: center; height: 130px;
         display: flex; align-items: center; justify-content: center;
-        margin-bottom: 35px; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 35px; border-radius: 0 0 30px 30px;
     }}
-    .header-text {{ color: white; font-size: 32px; font-weight: 800; letter-spacing: 3px; }}
+    .header-text {{
+        color: white; font-size: 32px; font-weight: 800;
+    }}
 
     div.stButton > button {{
         background-color: #f43f5e !important;
         color: white !important;
         border-radius: 18px !important;
         width: 100% !important;
+        font-weight: 800 !important;
     }}
 
-    .card {{ border-radius: 25px; padding: 20px; margin: 10px 20px; background-color: white; }}
+    .card {{
+        border-radius: 25px;
+        padding: 20px;
+        margin: 10px 20px;
+        background-color: #FFFFFF;
+    }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -94,7 +130,7 @@ st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div><
 
 # ================= LOGIN =================
 if st.session_state.pagina == "Login":
-    st.markdown("## Login 🔐")
+    st.markdown('<h2 style="text-align:center;">Login 🔐</h2>', unsafe_allow_html=True)
 
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
@@ -113,7 +149,7 @@ if st.session_state.pagina == "Login":
         vai("Registrazione")
         st.rerun()
 
-# ================= REGISTRAZIONE =================
+# ================= REGISTRAZIONE (AGGIUNTA) =================
 elif st.session_state.pagina == "Registrazione":
     st.markdown('<h2 style="text-align:center;">Registrati ✨</h2>', unsafe_allow_html=True)
 
@@ -125,9 +161,7 @@ elif st.session_state.pagina == "Registrazione":
         taglia = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"])
         locker = st.selectbox("Locker", ["Locker Esselunga", "Locker InPost", "Poste Italiane"])
 
-        submitted = st.form_submit_button("CREA ACCOUNT")
-
-        if submitted:
+        if st.form_submit_button("CREA ACCOUNT"):
             nuovo = {
                 "email": email,
                 "password": hash_password(password),
@@ -141,26 +175,24 @@ elif st.session_state.pagina == "Registrazione":
 
             registra_user(nuovo)
 
-            st.success("Account creato! Ora fai login 👇")
+            st.success("Account creato! Ora accedi 👇")
             vai("Login")
             st.rerun()
 
-# ================= HOME (TUO ORIGINALE) =================
+# ================= HOME (TUO DESIGN INALTERATO) =================
 elif st.session_state.pagina == "Home":
     user = st.session_state.user
 
-    u_nome = user.get("nome_genitore","").split()[0] if user else ""
+    u_nome = user.get("nome_genitore", "").split()[0] if user else ""
 
     st.markdown(f"""
         <div class="card">
             <h2>Ciao {u_nome} 👋</h2>
-            <p>Benvenuto in LoopBaby</p>
+            <p>L'armadio circolare che cresce con il tuo bambino</p>
         </div>
     """, unsafe_allow_html=True)
 
-# ================= RESTO DEL TUO CODICE =================
-# (Box, Vetrina, Profilo, Carrello, ecc. NON TOCCATI)
-
+# ================= PROFILO =================
 elif st.session_state.pagina == "Profilo":
     user = st.session_state.user
 

@@ -5,28 +5,39 @@ import json
 from datetime import date
 import requests
 
-# -------------------------
-# DATABASE UTENTI (EXCEL SHEETDB)
-# -------------------------
-USERS_API = "https://sheetdb.io/api/v1/XXXXXXX"  # <-- METTI QUI
+# =========================
+# SHEETDB USERS (EXCEL LOGIN)
+# =========================
+USERS_API = "https://sheetdb.io/api/v1/XXXXXXX"  # <-- METTI QUI IL TUO
 
 def registra_utente(email, password):
-    payload = {"data": [{"email": email, "password": password}]}
-    requests.post(USERS_API, json=payload)
+    payload = {
+        "data": {
+            "email": email,
+            "password": password
+        }
+    }
+    headers = {"Content-Type": "application/json"}
+    requests.post(USERS_API, json=payload, headers=headers)
 
 def verifica_login(email, password):
     try:
         res = requests.get(USERS_API).json()
-        for u in res:
+
+        # SheetDB può restituire data oppure lista diretta
+        users = res.get("data", res)
+
+        for u in users:
             if u["email"] == email and u["password"] == password:
                 return True
     except:
         pass
+
     return False
 
-# -------------------------
-# LOGIN / REGISTER SCREEN
-# -------------------------
+# =========================
+# LOGIN SCREEN (BLOCCANTE)
+# =========================
 if "loggato" not in st.session_state:
     st.session_state.loggato = False
 
@@ -51,13 +62,13 @@ if not st.session_state.loggato:
                 st.success("Login riuscito!")
                 st.rerun()
             else:
-                st.error("Credenziali errate")
+                st.error("Email o password errati")
 
     st.stop()
 
-# -------------------------
-# DATABASE FILE UTENTE LOOPBABY
-# -------------------------
+# =========================
+# DATABASE UTENTE APP
+# =========================
 DB_FILE = "db_loopbaby.json"
 
 def carica_dati():
@@ -69,6 +80,7 @@ def carica_dati():
                 return d
         except:
             pass
+
     return {
         "nome_genitore": "",
         "email": "",
@@ -79,15 +91,15 @@ def carica_dati():
         "locker": ""
     }
 
-def salva_dati_su_file(dati):
-    d_save = dati.copy()
-    d_save["nascita"] = dati["nascita"].isoformat()
+def salva_dati(dati):
+    d = dati.copy()
+    d["nascita"] = dati["nascita"].isoformat()
     with open(DB_FILE, "w") as f:
-        json.dump(d_save, f)
+        json.dump(d, f)
 
-# -------------------------
-# CONFIGURAZIONE
-# -------------------------
+# =========================
+# SETUP APP
+# =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 if "dati" not in st.session_state:
@@ -96,119 +108,113 @@ if "dati" not in st.session_state:
 if "pagina" not in st.session_state:
     st.session_state.pagina = "Home"
 
-if "edit_mode" not in st.session_state:
-    st.session_state.edit_mode = False
-
 if "carrello" not in st.session_state:
     st.session_state.carrello = []
 
-def vai(nome_pag):
-    st.session_state.pagina = nome_pag
+def vai(p):
+    st.session_state.pagina = p
 
-def aggiungi_al_carrello(nome, prezzo):
+def add_cart(nome, prezzo):
     st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
-    st.toast(f"✅ {nome} aggiunto!")
+    st.toast("Aggiunto!")
 
-# -------------------------
-# BASE64 IMMAGINI
-# -------------------------
-def get_base64(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
+# =========================
+# BASE64
+# =========================
+def b64(file):
+    if os.path.exists(file):
+        return base64.b64encode(open(file, "rb").read()).decode()
     return ""
 
-img_data = get_base64("bimbo.jpg")
-logo_bg = get_base64("logo.png")
+img = b64("bimbo.jpg")
+logo = b64("logo.png")
 
-# -------------------------
-# CSS (IDENTICO AL TUO)
-# -------------------------
+# =========================
+# CSS (IDENTICO CONCEPT)
+# =========================
 st.markdown(f"""
 <style>
-[data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
-.stApp {{ background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 120px !important; }}
-.main .block-container {{padding: 0 !important;}}
-* {{ font-family: 'Lexend', sans-serif !important; }}
-
-.header-custom {{
-    background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,{logo_bg}");
-    background-size: cover; background-position: center; height: 130px;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 35px; border-radius: 0 0 30px 30px;
+.stApp {{
+    background:#FDFBF7;
+    max-width:450px;
+    margin:auto;
+    padding-bottom:120px;
 }}
-
-.header-text {{
-    color: white; font-size: 32px; font-weight: 800;
+* {{
+    font-family: Lexend;
 }}
-
+.header {{
+    background:url(data:image/png;base64,{logo});
+    height:130px;
+    background-size:cover;
+    border-radius:0 0 30px 30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}}
+.title {{
+    color:white;
+    font-size:32px;
+    font-weight:800;
+}}
 .card {{
-    border-radius: 25px; padding: 20px; margin: 10px 20px;
-    border: 1px solid #EAE2D6; text-align: center;
-    background-color: #FFFFFF;
+    background:white;
+    padding:20px;
+    margin:15px;
+    border-radius:20px;
 }}
-
-.box-luna {{ background-color: #f1f5f9 !important; }}
-.box-sole {{ background-color: #FFD600 !important; }}
-.box-nuvola {{ background-color: #94A3B8 !important; color: white !important; }}
-.box-premium {{ background: linear-gradient(135deg, #4F46E5, #312E81) !important; color: white !important; }}
-
-.prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; }}
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
+st.markdown('<div class="header"><div class="title">LOOPBABY</div></div>', unsafe_allow_html=True)
 
-# -------------------------
-# HOME (ESEMPLIFICATA MA IDENTICA LOGICA)
-# -------------------------
+# =========================
+# HOME
+# =========================
 if st.session_state.pagina == "Home":
 
     st.write("Benvenuto 👶")
 
-    if st.button("Vai a Box"):
+    if st.button("Vai Box"):
         vai("Box")
         st.rerun()
 
-# -------------------------
-# BOX PAGE
-# -------------------------
+# =========================
+# BOX
+# =========================
 elif st.session_state.pagina == "Box":
 
-    st.title("Scegli Box")
+    st.title("Box")
 
     if st.button("Aggiungi Box"):
-        aggiungi_al_carrello("Box LUNA", 19.90)
+        add_cart("Box LUNA", 19.90)
 
-# -------------------------
+# =========================
 # CARRELLO
-# -------------------------
+# =========================
 elif st.session_state.pagina == "Carrello":
 
     st.title("Carrello")
 
-    totale = 0
-    for item in st.session_state.carrello:
-        st.write(item["nome"], item["prezzo"])
-        totale += item["prezzo"]
+    tot = 0
+    for i in st.session_state.carrello:
+        st.write(i["nome"], i["prezzo"])
+        tot += i["prezzo"]
 
-    st.write("Totale:", totale)
+    st.write("Totale:", tot)
 
-# -------------------------
-# NAVBAR
-# -------------------------
-st.markdown("<hr>", unsafe_allow_html=True)
+# =========================
+# NAV
+# =========================
+st.markdown("---")
 
-col = st.columns(3)
+c1, c2, c3 = st.columns(3)
 
-if col[0].button("Home"):
-    vai("Home")
-    st.rerun()
+if c1.button("Home"):
+    vai("Home"); st.rerun()
 
-if col[1].button("Box"):
-    vai("Box")
-    st.rerun()
+if c2.button("Box"):
+    vai("Box"); st.rerun()
 
-if col[2].button("Carrello"):
-    vai("Carrello")
-    st.rerun()
+if c3.button("Carrello"):
+    vai("Carrello"); st.rerun()

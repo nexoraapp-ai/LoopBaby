@@ -1,4 +1,9 @@
 import requests
+import streamlit as st
+import os
+import base64
+import json
+from datetime import date
 
 SHEETDB_API = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
@@ -17,12 +22,6 @@ def salva_su_sheetdb(dati):
     }
     requests.post(SHEETDB_API, json=payload)
 
-
-import streamlit as st
-import os
-import base64
-import json
-from datetime import date
 
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
@@ -73,6 +72,7 @@ def get_base64(file_path):
 img_data = get_base64("bimbo.jpg")
 logo_bg = get_base64("logo.png")
 
+# ---------------- CSS (INVARIATO) ----------------
 st.markdown(f"""
 <style>
 [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {{display: none !important;}}
@@ -96,7 +96,6 @@ st.markdown(f"""
     color: white;
     font-size: 32px;
     font-weight: 800;
-    text-transform: uppercase;
 }}
 
 .card {{
@@ -110,7 +109,7 @@ st.markdown(f"""
 
 st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
 
-# ---------------- HOME / ALTRE PAGINE (NON MODIFICATE) ----------------
+# ---------------- Pagine ----------------
 
 if st.session_state.pagina == "Home":
     st.write("HOME")

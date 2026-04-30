@@ -297,7 +297,7 @@ elif st.session_state.pagina == "Profilo":
             <b>📧 Email:</b> {st.session_state.dati['email']}<br>
             <b>📞 Tel:</b> {st.session_state.dati['telefono']}<hr>
             <b>👶 Bambino:</b> {st.session_state.dati['nome_bambino']}<br>
-            <b>📅 Nascita:</b> {st.session_state.dati['nascita']}<br>
+            <b>📅 Nascita:</b> {safe_get(st.session_state.dati, 'nascita')}<br>
             <b>📏 Taglia attuale:</b> {st.session_state.dati['taglia']}<hr>
             <b>📍 Locker scelto:</b><br><span style="color:#0d9488; font-weight:800;">{st.session_state.dati['locker'] if st.session_state.dati['locker'] else 'Da scegliere'}</span>
         </div>""", unsafe_allow_html=True)

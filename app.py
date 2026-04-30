@@ -113,6 +113,9 @@ if st.session_state.utente is None:
 
             else:
                 st.warning("Compila email e password")
+                # ---------------- BLOCCO APP SE NON LOGGATO ----------------
+if st.session_state.utente is None:
+    st.stop()
 import os
 import base64
 import json

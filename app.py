@@ -1,33 +1,20 @@
 import streamlit as st
-import pandas as pd
-import requests
-import base64
 import os
+import base64
 import json
+import requests
 from datetime import date, datetime, timedelta
 
 # ==========================================
-# 1. DATABASE SHEETDB (LOGICA REALE)
+# 1. CONFIGURAZIONE DATABASE (SHEETDB)
 # ==========================================
-SHEETDB_URL = "https://sheetdb.io"
-
-def carica_db():
-    try:
-        t = datetime.now().microsecond
-        r = requests.get(f"{SHEETDB_URL}?t={t}")
-        if r.status_code == 200:
-            df = pd.DataFrame(r.json())
-            if not df.empty:
-                df.columns = [str(c).strip().lower() for c in df.columns]
-                return df
-        return pd.DataFrame()
-    except: return pd.DataFrame()
+SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 def registra_utente(email, password, nome, bimbo, taglia, locker):
     payload = {
         "data": [{
             "email": email.strip().lower(),
-            "password": password,
+            "password": str(password).strip(),
             "nome_genitore": nome,
             "nome_bambino": bimbo,
             "taglia": taglia,
@@ -42,13 +29,14 @@ def registra_utente(email, password, nome, bimbo, taglia, locker):
 
 def login(email, password):
     try:
-        utenti = carica_db()
-        if not utenti.empty:
-            # Fix per password numeriche in Excel
-            utenti['p_fix'] = utenti['password'].astype(str).str.replace('.0', '', regex=False).str.strip()
-            match = utenti[(utenti['email'].str.lower() == email.strip().lower()) & (utenti['p_fix'] == str(password).strip())]
-            if not match.empty:
-                return match.iloc[-1].to_dict()
+        # Cache buster per leggere dati sempre freschi
+        t = datetime.now().microsecond
+        r = requests.get(f"{SHEETDB_URL}?t={t}")
+        utenti = r.json()
+        # SheetDB restituisce una lista di dizionari
+        for u in utenti:
+            if str(u.get("email")).strip().lower() == email.strip().lower() and str(u.get("password")).strip() == str(password).strip():
+                return u 
     except: pass
     return None
 
@@ -61,15 +49,10 @@ if "loggato" not in st.session_state: st.session_state.loggato = False
 if "user_data" not in st.session_state: st.session_state.user_data = {}
 if "pagina" not in st.session_state: st.session_state.pagina = "Home"
 if "carrello" not in st.session_state: st.session_state.carrello = []
-if "edit_mode" not in st.session_state: st.session_state.edit_mode = False
 
 def vai(nome_pag): 
     st.session_state.pagina = nome_pag
     st.rerun()
-
-def aggiungi_al_carrello(nome, prezzo):
-    st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
-    st.toast(f"✅ {nome} aggiunto!")
 
 def get_base64(file_path):
     if os.path.exists(file_path):
@@ -80,7 +63,7 @@ img_data = get_base64("bimbo.jpg")
 logo_bg = get_base64("logo.png") 
 
 # ==========================================
-# 3. CSS TOTALE (TUO DESIGN 23:30)
+# 3. CSS TOTALE (TUO DESIGN ORIGINALE)
 # ==========================================
 st.markdown(f"""
     <style>
@@ -95,49 +78,68 @@ st.markdown(f"""
         margin-bottom: 35px; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }}
     .header-text {{ color: white; font-size: 32px; font-weight: 800; letter-spacing: 3px; text-shadow: 2px 2px 8px rgba(0,0,0,0.4); text-transform: uppercase; }}
-    div.stButton > button {{ background-color: #f43f5e !important; color: white !important; border-radius: 18px !important; width: 100% !important; font-weight: 800 !important; margin: 10px auto !important; border: none !important; height: 48px; }}
+    div.stButton > button {{
+        background-color: #f43f5e !important; color: white !important; border-radius: 18px !important;
+        width: 100% !important; font-weight: 800 !important; margin: 10px auto !important; border: none !important;
+    }}
     .card {{ border-radius: 25px; padding: 20px; margin: 10px 20px; border: 1px solid #EAE2D6; text-align: center; background-color: #FFFFFF; box-shadow: 0 8px 25px rgba(0,0,0,0.03); }}
-    .box-luna {{ background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; }}
-    .box-sole {{ background-color: #FFD600 !important; border-color: #EAB308 !important; color: #000 !important; }} 
-    .box-nuvola {{ background-color: #94A3B8 !important; border-color: #64748b !important; color: white !important; }}
-    .box-premium {{ background: linear-gradient(135deg, #4F46E5 0%, #312E81 100%) !important; color: white !important; border: none; }}
+    .box-luna {{ background-color: #f1f5f9 !important; }}
+    .box-sole {{ background-color: #FFD600 !important; color: #000 !important; }} 
     .prezzo-rosa {{ color: #ec4899; font-size: 24px; font-weight: 900; }}
     .obiettivo-pink {{ background-color: #fff1f2; padding: 20px; border-radius: 20px; margin: 20px; text-align: center; border: 1px solid #fecdd3; }}
     </style>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. LOGIN / REGISTRAZIONE BLOCCANTE
+# 4. SCHERMATA ACCESSO (LOGIN/REG BLOCCANTE)
 # ==========================================
 if not st.session_state.loggato:
     st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align:center;'>Benvenuta! 🌸</h2>", unsafe_allow_html=True)
-    scelta = st.radio("Accesso", ["Login", "Registrati"], horizontal=True)
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-
-    if scelta == "Registrati":
-        nome = st.text_input("Tuo Nome")
-        rt = st.selectbox("Taglia attuale", ["50-56 cm", "62-68 cm", "74-80 cm", "86-92 cm"])
-        rl = st.selectbox("Locker preferito", ["InPost", "Esselunga", "Poste Italiane"])
-        if st.button("CREA ACCOUNT"):
-            if email and password:
-                if registra_utente(email, password, nome, "", rt, rl) == 201:
-                    st.success("Registrazione completata! Ora fai login.")
-    else:
-        if st.button("ENTRA"):
-            user = login(email, password)
-            if user:
-                st.session_state.loggato = True
-                st.session_state.user_data = user
-                st.rerun()
-            else: st.error("Dati errati")
+    st.markdown("<h2 style='text-align:center;'>Benvenuta in Famiglia! 🌸</h2>", unsafe_allow_html=True)
+    
+    tab_l, tab_r = st.tabs(["Accedi", "Registrati"])
+    
+    with tab_l:
+        with st.form("login_form"):
+            e = st.text_input("Email")
+            p = st.text_input("Password", type="password")
+            if st.form_submit_button("ENTRA"):
+                user = login(e, p)
+                if user:
+                    st.session_state.loggato = True
+                    st.session_state.user_data = user
+                    st.rerun()
+                else: st.error("Email o Password errati")
+    
+    with tab_r:
+        with st.form("reg_form"):
+            re = st.text_input("Email")
+            rp = st.text_input("Password", type="password")
+            rn = st.text_input("Il tuo Nome")
+            rb = st.text_input("Nome Bambino")
+            rt = st.selectbox("Taglia", ["50-56 cm", "62-68 cm", "74-80 cm"])
+            rl = st.selectbox("Locker", ["InPost", "Esselunga", "Poste Italiane"])
+            if st.form_submit_button("CREA ACCOUNT"):
+                if re and rp:
+                    if registra_utente(re, rp, rn, rb, rt, rl) == 201:
+                        st.success("Registrato! Ora fai login.")
+                else: st.error("Inserisci i dati richiesti")
     st.stop()
 
 # ==========================================
-# 5. APP PAGES (DOPO IL LOGIN)
+# 5. APP DOPO LOGIN (THE FULL EXPERIENCE)
 # ==========================================
 st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
+
+# Barra Navigazione Fissa a 7 icone
+c_nav = st.columns(7)
+menu = [("🏠", "Home"), ("📖", "Info"), ("📦", "Box"), ("🛍️", "Vetrina"), ("👤", "Profilo"), ("🛒", "Carrello"), ("👋", "ChiSiamo")]
+for i, (icon, pag) in enumerate(menu):
+    with c_nav[i]:
+        label = f"{icon}({len(st.session_state.carrello)})" if pag == "Carrello" and len(st.session_state.carrello)>0 else icon
+        if st.button(label, key=f"nav_{pag}"): vai(pag)
+
+st.divider()
 
 if st.session_state.pagina == "Home":
     img_html = f'<img src="data:image/jpeg;base64,{img_data}" style="width:100%; border-radius:25px;">' if img_data else ""
@@ -145,20 +147,37 @@ if st.session_state.pagina == "Home":
     st.markdown(f"""<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; padding: 0 20px; align-items: start;">
         <div>
             <div style="font-size:28px; font-weight:800; color:#1e293b;">Ciao {u_nome}! 👋</div>
-            <div style="font-size:14px; font-weight:600; color:#334155; line-height:1.3;">L'armadio circolare che cresce con il tuo bambino.</div>
+            <div style="font-size:14px; font-weight:600; color:#334155; line-height:1.3;">L'armadio circolare che cresce con il tuo bambino: capi scelti con amore.</div>
         </div>
         <div>{img_html}</div>
     </div>""", unsafe_allow_html=True)
-    st.markdown('<div class="card" style="background-color: #FFF1F2; border: 2px dashed #F43F5E;"><b>✨ Promo Mamme Fondatrici</b><br>Dona 10 capi e ricevi una Box OMAGGIO!</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card" style="background-color: #FFF1F2; border: 2px dashed #F43F5E;"><b>✨ Promo Fondatrici</b><br>Dona 10 capi e ricevi una Box OMAGGIO!</div>', unsafe_allow_html=True)
 
 elif st.session_state.pagina == "Info":
-    st.markdown('<h2 style="text-align:center;">Come funziona 🔄</h2>', unsafe_allow_html=True)
-    st.markdown('<div class="card" style="text-align:left; font-size:14px;"><b>1. Scegli Box.</b><br><b>2. Usala per 3 mesi.</b><br><b>3. Scambia o Rendi.</b></div>', unsafe_allow_html=True)
+    st.markdown('<h2 style="text-align:center;">Come funziona LoopBaby 🔄</h2>', unsafe_allow_html=True)
+    st.markdown("""<div style="padding: 0 25px; font-size: 14px; color: #475569; line-height: 1.6;">
+            <b>1. Scegli e Ricevi:</b> Nel Locker scelto.<br><br>
+            <b>2. Controllo Qualità:</b> Hai 48 ore.<br><br>
+            <b>3. Utilizzo:</b> Massimo 3 mesi.<br><br>
+            <b>🚚 Spedizioni:</b> Se continui il ciclo, paghiamo noi andata e ritorno!</div>""", unsafe_allow_html=True)
 
-# --- NAV BAR FISSA ---
-st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
-c = st.columns(7)
-menu = [("🏠", "Home"), ("📖", "Info"), ("📦", "Box"), ("🛍️", "Vetrina"), ("👤", "Profilo"), ("🛒", "Carrello"), ("👋", "ChiSiamo")]
-for i, (icon, pag) in enumerate(menu):
-    with c[i]:
-        if st.button(icon, key=f"nav_{pag}"): vai(pag)
+elif st.session_state.pagina == "Box":
+    tg = st.session_state.user_data.get('taglia', '50-56 cm')
+    st.markdown(f'<div style="text-align:center;"><span style="background:#e0f2f1; padding:5px 15px; border-radius:15px; font-size:12px; font-weight:700;">📍 TAGLIA: {tg}</span></div>', unsafe_allow_html=True)
+    for s, c in [("LUNA 🌙", "box-luna"), ("SOLE ☀️", "box-sole")]:
+        st.markdown(f'<div class="card {c}"><h3>{s}</h3><div class="prezzo-rosa">19,90€</div></div>', unsafe_allow_html=True)
+        if st.button(f"Scegli {s}", key=s): st.session_state.carrello.append(s); st.toast("Aggiunto!")
+
+elif st.session_state.pagina == "Profilo":
+    u = st.session_state.user_data
+    st.markdown(f"""<div class="card" style="text-align:left; font-size:14px;">
+        <b>👤 Nome:</b> {u.get('nome_genitore')}<br><b>📧 Email:</b> {u.get('email')}<br>
+        <b>📏 Taglia:</b> {u.get('taglia')}<br><b>📍 Locker:</b> {u.get('locker')}
+    </div>""", unsafe_allow_html=True)
+    if st.button("Logout"): 
+        st.session_state.loggato = False
+        st.rerun()
+
+elif st.session_state.pagina == "ChiSiamo":
+    st.markdown('<div style="text-align:center; padding:20px;"><h2>Chi siamo? ❤️</h2><b>Siamo genitori come te.</b></div>', unsafe_allow_html=True)
+    st.markdown('<div class="obiettivo-pink"><b>Il nostro obiettivo?</b><br>Risparmio e futuro migliore per i nostri figli.</div>', unsafe_allow_html=True)

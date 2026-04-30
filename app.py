@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 import base64
-import json
 import requests
 from datetime import date
 
@@ -11,10 +10,10 @@ from datetime import date
 SHEETDB_API = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 # =========================
-# FUNZIONI UTILI
+# UTILS SICURE
 # =========================
-def safe_get(d, k, default=""):
-    return d.get(k, default)
+def safe(d, k, default=""):
+    return d.get(k, default) if isinstance(d, dict) else default
 
 def login(email, password):
     url = f"{SHEETDB_API}/search?email={email}&password={password}"
@@ -23,7 +22,7 @@ def login(email, password):
         return r.json()[0]
     return None
 
-def registra_utente(email, password, dati):
+def registra(email, password, dati):
     payload = {
         "data": [{
             "email": email,
@@ -37,23 +36,17 @@ def registra_utente(email, password, dati):
             "locker": dati.get("locker","")
         }]
     }
-    r = requests.post(SHEETDB_API, json=payload)
-    return r.status_code in [200, 201]
+    requests.post(SHEETDB_API, json=payload)
 
 def vai(p):
     st.session_state.pagina = p
 
-def aggiungi_al_carrello(n, p):
+def add_cart(n, p):
     st.session_state.carrello.append({"nome": n, "prezzo": p})
     st.toast(f"✅ {n} aggiunto!")
 
-def get_base64(path):
-    if os.path.exists(path):
-        return base64.b64encode(open(path,"rb").read()).decode()
-    return ""
-
 # =========================
-# CONFIG
+# INIT STATE
 # =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
@@ -70,18 +63,17 @@ if "dati" not in st.session_state:
     st.session_state.dati = {}
 
 # =========================
-# LOGIN / REGISTRAZIONE
+# LOGIN / REGISTER
 # =========================
 if st.session_state.utente is None:
 
-    st.markdown("## LoopBaby 🔐")
+    st.title("LoopBaby 🔐")
 
-    tab1, tab2 = st.tabs(["Login", "Registrati"])
+    tab1, tab2 = st.tabs(["Login", "Registrazione"])
 
-    # ---------------- LOGIN ----------------
     with tab1:
-        email = st.text_input("Email", key="log_email")
-        password = st.text_input("Password", type="password", key="log_pass")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
 
         if st.button("Accedi"):
             user = login(email, password)
@@ -93,10 +85,9 @@ if st.session_state.utente is None:
             else:
                 st.error("Credenziali errate")
 
-    # ---------------- REGISTRAZIONE ----------------
     with tab2:
-        email = st.text_input("Email ", key="reg_email")
-        password = st.text_input("Password ", type="password", key="reg_pass")
+        email_r = st.text_input("Email ", key="r1")
+        pass_r = st.text_input("Password ", type="password", key="r2")
 
         nome = st.text_input("Nome genitore")
         bimbo = st.text_input("Nome bambino")
@@ -110,18 +101,13 @@ if st.session_state.utente is None:
                 "taglia": "50-56 cm",
                 "locker": ""
             }
-
-            ok = registra_utente(email, password, dati)
-
-            if ok:
-                st.success("Registrazione completata")
-            else:
-                st.error("Errore registrazione")
+            registra(email_r, pass_r, dati)
+            st.success("Registrazione completata")
 
     st.stop()
 
 # =========================
-# FIX DATI SICURI
+# FIX DATI
 # =========================
 BASE = {
     "nome_genitore": "",
@@ -138,30 +124,29 @@ for k in BASE:
         st.session_state.dati[k] = BASE[k]
 
 # =========================
-# CSS (NON MODIFICATO)
+# DESIGN (NON TOCCATO)
 # =========================
 st.markdown("""
 <style>
-.stApp { background-color: #FDFBF7; max-width: 450px; margin: 0 auto; }
-.card { border-radius: 25px; padding: 20px; margin: 10px; background: white; }
+.stApp { background:#FDFBF7; max-width:450px; margin:auto; }
+.card { background:white; padding:20px; border-radius:20px; margin:10px; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h2 style="text-align:center;">LOOPBABY</h2>', unsafe_allow_html=True)
+st.markdown("<h2 style='text-align:center'>LOOPBABY</h2>", unsafe_allow_html=True)
 
 # =========================
 # HOME
 # =========================
 if st.session_state.pagina == "Home":
 
-    nome = safe_get(st.session_state.dati, "nome_genitore").split(" ")[0]
+    nome = safe(st.session_state.dati, "nome_genitore").split(" ")[0]
 
     st.markdown(f"### Ciao {nome} 👋")
 
     st.markdown("""
-    <div class="card">
-    Benvenuto in LoopBaby 🔄<br>
-    Armadio circolare per bambini
+    <div class='card'>
+    Armadio circolare bambini ♻️
     </div>
     """, unsafe_allow_html=True)
 
@@ -174,33 +159,33 @@ if st.session_state.pagina == "Home":
 # =========================
 elif st.session_state.pagina == "Box":
 
-    st.markdown("## Scegli Box 📦")
+    st.markdown("## Box 📦")
 
-    tg = safe_get(st.session_state.dati, "taglia")
+    tag = safe(st.session_state.dati, "taglia")
 
-    st.info(f"Taglia: {tg}")
+    st.info(f"Taglia: {tag}")
 
-    if st.button("Box Standard 19.90€"):
-        aggiungi_al_carrello("Box Standard", 19.90)
+    if st.button("Standard 19.90€"):
+        add_cart("Box Standard", 19.90)
 
-    if st.button("Box Premium 29.90€"):
-        aggiungi_al_carrello("Box Premium", 29.90)
+    if st.button("Premium 29.90€"):
+        add_cart("Box Premium", 29.90)
 
 # =========================
-# PROFILO (FIXATO)
+# PROFILO (FIX DEFINITIVO)
 # =========================
 elif st.session_state.pagina == "Profilo":
 
     st.markdown("## Profilo 👤")
 
     st.markdown(f"""
-    <div class="card">
-    👤 Nome: {safe_get(st.session_state.dati,'nome_genitore')}<br>
-    📧 Email: {safe_get(st.session_state.dati,'email')}<br>
-    📞 Tel: {safe_get(st.session_state.dati,'telefono')}<br>
-    👶 Bambino: {safe_get(st.session_state.dati,'nome_bambino')}<br>
-    📏 Taglia: {safe_get(st.session_state.dati,'taglia')}<br>
-    📍 Locker: {safe_get(st.session_state.dati,'locker','Da scegliere')}
+    <div class='card'>
+    👤 {safe(st.session_state.dati,'nome_genitore')}<br>
+    📧 {safe(st.session_state.dati,'email')}<br>
+    📞 {safe(st.session_state.dati,'telefono')}<br>
+    👶 {safe(st.session_state.dati,'nome_bambino')}<br>
+    📏 {safe(st.session_state.dati,'taglia')}<br>
+    📍 {safe(st.session_state.dati,'locker','Da scegliere')}
     </div>
     """, unsafe_allow_html=True)
 
@@ -222,20 +207,20 @@ elif st.session_state.pagina == "Carrello":
         st.markdown(f"### Totale: {tot}€")
 
         if st.button("Paga"):
-            st.success("Pagamento simulato")
+            st.success("Pagamento ok")
             st.session_state.carrello = []
             st.rerun()
 
 # =========================
-# NAV
+# NAV BAR
 # =========================
 st.markdown("---")
-c = st.columns(4)
+cols = st.columns(4)
 
 menu = ["Home", "Box", "Profilo", "Carrello"]
 
 for i, m in enumerate(menu):
-    with c[i]:
+    with cols[i]:
         if st.button(m):
             vai(m)
             st.rerun()

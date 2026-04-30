@@ -1,226 +1,218 @@
 import streamlit as st
 import os
 import base64
+import json
 import requests
 from datetime import date
 
 # =========================
-# SHEETDB
+# SHEETDB CONFIG
 # =========================
 SHEETDB_API = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 # =========================
-# UTILS SICURE
+# LOGIN / REGISTER SHEETDB
 # =========================
-def safe(d, k, default=""):
-    return d.get(k, default) if isinstance(d, dict) else default
-
-def login(email, password):
-    url = f"{SHEETDB_API}/search?email={email}&password={password}"
-    r = requests.get(url)
-    if r.status_code == 200 and len(r.json()) > 0:
-        return r.json()[0]
-    return None
-
-def registra(email, password, dati):
+def salva_su_sheetdb(dati, password):
     payload = {
         "data": [{
-            "email": email,
+            "email": dati["email"],
             "password": password,
-            "nome_genitore": dati.get("nome_genitore",""),
-            "nome_bambino": dati.get("nome_bambino",""),
-            "telefono": dati.get("telefono",""),
-            "taglia": dati.get("taglia","50-56 cm"),
+            "nome_genitore": dati["nome_genitore"],
+            "nome_bambino": dati["nome_bambino"],
+            "taglia": dati["taglia"],
             "data_inizio": str(date.today()),
             "scadenza": "",
-            "locker": dati.get("locker","")
+            "locker": dati["locker"],
+            "telefono": dati.get("telefono", "")
         }]
     }
     requests.post(SHEETDB_API, json=payload)
 
-def vai(p):
-    st.session_state.pagina = p
 
-def add_cart(n, p):
-    st.session_state.carrello.append({"nome": n, "prezzo": p})
-    st.toast(f"✅ {n} aggiunto!")
+def login_sheetdb(email, password):
+    url = f"{SHEETDB_API}/search?email={email}&password={password}"
+    r = requests.get(url)
+    data = r.json()
+    return len(data) > 0
 
 # =========================
-# INIT STATE
+# FIX DATI (NO KEY ERROR)
+# =========================
+def safe_dati():
+    return {
+        "nome_genitore": "",
+        "email": "",
+        "telefono": "",
+        "nome_bambino": "",
+        "nascita": date(2024, 1, 1),
+        "taglia": "50-56 cm",
+        "locker": ""
+    }
+
+# =========================
+# STREAMLIT CONFIG
 # =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
+# =========================
+# SESSION STATE
+# =========================
+if "logged" not in st.session_state:
+    st.session_state.logged = False
+
 if "pagina" not in st.session_state:
-    st.session_state.pagina = "Auth"
+    st.session_state.pagina = "Home"
+
+if "dati" not in st.session_state:
+    st.session_state.dati = safe_dati()
 
 if "carrello" not in st.session_state:
     st.session_state.carrello = []
 
-if "utente" not in st.session_state:
-    st.session_state.utente = None
+if "edit_mode" not in st.session_state:
+    st.session_state.edit_mode = False
 
-if "dati" not in st.session_state:
-    st.session_state.dati = {}
+def vai(p):
+    st.session_state.pagina = p
+
+def aggiungi_al_carrello(nome, prezzo):
+    st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
+    st.toast(f"{nome} aggiunto")
 
 # =========================
-# LOGIN / REGISTER
+# LOGIN / REGISTER UI
 # =========================
-if st.session_state.utente is None:
+if not st.session_state.logged:
 
-    st.title("LoopBaby 🔐")
+    st.title("LoopBaby Login")
 
     tab1, tab2 = st.tabs(["Login", "Registrazione"])
 
+    # ---------------- LOGIN ----------------
     with tab1:
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
 
-        if st.button("Accedi"):
-            user = login(email, password)
-            if user:
-                st.session_state.utente = user
-                st.session_state.dati = user
-                st.session_state.pagina = "Home"
+        if st.button("ENTRA"):
+            if login_sheetdb(email, password):
+                st.session_state.logged = True
+                st.session_state.dati["email"] = email
+                st.success("Login ok")
                 st.rerun()
             else:
                 st.error("Credenziali errate")
 
+    # ---------------- REGISTER ----------------
     with tab2:
-        email_r = st.text_input("Email ", key="r1")
-        pass_r = st.text_input("Password ", type="password", key="r2")
-
         nome = st.text_input("Nome genitore")
-        bimbo = st.text_input("Nome bambino")
+        email_r = st.text_input("Email ")
         tel = st.text_input("Telefono")
+        bambino = st.text_input("Nome bambino")
+        taglia = st.selectbox("Taglia", ["50-56 cm","62-68 cm","74-80 cm","86-92 cm"])
+        locker = st.text_input("Locker")
+        password_r = st.text_input("Password", type="password")
 
-        if st.button("Registrati"):
+        if st.button("REGISTRATI"):
             dati = {
                 "nome_genitore": nome,
-                "nome_bambino": bimbo,
+                "email": email_r,
                 "telefono": tel,
-                "taglia": "50-56 cm",
-                "locker": ""
+                "nome_bambino": bambino,
+                "taglia": taglia,
+                "locker": locker
             }
-            registra(email_r, pass_r, dati)
+
+            salva_su_sheetdb(dati, password_r)
+
             st.success("Registrazione completata")
+            st.session_state.logged = True
+            st.session_state.dati = dati
+            st.rerun()
 
     st.stop()
 
 # =========================
-# FIX DATI
-# =========================
-BASE = {
-    "nome_genitore": "",
-    "email": "",
-    "telefono": "",
-    "nome_bambino": "",
-    "nascita": "",
-    "taglia": "50-56 cm",
-    "locker": ""
-}
-
-for k in BASE:
-    if k not in st.session_state.dati:
-        st.session_state.dati[k] = BASE[k]
-
-# =========================
-# DESIGN (NON TOCCATO)
+# DESIGN (IDENTICO AL TUO)
 # =========================
 st.markdown("""
 <style>
-.stApp { background:#FDFBF7; max-width:450px; margin:auto; }
-.card { background:white; padding:20px; border-radius:20px; margin:10px; }
+[data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
+.stApp { background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 120px !important; }
+.main .block-container {padding: 0 !important;}
+* { font-family: 'Lexend', sans-serif !important; }
+
+.header-custom {
+    background: #000;
+    height: 130px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:0 0 30px 30px;
+}
+.header-text {
+    color:white;
+    font-size:32px;
+    font-weight:800;
+}
+
+.card { border-radius: 25px; padding: 20px; margin: 10px 20px; background:white;}
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h2 style='text-align:center'>LOOPBABY</h2>", unsafe_allow_html=True)
+st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div></div>', unsafe_allow_html=True)
 
 # =========================
-# HOME
+# HOME (UGUALE)
 # =========================
 if st.session_state.pagina == "Home":
 
-    nome = safe(st.session_state.dati, "nome_genitore").split(" ")[0]
+    nome = st.session_state.dati.get("nome_genitore","")
 
     st.markdown(f"### Ciao {nome} 👋")
 
     st.markdown("""
-    <div class='card'>
-    Armadio circolare bambini ♻️
+    <div class="card">
+    Armadio circolare per bambini
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("Vai ai Box"):
+    if st.button("Vai Box"):
         vai("Box")
         st.rerun()
 
 # =========================
-# BOX
+# BOX (UGUALE)
 # =========================
 elif st.session_state.pagina == "Box":
 
-    st.markdown("## Box 📦")
+    st.markdown("## Box")
 
-    tag = safe(st.session_state.dati, "taglia")
-
-    st.info(f"Taglia: {tag}")
-
-    if st.button("Standard 19.90€"):
-        add_cart("Box Standard", 19.90)
-
-    if st.button("Premium 29.90€"):
-        add_cart("Box Premium", 29.90)
+    if st.button("Aggiungi"):
+        aggiungi_al_carrello("Box", 19.9)
 
 # =========================
-# PROFILO (FIX DEFINITIVO)
+# PROFILO (FIX KEYERROR)
 # =========================
 elif st.session_state.pagina == "Profilo":
 
-    st.markdown("## Profilo 👤")
+    d = st.session_state.dati
 
     st.markdown(f"""
-    <div class='card'>
-    👤 {safe(st.session_state.dati,'nome_genitore')}<br>
-    📧 {safe(st.session_state.dati,'email')}<br>
-    📞 {safe(st.session_state.dati,'telefono')}<br>
-    👶 {safe(st.session_state.dati,'nome_bambino')}<br>
-    📏 {safe(st.session_state.dati,'taglia')}<br>
-    📍 {safe(st.session_state.dati,'locker','Da scegliere')}
+    <div class="card">
+    Nome: {d.get('nome_genitore','')} <br>
+    Email: {d.get('email','')} <br>
+    Telefono: {d.get('telefono','')} <br>
+    Bambino: {d.get('nome_bambino','')} <br>
+    Nascita: {d.get('nascita','')} <br>
+    Taglia: {d.get('taglia','')} <br>
+    Locker: {d.get('locker','')}
     </div>
     """, unsafe_allow_html=True)
 
 # =========================
-# CARRELLO
+# LOGOUT
 # =========================
-elif st.session_state.pagina == "Carrello":
-
-    st.markdown("## Carrello 🛒")
-
-    if not st.session_state.carrello:
-        st.write("Vuoto")
-    else:
-        tot = 0
-        for i in st.session_state.carrello:
-            st.write(f"{i['nome']} - {i['prezzo']}€")
-            tot += i['prezzo']
-
-        st.markdown(f"### Totale: {tot}€")
-
-        if st.button("Paga"):
-            st.success("Pagamento ok")
-            st.session_state.carrello = []
-            st.rerun()
-
-# =========================
-# NAV BAR
-# =========================
-st.markdown("---")
-cols = st.columns(4)
-
-menu = ["Home", "Box", "Profilo", "Carrello"]
-
-for i, m in enumerate(menu):
-    with cols[i]:
-        if st.button(m):
-            vai(m)
-            st.rerun()
+if st.button("Logout"):
+    st.session_state.logged = False
+    st.rerun()

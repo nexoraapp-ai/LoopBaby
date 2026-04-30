@@ -92,7 +92,7 @@ if not st.session_state.logged:
     # ---------------- LOGIN ----------------
     with tab1:
         email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
+        password_r = st.text_input("Password", type="password", key="reg_password")
 
         if st.button("ENTRA"):
             if login_sheetdb(email, password):

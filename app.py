@@ -95,7 +95,7 @@ if not st.session_state.logged:
         password_r = st.text_input("Password", type="password", key="reg_password")
 
         if st.button("ENTRA"):
-            if login_sheetdb(email, password):
+            if login_sheetdb(email, password_r):
                 st.session_state.logged = True
                 st.session_state.dati["email"] = email
                 st.success("Login ok")

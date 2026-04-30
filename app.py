@@ -293,15 +293,16 @@ elif st.session_state.pagina == "Profilo":
     st.markdown('<h2 style="text-align:center;">Profilo 👤</h2>', unsafe_allow_html=True)
     if not st.session_state.edit_mode:
         st.markdown(f"""<div class="card" style="text-align:left; font-size:14px;">
-            <b>👤 Nome:</b> {st.session_state.dati['nome_genitore']}<br>
-            <b>📧 Email:</b> {st.session_state.dati['email']}<br>
-            <b>📞 Tel:</b> {st.session_state.dati['telefono']}<hr>
-            <b>👶 Bambino:</b> {st.session_state.dati['nome_bambino']}<br>
-            <b>📅 Nascita:</b> {safe_get(st.session_state.dati, 'nascita')}<br>
-            <b>📏 Taglia attuale:</b> {st.session_state.dati['taglia']}<hr>
-            <b>📍 Locker scelto:</b><br><span style="color:#0d9488; font-weight:800;">{st.session_state.dati['locker'] if st.session_state.dati['locker'] else 'Da scegliere'}</span>
-        </div>""", unsafe_allow_html=True)
-        if st.button("MODIFICA DATI"): st.session_state.edit_mode = True; st.rerun()
+           <b>👤 Nome:</b> {safe_get(st.session_state.dati,'nome_genitore')}<br>
+<b>📧 Email:</b> {safe_get(st.session_state.dati,'email')}<br>
+<b>📞 Tel:</b> {safe_get(st.session_state.dati,'telefono')}<br><hr>
+<b>👶 Bambino:</b> {safe_get(st.session_state.dati,'nome_bambino')}<br>
+<b>📅 Nascita:</b> {safe_get(st.session_state.dati,'nascita')}<br>
+<b>📏 Taglia attuale:</b> {safe_get(st.session_state.dati,'taglia')}<hr>
+<b>📍 Locker scelto:</b><br>
+<span style="color:#0d9488; font-weight:800;">
+{safe_get(st.session_state.dati,'locker','Da scegliere')}
+</span>
     else:
         with st.form("edit_f"):
             n = st.text_input("Nome e Cognome", st.session_state.dati['nome_genitore'])

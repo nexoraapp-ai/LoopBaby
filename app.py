@@ -39,41 +39,24 @@ def login(email, password):
         st.error(f"Errore connessione: {e}")
     return False
 
-# --- 2. CONFIGURAZIONE E STATO ---
-st.set_page_config(page_title="LoopBaby", layout="centered")
+# --- 2. CONFIGURAZIONE PAGINA & STATO ---
+st.set_page_config(page_title="LoopBaby", layout="centered", initial_sidebar_state="collapsed")
 
-if "dati" not in st.session_state:
-    st.session_state.dati = carica_dati()
-if "pagina" not in st.session_state: 
-    st.session_state.pagina = "Home"
-if "edit_mode" not in st.session_state:
-    st.session_state.edit_mode = False
-if "carrello" not in st.session_state:
-    st.session_state.carrello = []
-if "locker_lista" not in st.session_state:
-    st.session_state.locker_lista = []
+if "loggato" not in st.session_state: st.session_state.loggato = False
+if "pagina" not in st.session_state: st.session_state.pagina = "Home"
+if "carrello" not in st.session_state: st.session_state.carrello = []
 
-def vai(nome_pag): 
-    st.session_state.pagina = nome_pag
-
-def aggiungi_al_carrello(nome, prezzo):
-    st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
-    st.toast(f"✅ {nome} aggiunto!")
-
-# Gestione link "contattaci" rapido
-if "nav" in st.query_params:
-    st.session_state.pagina = st.query_params["nav"]
-    st.query_params.clear()
+def vai(p): 
+    st.session_state.pagina = p
     st.rerun()
 
-def get_base64(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
+def get_base64(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f: return base64.b64encode(f.read()).decode()
     return ""
 
-img_data = get_base64("bimbo.jpg")
-logo_bg = get_base64("logo.png") 
+img_data, logo_bg = get_base64("bimbo.jpg"), get_base64("logo.png")
+ 
 
 # --- 3. CSS TOTALE (Design Originale con Colori Box) ---
 st.markdown(f"""

@@ -142,6 +142,9 @@ if "carrello" not in st.session_state:
 if "locker_lista" not in st.session_state:
     st.session_state.locker_lista = []
 
+if "profilo_completo" not in st.session_state:
+    st.session_state.profilo_completo = False
+
 def vai(nome_pag): 
     st.session_state.pagina = nome_pag
 

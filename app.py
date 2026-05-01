@@ -95,20 +95,23 @@ if not st.session_state.auth:
 
             if login(email, password):
 
-                st.session_state.auth = True
-                st.session_state.user = email
+    st.session_state.auth = True
 
-                dati = carica_dati(email)
-                st.session_state.dati = dati
+    # 🔥 user SEMPRE dizionario (coerente con resto app)
+    st.session_state.user = {"email": email}
 
-                if dati["nome_genitore"] == "":
-                    st.session_state.profilo_completo = False
-                    st.session_state.pagina = "CompletaProfilo"
-                else:
-                    st.session_state.profilo_completo = True
-                    st.session_state.pagina = "Home"
+    dati = carica_dati(email)
+    st.session_state.dati = dati
 
-                st.rerun()
+    # prima volta → profilo
+    if dati.get("nome_genitore", "") == "":
+        st.session_state.profilo_completo = False
+        st.session_state.pagina = "CompletaProfilo"
+    else:
+        st.session_state.profilo_completo = True
+        st.session_state.pagina = "Home"
+
+    st.rerun()
 
             else:
                 st.error("Errore login")

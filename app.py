@@ -103,12 +103,23 @@ if not st.session_state.auth:
             else:
                 st.error("Email già registrata")
 
-    if mode == "Login":
-        if st.button("Entra"):
-            if login(email, password):
-                st.session_state.auth = True
-                st.session_state.dati["email"] = email
-                st.rerun()
+    if login(email, password):
+    st.session_state.auth = True
+
+    if "dati" not in st.session_state or not st.session_state.dati:
+        st.session_state.dati = {
+            "nome_genitore": "",
+            "email": email,
+            "telefono": "",
+            "nome_bambino": "",
+            "nascita": date(2024, 1, 1),
+            "taglia": "50-56 cm",
+            "locker": ""
+        }
+    else:
+        st.session_state.dati["email"] = email
+
+    st.rerun()
             else:
                 st.error("Credenziali errate")
 

@@ -52,8 +52,10 @@ if not st.session_state.auth:
 
     if mode == "Registrati":
         if st.button("Crea"):
-            registra(email,password)
-            st.success("Creato!")
+    if registra(email,password):
+        st.success("Account creato!")
+    else:
+        st.error("Email già registrata oppure errore")
 
     if mode == "Login":
         if st.button("Entra"):

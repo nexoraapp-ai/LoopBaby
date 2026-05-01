@@ -18,18 +18,19 @@ def login(email, password):
     try:
         r = requests.get(SHEETDB_URL)
         for u in r.json():
-            if u.get("email","").lower() == email.lower() and u.get("password") == password:
-                st.session_state.user = u
-                return True
-    except:
-        pass
+            if u.get("email","").lower() == email.lower():
+                if check_password(password, u.get("password","")):
+                    st.session_state.user = u
+                    return True
+    except Exception as e:
+        st.error(f"Errore: {e}")
     return False
 
 def registra(email, password):
+    hashed = hash_password(password)
     requests.post(SHEETDB_URL, json={
-        "data":[{"email":email,"password":password}]
+        "data":[{"email":email,"password":hashed}]
     })
-
 
 # =========================
 # 🔒 BLOCCO LOGIN (PRIMA DI TUTTO)

@@ -7,31 +7,14 @@ import json
 from datetime import date
 
 # =========================
-# CONFIG
+# 🔐 LOGIN SYSTEM
 # =========================
 SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 DB_FILE = "db_loopbaby.json"
 
-# =========================
-# UTILS
-# =========================
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
-def carica_dati_base():
-    return {
-        "nome_genitore": "",
-        "email": "",
-        "telefono": "",
-        "nome_bambino": "",
-        "nascita": date(2024, 1, 1),
-        "taglia": "50-56 cm",
-        "locker": ""
-    }
-
-# =========================
-# AUTH
-# =========================
 def login(email, password):
     try:
         r = requests.get(SHEETDB_URL)
@@ -72,6 +55,7 @@ if "dati" not in st.session_state:
         "taglia": "50-56 cm",
         "locker": ""
     }
+
 if "carrello" not in st.session_state:
     st.session_state.carrello = []
 
@@ -103,32 +87,29 @@ if not st.session_state.auth:
             else:
                 st.error("Email già registrata")
 
-    if login(email, password):
-    st.session_state.auth = True
-
-    if "dati" not in st.session_state or not st.session_state.dati:
-        st.session_state.dati = {
-            "nome_genitore": "",
-            "email": email,
-            "telefono": "",
-            "nome_bambino": "",
-            "nascita": date(2024, 1, 1),
-            "taglia": "50-56 cm",
-            "locker": ""
-        }
-    else:
-        st.session_state.dati["email"] = email
-
-    st.rerun()
+    if mode == "Login":
+        if st.button("Entra"):
+            if login(email, password):
+                st.session_state.auth = True
+                st.session_state.dati["email"] = email
+                st.rerun()
             else:
                 st.error("Credenziali errate")
 
     st.stop()
 
 # =========================
-# UI BASE
+# CONFIG PAGE
 # =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
+
+st.markdown("""
+<style>
+.stApp { background-color:#FDFBF7; max-width:450px; margin:auto; }
+.card { border-radius:20px; padding:20px; margin:10px; background:white; box-shadow:0 5px 15px rgba(0,0,0,0.05);}
+.prezzo-rosa { color:#ec4899; font-weight:800; }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("LOOPBABY 🌿")
 
@@ -136,12 +117,12 @@ st.title("LOOPBABY 🌿")
 # HOME
 # =========================
 if st.session_state.pagina == "Home":
+
     nome = st.session_state.dati["nome_genitore"].split()[0] if st.session_state.dati["nome_genitore"] else "👋"
 
     st.write(f"Ciao {nome}")
 
-    st.markdown("### Benvenuto in LoopBaby")
-    st.write("Armadio circolare per bambini")
+    st.markdown("<div class='card'>Armadio circolare per bambini</div>", unsafe_allow_html=True)
 
     if st.button("Vai ai Box"):
         vai("Box")
@@ -151,20 +132,44 @@ if st.session_state.pagina == "Home":
 # =========================
 elif st.session_state.pagina == "Box":
 
-    st.subheader("Scegli la tua Box")
+    st.subheader("Scegli Box")
 
     taglia = st.session_state.dati["taglia"]
 
-    st.info(f"Taglia attuale: {taglia}")
+    st.info(f"Taglia: {taglia}")
 
-    if st.button("Box Luna 🌙 - 19.90€"):
+    if st.button("Luna 🌙 - 19.90€"):
         aggiungi("Box Luna", 19.90)
 
-    if st.button("Box Sole ☀️ - 19.90€"):
+    if st.button("Sole ☀️ - 19.90€"):
         aggiungi("Box Sole", 19.90)
 
-    if st.button("Box Premium 💎 - 29.90€"):
+    if st.button("Premium 💎 - 29.90€"):
         aggiungi("Box Premium", 29.90)
+
+# =========================
+# VETRINA
+# =========================
+elif st.session_state.pagina == "Vetrina":
+
+    st.subheader("Vetrina")
+
+    if st.button("Body Bio - 9.90€"):
+        aggiungi("Body Bio", 9.90)
+
+# =========================
+# PROFILO
+# =========================
+elif st.session_state.pagina == "Profilo":
+
+    st.subheader("Profilo")
+
+    st.write(st.session_state.dati["email"])
+
+    if st.button("Logout"):
+        st.session_state.auth = False
+        st.session_state.clear()
+        st.rerun()
 
 # =========================
 # CARRELLO
@@ -186,34 +191,19 @@ elif st.session_state.pagina == "Carrello":
         st.rerun()
 
 # =========================
-# PROFILO
-# =========================
-elif st.session_state.pagina == "Profilo":
-
-    st.subheader("Profilo")
-
-    st.write(st.session_state.dati["email"])
-
-    if st.button("Logout"):
-        st.session_state.auth = False
-        st.session_state.clear()
-        st.rerun()
-
-# =========================
-# NAV BAR SEMPLICE
+# NAVIGATION
 # =========================
 st.divider()
 
-col1, col2, col3 = st.columns(3)
+c1, c2, c3, c4, c5 = st.columns(5)
 
-with col1:
-    if st.button("Home"):
-        vai("Home")
-
-with col2:
-    if st.button("Box"):
-        vai("Box")
-
-with col3:
-    if st.button("Carrello"):
-        vai("Carrello")
+with c1:
+    if st.button("Home"): vai("Home")
+with c2:
+    if st.button("Box"): vai("Box")
+with c3:
+    if st.button("Vetrina"): vai("Vetrina")
+with c4:
+    if st.button("Carrello"): vai("Carrello")
+with c5:
+    if st.button("Profilo"): vai("Profilo")

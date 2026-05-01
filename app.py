@@ -93,17 +93,14 @@ if not st.session_state.auth:
     elif mode == "Login":
         if st.button("Entra"):
 
-            if login(email, password):
+ if login(email, password):
 
     st.session_state.auth = True
-
-    # 🔥 user SEMPRE dizionario (coerente con resto app)
     st.session_state.user = {"email": email}
 
     dati = carica_dati(email)
     st.session_state.dati = dati
 
-    # prima volta → profilo
     if dati.get("nome_genitore", "") == "":
         st.session_state.profilo_completo = False
         st.session_state.pagina = "CompletaProfilo"
@@ -112,7 +109,6 @@ if not st.session_state.auth:
         st.session_state.pagina = "Home"
 
     st.rerun()
-
             else:
                 st.error("Errore login")
 

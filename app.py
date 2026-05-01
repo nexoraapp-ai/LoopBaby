@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import hashlib
 from datetime import date
 
 # =========================
@@ -7,20 +8,23 @@ from datetime import date
 # =========================
 SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
+def hash_password(p):
+    return hashlib.sha256(p.encode()).hexdigest()
+
 def login(email, password):
     try:
         r = requests.get(SHEETDB_URL)
         for u in r.json():
-            if u.get("email","").lower() == email.lower() and u.get("password") == password:
+            if u.get("email","").lower() == email.lower() and u.get("password") == hash_password(password):
                 st.session_state.user = u
                 return True
     except:
         pass
     return False
-
+    
 def registra(email, password):
     requests.post(SHEETDB_URL, json={
-        "data":[{"email":email,"password":password}]
+        "data":[{"email":email,"password":hash_password(password)}]
     })
 
 

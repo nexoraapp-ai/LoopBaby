@@ -27,7 +27,6 @@ def login(email, password):
     return False
 
 def registra(email, password):
-  def registra(email, password):
     hashed = hash_password(password)
     requests.post(SHEETDB_URL, json={
         "data":[{"email":email,"password":hashed}]

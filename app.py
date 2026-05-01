@@ -91,26 +91,27 @@ if not st.session_state.auth:
                 st.success("Account creato!")
 
     elif mode == "Login":
-        if st.button("Entra"):
+    if st.button("Entra"):
 
- if login(email, password):
+        if login(email, password):
 
-    st.session_state.auth = True
-    st.session_state.user = {"email": email}
+            st.session_state.auth = True
+            st.session_state.user = {"email": email}
 
-    dati = carica_dati(email)
-    st.session_state.dati = dati
+            dati = carica_dati(email)
+            st.session_state.dati = dati
 
-    if dati.get("nome_genitore", "") == "":
-        st.session_state.profilo_completo = False
-        st.session_state.pagina = "CompletaProfilo"
-    else:
-        st.session_state.profilo_completo = True
-        st.session_state.pagina = "Home"
-
-    st.rerun()
+            if dati.get("nome_genitore", "") == "":
+                st.session_state.profilo_completo = False
+                st.session_state.pagina = "CompletaProfilo"
             else:
-                st.error("Errore login")
+                st.session_state.profilo_completo = True
+                st.session_state.pagina = "Home"
+
+            st.rerun()
+
+        else:
+            st.error("Errore login")
 
     st.stop()
 

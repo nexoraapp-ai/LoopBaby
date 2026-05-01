@@ -7,7 +7,7 @@ import json
 from datetime import date
 
 # =========================
-# 🔐 LOGIN SYSTEM
+# 🔐 LOGIN
 # =========================
 SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 DB_FILE = "db_loopbaby.json"
@@ -39,8 +39,9 @@ def registra(email, password):
     except:
         return False
 
+
 # =========================
-# SESSION INIT
+# 🔒 SESSION INIT (FIXED)
 # =========================
 if "auth" not in st.session_state:
     st.session_state.auth = False
@@ -56,18 +57,21 @@ if "dati" not in st.session_state:
         "locker": ""
     }
 
-if "carrello" not in st.session_state:
-    st.session_state.carrello = []
-
 if "pagina" not in st.session_state:
     st.session_state.pagina = "Home"
+
+if "edit_mode" not in st.session_state:
+    st.session_state.edit_mode = False
+
+if "carrello" not in st.session_state:
+    st.session_state.carrello = []
 
 def vai(p):
     st.session_state.pagina = p
 
 def aggiungi(nome, prezzo):
     st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
-    st.toast(f"{nome} aggiunto")
+    st.toast(f"✅ {nome} aggiunto!")
 
 # =========================
 # LOGIN PAGE
@@ -81,7 +85,7 @@ if not st.session_state.auth:
     password = st.text_input("Password", type="password")
 
     if mode == "Registrati":
-        if st.button("Crea account"):
+        if st.button("Crea"):
             if registra(email, password):
                 st.success("Account creato!")
             else:
@@ -94,35 +98,63 @@ if not st.session_state.auth:
                 st.session_state.dati["email"] = email
                 st.rerun()
             else:
-                st.error("Credenziali errate")
+                st.error("Errore login")
 
     st.stop()
 
 # =========================
-# CONFIG PAGE
+# PAGE CONFIG
 # =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
+# =========================
+# 🔥 TUO DESIGN ORIGINALE (INTEGRO)
+# =========================
 st.markdown("""
 <style>
-.stApp { background-color:#FDFBF7; max-width:450px; margin:auto; }
-.card { border-radius:20px; padding:20px; margin:10px; background:white; box-shadow:0 5px 15px rgba(0,0,0,0.05);}
-.prezzo-rosa { color:#ec4899; font-weight:800; }
+[data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display: none !important;}
+.stApp { background-color: #FDFBF7 !important; max-width: 450px !important; margin: 0 auto !important; padding-bottom: 120px !important; }
+.main .block-container {padding: 0 !important;}
+* { font-family: 'Lexend', sans-serif !important; }
+
+.header-custom {
+    background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("data:image/png;base64,");
+    background-size: cover; background-position: center; height: 130px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 35px; border-radius: 0 0 30px 30px;
+}
+
+.card {
+    border-radius: 25px; padding: 20px; margin: 10px 20px;
+    border: 1px solid #EAE2D6; text-align: center;
+    background-color: #FFFFFF;
+}
+
+.box-luna { background-color: #f1f5f9; }
+.box-sole { background-color: #FFD600; }
+.box-nuvola { background-color: #94A3B8; color: white; }
+.box-premium { background: linear-gradient(135deg, #4F46E5, #312E81); color: white; }
+
+.prezzo-rosa { color: #ec4899; font-size: 24px; font-weight: 900; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("LOOPBABY 🌿")
+st.markdown('<div class="header-custom"><h1>LOOPBABY</h1></div>', unsafe_allow_html=True)
 
 # =========================
 # HOME
 # =========================
 if st.session_state.pagina == "Home":
 
-    nome = st.session_state.dati["nome_genitore"].split()[0] if st.session_state.dati["nome_genitore"] else "👋"
+    nome = st.session_state.dati["nome_genitore"].split()[0] if st.session_state.dati["nome_genitore"] else ""
+    st.markdown(f"### Ciao {nome} 👋")
 
-    st.write(f"Ciao {nome}")
-
-    st.markdown("<div class='card'>Armadio circolare per bambini</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="card">
+    Armadio circolare per bambini<br>
+    Cresce con il tuo bambino ♻️
+    </div>
+    """, unsafe_allow_html=True)
 
     if st.button("Vai ai Box"):
         vai("Box")
@@ -138,13 +170,13 @@ elif st.session_state.pagina == "Box":
 
     st.info(f"Taglia: {taglia}")
 
-    if st.button("Luna 🌙 - 19.90€"):
+    if st.button("Luna 🌙 19.90€"):
         aggiungi("Box Luna", 19.90)
 
-    if st.button("Sole ☀️ - 19.90€"):
+    if st.button("Sole ☀️ 19.90€"):
         aggiungi("Box Sole", 19.90)
 
-    if st.button("Premium 💎 - 29.90€"):
+    if st.button("Premium 💎 29.90€"):
         aggiungi("Box Premium", 29.90)
 
 # =========================
@@ -154,7 +186,7 @@ elif st.session_state.pagina == "Vetrina":
 
     st.subheader("Vetrina")
 
-    if st.button("Body Bio - 9.90€"):
+    if st.button("Body Bio 9.90€"):
         aggiungi("Body Bio", 9.90)
 
 # =========================
@@ -164,10 +196,9 @@ elif st.session_state.pagina == "Profilo":
 
     st.subheader("Profilo")
 
-    st.write(st.session_state.dati["email"])
+    st.write("Email:", st.session_state.dati["email"])
 
     if st.button("Logout"):
-        st.session_state.auth = False
         st.session_state.clear()
         st.rerun()
 
@@ -181,7 +212,7 @@ elif st.session_state.pagina == "Carrello":
     totale = 0
 
     for i in st.session_state.carrello:
-        st.write(f"{i['nome']} - {i['prezzo']}€")
+        st.write(i["nome"], i["prezzo"])
         totale += i["prezzo"]
 
     st.markdown(f"### Totale: {totale:.2f}€")
@@ -191,7 +222,7 @@ elif st.session_state.pagina == "Carrello":
         st.rerun()
 
 # =========================
-# NAVIGATION
+# NAV BAR
 # =========================
 st.divider()
 

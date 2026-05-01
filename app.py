@@ -40,7 +40,8 @@ def email_esiste(email):
     except:
         return False
 
-if not st.session_state.auth:
+if "auth" not in st.session_state:
+    st.session_state.auth = False
 
     st.title("LoopBaby 🌸")
 

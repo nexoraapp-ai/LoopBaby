@@ -63,8 +63,15 @@ if "auth" not in st.session_state:
     st.session_state.auth = False
 
 if "dati" not in st.session_state:
-    st.session_state.dati = carica_dati_base()
-
+    st.session_state.dati = {
+        "nome_genitore": "",
+        "email": "",
+        "telefono": "",
+        "nome_bambino": "",
+        "nascita": date(2024, 1, 1),
+        "taglia": "50-56 cm",
+        "locker": ""
+    }
 if "carrello" not in st.session_state:
     st.session_state.carrello = []
 

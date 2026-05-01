@@ -27,22 +27,19 @@ def login(email, password):
     return False
 
 def registra(email, password):
+  def registra(email, password):
     hashed = hash_password(password)
     requests.post(SHEETDB_URL, json={
         "data":[{"email":email,"password":hashed}]
     })
-    def email_esiste(email):
+
+
+def email_esiste(email):
     try:
         r = requests.get(SHEETDB_URL)
         return any(u.get("email","").lower() == email.lower() for u in r.json())
     except:
         return False
-
-# =========================
-# 🔒 BLOCCO LOGIN (PRIMA DI TUTTO)
-# =========================
-if "auth" not in st.session_state:
-    st.session_state.auth = False
 
 if not st.session_state.auth:
 

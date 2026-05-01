@@ -60,8 +60,9 @@ if not st.session_state.auth:
     if mode == "Login":
         if st.button("Entra"):
             if login(email, password):
-                st.session_state.auth = True
-                st.rerun()
+    st.session_state.auth = True
+    st.session_state.dati["email"] = email
+    st.rerun()
             else:
                 st.error("Errore")
 

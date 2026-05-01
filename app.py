@@ -57,15 +57,14 @@ if not st.session_state.auth:
             else:
                 st.error("Email già registrata oppure errore")
 
-    if mode == "Login":
-        if st.button("Entra"):
-            if login(email, password):
-    st.session_state.auth = True
-    st.session_state.dati["email"] = email
-    st.rerun()
-            else:
-                st.error("Errore")
-
+   if mode == "Login":
+    if st.button("Entra"):
+        if login(email, password):
+            st.session_state.auth = True
+            st.session_state.dati["email"] = email
+            st.rerun()
+        else:
+            st.error("Errore")
     st.stop()
 
 # =====================================================

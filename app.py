@@ -49,7 +49,7 @@ if not st.session_state.auth:
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
-    if mode == "Registrati":
+if mode == "Registrati":
     if st.button("Crea"):
 
         if not email or "@" not in email:

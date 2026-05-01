@@ -43,12 +43,13 @@ def email_esiste(email):
 if "auth" not in st.session_state:
     st.session_state.auth = False
 
+if not st.session_state.auth:
+
     st.title("LoopBaby 🌸")
 
     mode = st.radio("Accesso", ["Login","Registrati"])
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
-
 if mode == "Registrati":
     if st.button("Crea"):
 

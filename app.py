@@ -31,6 +31,12 @@ def registra(email, password):
     requests.post(SHEETDB_URL, json={
         "data":[{"email":email,"password":hashed}]
     })
+    def email_esiste(email):
+    try:
+        r = requests.get(SHEETDB_URL)
+        return any(u.get("email","").lower() == email.lower() for u in r.json())
+    except:
+        return False
 
 # =========================
 # 🔒 BLOCCO LOGIN (PRIMA DI TUTTO)

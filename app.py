@@ -53,9 +53,20 @@ if not st.session_state.auth:
     password = st.text_input("Password", type="password")
 
     if mode == "Registrati":
-        if st.button("Crea"):
+    if st.button("Crea"):
+
+        if not email or "@" not in email:
+            st.error("Inserisci una email valida")
+        
+        elif len(password) < 4:
+            st.error("Password troppo corta")
+        
+        elif email_esiste(email):
+            st.error("Email già registrata")
+        
+        else:
             registra(email,password)
-            st.success("Creato!")
+            st.success("Account creato!")
 
     if mode == "Login":
         if st.button("Entra"):

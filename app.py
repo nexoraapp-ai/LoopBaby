@@ -46,27 +46,26 @@ if not st.session_state.auth:
 
     st.title("LoopBaby 🌸")
 
-    mode = st.radio("Accesso", ["Login","Registrati"])
+    mode = st.radio("Accesso", ["Login", "Registrati"])
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
-   if mode == "Registrati":
-    if st.button("Crea"):
-        if registra(email, password):
-            st.success("Account creato!")
-        else:
-            st.error("Email già registrata oppure errore")
+    if mode == "Registrati":
+        if st.button("Crea"):
+            if registra(email, password):
+                st.success("Account creato!")
+            else:
+                st.error("Email già registrata oppure errore")
 
     if mode == "Login":
         if st.button("Entra"):
-            if login(email,password):
+            if login(email, password):
                 st.session_state.auth = True
                 st.rerun()
             else:
                 st.error("Errore")
 
     st.stop()
-
 
 # =====================================================
 # 🚨 DA QUI IN POI: INCOLLA IL TUO CODICE B IDENTICO

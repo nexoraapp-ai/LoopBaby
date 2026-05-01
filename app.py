@@ -90,20 +90,28 @@ from datetime import date
 # --- 1. FUNZIONI MEMORIA FISSA (DATABASE JSON) ---
 DB_FILE = "db_loopbaby.json"
 
-def carica_dati():
-    if os.path.exists(DB_FILE):
-        try:
-            with open(DB_FILE, "r") as f:
-                d = json.load(f)
-                d["nascita"] = date.fromisoformat(d["nascita"])
-                return d
-        except: pass
+def carica_dati(email):
+    try:
+        r = requests.get(SHEETDB_URL)
+        for u in r.json():
+            if u.get("email","").lower() == email.lower():
+                return {
+                    "nome_genitore": u.get("nome_genitore",""),
+                    "email": u.get("email",""),
+                    "telefono": u.get("telefono",""),
+                    "nome_bambino": u.get("nome_bambino",""),
+                    "nascita": date(2024, 1, 1),
+                    "taglia": u.get("taglia","50-56 cm"),
+                    "locker": u.get("locker","")
+                }
+    except:
+        pass
+
     return {
-        "nome_genitore": "", "email": "", "telefono": "",
+        "nome_genitore": "", "email": email, "telefono": "",
         "nome_bambino": "", "nascita": date(2024, 1, 1),
         "taglia": "50-56 cm", "locker": ""
     }
-
 def salva_dati_su_file(dati):
     d_save = dati.copy()
     d_save["nascita"] = dati["nascita"].isoformat()

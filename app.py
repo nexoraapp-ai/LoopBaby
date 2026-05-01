@@ -128,7 +128,7 @@ if "user" not in st.session_state:
     st.session_state.user = None
 
 if st.session_state.auth and st.session_state.user:
-st.session_state.dati = carica_dati(st.session_state.user["email"])
+    st.session_state.dati = carica_dati(st.session_state.user["email"])
 
 if "pagina" not in st.session_state:
     st.session_state.pagina = "Home"

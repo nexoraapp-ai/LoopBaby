@@ -62,7 +62,7 @@ if not st.session_state.auth:
             if login(email, password):
                 st.session_state.auth = True
 
-                if "dati" not in st.session_state:
+               if "dati" not in st.session_state:
     st.session_state.dati = {
         "nome_genitore": "",
         "email": "",

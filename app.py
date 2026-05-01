@@ -23,10 +23,18 @@ def login(email, password):
     return False
     
 def registra(email, password):
-    requests.post(SHEETDB_URL, json={
-        "data":[{"email":email,"password":hash_password(password)}]
-    })
+    try:
+        r = requests.get(SHEETDB_URL)
+        for u in r.json():
+            if u.get("email","").lower() == email.lower():
+                return False
 
+        requests.post(SHEETDB_URL, json={
+            "data":[{"email":email,"password":hash_password(password)}]
+        })
+        return True
+    except:
+        return False
 
 # =========================
 # 🔒 BLOCCO LOGIN (PRIMA DI TUTTO)

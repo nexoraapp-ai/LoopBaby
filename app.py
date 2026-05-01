@@ -78,7 +78,10 @@ import json
 from datetime import date
 
 # --- 1. FUNZIONI MEMORIA FISSA (DATABASE JSON) ---
-DB_FILE = "db_loopbaby.json"
+if "user" in st.session_state:
+    DB_FILE = f"db_{st.session_state.user['email']}.json"
+else:
+    DB_FILE = "db_loopbaby.json"
 
 def carica_dati():
     if os.path.exists(DB_FILE):

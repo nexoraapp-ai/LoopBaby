@@ -113,14 +113,24 @@ def salva_dati_su_file(dati):
 # --- 2. CONFIGURAZIONE E STATO ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
+if "auth" not in st.session_state:
+    st.session_state.auth = False
+
+if "user" not in st.session_state:
+    st.session_state.user = None
+
 if "dati" not in st.session_state:
     st.session_state.dati = carica_dati()
-if "pagina" not in st.session_state: 
+
+if "pagina" not in st.session_state:
     st.session_state.pagina = "Home"
+
 if "edit_mode" not in st.session_state:
     st.session_state.edit_mode = False
+
 if "carrello" not in st.session_state:
     st.session_state.carrello = []
+
 if "locker_lista" not in st.session_state:
     st.session_state.locker_lista = []
 

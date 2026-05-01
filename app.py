@@ -66,14 +66,31 @@ if mode == "Registrati":
             registra(email,password)
             st.success("Account creato!")
 
-    if mode == "Login":
-        if st.button("Entra"):
-            if login(email,password):
-                st.session_state.auth = True
-                st.rerun()
-            else:
-                st.error("Errore")
+ if mode == "Login":
+    if st.button("Entra"):
 
+        if login(email, password):
+
+            st.session_state.auth = True
+            st.session_state.user = email
+
+            # carica dati profilo
+            dati = carica_dati(email)
+
+            st.session_state.dati = dati
+
+            # primo accesso → completa profilo
+            if dati["nome_genitore"] == "":
+                st.session_state.profilo_completo = False
+                st.session_state.pagina = "CompletaProfilo"
+            else:
+                st.session_state.profilo_completo = True
+                st.session_state.pagina = "Home"
+
+            st.rerun()
+
+        else:
+            st.error("Errore login")
     st.stop()
 
 

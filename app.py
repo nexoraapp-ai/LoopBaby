@@ -63,8 +63,15 @@ if not st.session_state.auth:
                 st.session_state.auth = True
 
                 if "dati" not in st.session_state:
-                    st.session_state.dati = {}
-
+    st.session_state.dati = {
+        "nome_genitore": "",
+        "email": "",
+        "telefono": "",
+        "nome_bambino": "",
+        "nascita": date(2024, 1, 1),
+        "taglia": "50-56 cm",
+        "locker": ""
+    }
                 st.session_state.dati["email"] = email
                 st.rerun()
             else:

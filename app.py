@@ -105,23 +105,29 @@ if not st.session_state.auth:
     # LOGIN
     # -------------------
     else:
-
-        if st.button("Entra"):
-
-         if login(email, password):
-    st.session_state.auth = True
-    st.session_state.dati = carica_dati(email)
-    st.session_state.pagina = "Profilo"
-    st.rerun()
+# -------------------
+# LOGIN
+# -------------------
 else:
-    st.error("Errore nel login automatico")
 
-                if dati.get("nome_genitore", "") == "":
-                    st.session_state.pagina = "Profilo"
-                else:
-                    st.session_state.pagina = "Home"
+    if st.button("Entra"):
 
-                st.rerun()
+        if login(email, password):
+
+            st.session_state.auth = True
+
+            dati = carica_dati(email)
+            st.session_state.dati = dati
+
+            if dati.get("nome_genitore", "") == "":
+                st.session_state.pagina = "Profilo"
+            else:
+                st.session_state.pagina = "Home"
+
+            st.rerun()
+
+        else:
+            st.error("Email o password errati")
 
             else:
                 st.error("Email o password errati")

@@ -105,10 +105,6 @@ if not st.session_state.auth:
     # LOGIN
     # -------------------
     else:
-# -------------------
-# LOGIN
-# -------------------
-else:
 
     if st.button("Entra"):
 

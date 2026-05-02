@@ -1,261 +1,254 @@
 import streamlit as st
 import requests
 import bcrypt
-import os
-import base64
-import json
 from datetime import date
 
 # =========================
-# 🔐 PASSWORD
-# =========================
-def hash_password(password):
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
-def check_password(password, hashed):
-    return bcrypt.checkpw(password.encode(), hashed.encode())
-
-
-# =========================
-# 📡 SHEETDB
+# 🔐 DATABASE
 # =========================
 SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 
-def carica_dati(email):
-    try:
-        r = requests.get(SHEETDB_URL)
-        for u in r.json():
-            if u.get("email","").lower() == email.lower():
-                return {
-                    "nome_genitore": u.get("nome_genitore",""),
-                    "email": u.get("email",""),
-                    "telefono": u.get("telefono",""),
-                    "nome_bambino": u.get("nome_bambino",""),
-                    "nascita": date(2024, 1, 1),
-                    "taglia": u.get("taglia","50-56 cm"),
-                    "locker": u.get("locker","")
-                }
-    except:
-        pass
+# =========================
+# 🔐 PASSWORD
+# =========================
+def hash_password(p):
+    return bcrypt.hashpw(p.encode(), bcrypt.gensalt()).decode()
 
-    return {
-        "nome_genitore": "",
-        "email": email,
-        "telefono": "",
-        "nome_bambino": "",
-        "nascita": date(2024, 1, 1),
-        "taglia": "50-56 cm",
-        "locker": ""
-    }
+def check_password(p, h):
+    return bcrypt.checkpw(p.encode(), h.encode())
 
 
-def login(email, password):
-    try:
-        r = requests.get(SHEETDB_URL)
-        for u in r.json():
-            if u.get("email","").lower() == email.lower():
-                if check_password(password, u.get("password","")):
-                    st.session_state.user = u
-                    return True
-    except:
-        pass
-    return False
-
-
-def registra(email, password):
-    hashed = hash_password(password)
-    requests.post(SHEETDB_URL, json={
-        "data":[{"email":email,"password":hashed}]
-    })
+# =========================
+# 📡 UTENTI
+# =========================
+def get_users():
+    return requests.get(SHEETDB_URL).json()
 
 
 def email_esiste(email):
-    try:
-        r = requests.get(SHEETDB_URL)
-        return any(u.get("email","").lower() == email.lower() for u in r.json())
-    except:
-        return False
+    return any(u["email"].lower() == email.lower() for u in get_users())
+
+
+def registra_utente(user):
+    requests.post(SHEETDB_URL, json={"data":[user]})
+
+
+def login(email, password):
+    for u in get_users():
+        if u["email"].lower() == email.lower():
+            if check_password(password, u["password"]):
+                st.session_state.user = u
+                return True
+    return False
 
 
 # =========================
-# 🔐 SESSIONE LOGIN
+# ⚙️ INIT SESSION
 # =========================
-if "auth" not in st.session_state:
-    st.session_state.auth = False
+if "page" not in st.session_state:
+    st.session_state.page = "login"
 
-if not st.session_state.auth:
+if "user" not in st.session_state:
+    st.session_state.user = None
+
+
+# =========================
+# 🎨 HEADER (LOGO + DESIGN)
+# =========================
+st.markdown("""
+<div style="text-align:center;">
+    <img src="logo.png" width="140">
+</div>
+""", unsafe_allow_html=True)
+
+
+# =========================
+# 🔐 LOGIN / REGISTER
+# =========================
+if st.session_state.page == "login":
 
     st.title("LoopBaby 🌸")
 
     mode = st.radio("Accesso", ["Login", "Registrati"])
+
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
+    # ---------------- REGISTER ----------------
     if mode == "Registrati":
+
+        nome = st.text_input("Nome")
+        cognome = st.text_input("Cognome")
+        bambino = st.text_input("Nome bambino")
+        nascita = st.date_input("Data nascita")
+        taglia = st.selectbox("Taglia", ["50-56", "62-68", "74-80", "86-92"])
+        locker = st.text_input("Locker più vicino")
 
         if st.button("Crea account"):
 
             if not email or "@" not in email:
                 st.error("Email non valida")
 
-            elif len(password) < 4:
-                st.error("Password troppo corta")
-
             elif email_esiste(email):
                 st.error("Email già registrata")
 
             else:
-                registra(email, password)
-                st.success("Account creato!")
+                user = {
+                    "email": email,
+                    "password": hash_password(password),
+                    "nome": nome,
+                    "cognome": cognome,
+                    "nome_bambino": bambino,
+                    "nascita": nascita.isoformat(),
+                    "taglia": taglia,
+                    "locker": locker
+                }
 
-                login(email, password)
-                st.session_state.auth = True
-                st.session_state.dati = carica_dati(email)
-                st.session_state.pagina = "Profilo"
+                registra_utente(user)
+
+                st.success("Account creato!")
+                st.session_state.user = user
+                st.session_state.page = "home"
                 st.rerun()
 
+    # ---------------- LOGIN ----------------
     else:
 
         if st.button("Entra"):
+
             if login(email, password):
-                st.session_state.auth = True
-                st.session_state.dati = carica_dati(email)
-
-                if st.session_state.dati.get("nome_genitore","") == "":
-                    st.session_state.pagina = "Profilo"
-                else:
-                    st.session_state.pagina = "Home"
-
+                st.session_state.page = "home"
                 st.rerun()
             else:
                 st.error("Credenziali errate")
+
 
     st.stop()
 
 
 # =========================
-# 💾 STATO APP
+# ☰ MENU (SIDEBAR STILE FACEBOOK)
 # =========================
-st.set_page_config(page_title="LoopBaby", layout="centered")
+menu = st.sidebar.radio("☰ Menu", [
+    "Home",
+    "Box",
+    "Vetrina",
+    "Chi Siamo",
+    "Come funziona",
+    "Profilo",
+    "Contatti"
+])
 
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "Home"
-
-if "carrello" not in st.session_state:
-    st.session_state.carrello = []
-
-
-def vai(p):
-    st.session_state.pagina = p
-
-
-def aggiungi(nome, prezzo):
-    st.session_state.carrello.append({"nome": nome, "prezzo": prezzo})
-    st.toast("Aggiunto!")
-
-
-# =========================
-# 🎨 CSS (IDENTICO)
-# =========================
-st.markdown("""
-<style>
-.stApp { background-color:#FDFBF7; max-width:450px; margin:0 auto; padding-bottom:120px; }
-.card { border-radius:25px; padding:20px; margin:10px 20px; background:#fff; border:1px solid #eee; }
-
-.box-luna { background:#f1f5f9; }
-.box-sole { background:#FFD600; }
-.box-nuvola { background:#94A3B8; color:white; }
-.box-premium { background:linear-gradient(135deg,#4F46E5,#312E81); color:white; }
-
-.prezzo-rosa { color:#ec4899; font-size:22px; font-weight:900; }
-</style>
-""", unsafe_allow_html=True)
-
-st.title("LOOPBABY 🌸")
+st.session_state.page = menu
 
 
 # =========================
 # 🏠 HOME
 # =========================
-if st.session_state.pagina == "Home":
+if st.session_state.page == "Home":
 
-    dati = st.session_state.get("dati", {})
-    nome = dati.get("nome_genitore","")
-    u_nome = nome.split()[0] if nome else ""
+    u = st.session_state.user
+    nome = u["nome"]
 
-    st.markdown(f"### Ciao {u_nome} 👋")
+    st.markdown(f"## Ciao {nome} 👋")
 
-    st.write("Benvenuto in LoopBaby")
+    st.image("bimbo.jpg", use_container_width=True)
 
-    if st.button("Vai alle Box"):
-        vai("Box")
-        st.rerun()
+    st.markdown("""
+    ### 🌿 LoopBaby
+
+    👶 Capi selezionati  
+    🔄 Cresce con il tuo bambino  
+    💰 Risparmi fino a 1000€/anno  
+    📍 Locker vicino a casa  
+    ♻️ Sostenibilità reale  
+    """)
+
+    st.markdown("""
+    ### ✨ Promo Mamme Fondatrici
+    Dona 10 capi → ricevi box omaggio
+    """)
 
 
 # =========================
 # 📦 BOX
 # =========================
-elif st.session_state.pagina == "Box":
+elif st.session_state.page == "Box":
 
-    st.markdown("## Box 📦")
+    st.title("Box 📦")
 
-    for nome, cls in [
-        ("LUNA 🌙","box-luna"),
-        ("SOLE ☀️","box-sole"),
-        ("NUVOLA ☁️","box-nuvola")
-    ]:
+    st.markdown("### Standard - 14,90€")
 
-        st.markdown(f"""
-        <div class="card {cls}">
-            <h3>{nome}</h3>
-            <p>19.90€</p>
-        </div>
-        """, unsafe_allow_html=True)
+    if st.button("Luna 🌙"):
+        st.success("Aggiunta")
 
-        if st.button(f"Scegli {nome}"):
-            aggiungi(nome, 19.90)
+    if st.button("Sole ☀️"):
+        st.success("Aggiunta")
+
+    if st.button("Nuvola ☁️"):
+        st.success("Aggiunta")
+
+
+    st.markdown("### Premium - 24,90€")
+
+    if st.button("Box Premium 💎"):
+        st.success("Aggiunta")
 
 
 # =========================
-# 🛒 CARRELLO
+# 🛍️ VETRINA
 # =========================
-elif st.session_state.pagina == "Carrello":
+elif st.session_state.page == "Vetrina":
 
-    st.markdown("## Carrello")
+    st.title("Vetrina 🛍️")
 
-    totale = 0
+    st.write("Prodotti disponibili per sempre")
 
-    for item in st.session_state.carrello:
-        st.write(item["nome"], item["prezzo"])
-        totale += item["prezzo"]
 
-    st.write("Totale:", totale)
+# =========================
+# ℹ️ COME FUNZIONA
+# =========================
+elif st.session_state.page == "Come funziona":
+
+    st.title("Come funziona")
+
+    st.write("""
+    1. Scegli box  
+    2. Ricevi a casa/locker  
+    3. Usi fino a 3 mesi  
+    4. Restituisci o cambi taglia  
+    """)
 
 
 # =========================
 # 👤 PROFILO
 # =========================
-elif st.session_state.pagina == "Profilo":
+elif st.session_state.page == "Profilo":
 
-    st.markdown("## Profilo")
+    u = st.session_state.user
 
-    d = st.session_state.get("dati", {})
+    st.title("Profilo")
 
-    st.write(d)
+    st.write(u)
 
 
 # =========================
-# 🧭 NAVBAR
+# 📞 CONTATTI
 # =========================
-st.markdown("---")
+elif st.session_state.page == "Contatti":
 
-cols = st.columns(4)
+    st.title("Contatti")
 
-menu = [("Home","Home"),("Box","Box"),("Carrello","Carrello"),("Profilo","Profilo")]
+    st.write("📧 assistenza.loopbaby@gmail.com")
+    st.write("📞 3921404637")
 
-for i,(icon,pag) in enumerate(menu):
-    with cols[i]:
-        if st.button(icon):
-            vai(pag)
-            st.rerun()
+
+# =========================
+# ℹ️ CHI SIAMO
+# =========================
+elif st.session_state.page == "Chi Siamo":
+
+    st.title("Chi siamo ❤️")
+
+    st.write("Siamo genitori come te...")

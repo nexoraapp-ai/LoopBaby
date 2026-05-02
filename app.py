@@ -29,6 +29,9 @@ def login(email, password):
         pass
     return False
 
+# =========================
+# LOGIN PAGE
+# =========================
 if "auth" not in st.session_state:
     st.session_state.auth = False
 
@@ -38,11 +41,12 @@ if not st.session_state.auth:
 
     mode = st.radio("Accesso", ["Login","Registrati"])
 
-    nome = st.text_input("Nome e Cognome")
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
     if mode == "Registrati":
+        nome = st.text_input("Nome e Cognome")
+
         if st.button("Crea account"):
             register(nome, email, password)
             st.success("Account creato")
@@ -312,8 +316,7 @@ elif st.session_state.page == "Profilo":
 
     st.markdown("## 👤 Profilo")
 
-    if nome:
-        st.success(f"Ciao {nome}")
+    st.write(f"Nome: {nome}")
 
 # =========================
 # CONTATTI

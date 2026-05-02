@@ -232,7 +232,9 @@ st.markdown('<div class="header-custom"><div class="header-text">LOOPBABY</div><
 
 if st.session_state.pagina == "Home":
     img_html = f'<img src="data:image/jpeg;base64,{img_data}" style="width:100%; border-radius:25px;">' if img_data else ""
-    u_nome = st.session_state.dati['nome_genitore'].split()[0] if st.session_state.dati['nome_genitore'] else ""
+    dati = st.session_state.get("dati", {})
+nome = dati.get("nome_genitore", "")
+u_nome = nome.split()[0] if nome else ""
     saluto = f"Ciao {u_nome}!" if u_nome else "Ciao!"
     st.markdown(f"""<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; padding: 0 20px; align-items: start;">
         <div>

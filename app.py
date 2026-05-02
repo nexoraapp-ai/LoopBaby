@@ -65,7 +65,6 @@ def email_esiste(email):
 
 if "auth" not in st.session_state:
     st.session_state.auth = False
-
 if not st.session_state.auth:
 
     st.title("LoopBaby 🌸")
@@ -94,10 +93,18 @@ if not st.session_state.auth:
                 registra(email, password)
                 st.success("Account creato!")
 
+                # LOGIN AUTOMATICO
+                login(email, password)
+                st.session_state.auth = True
+                st.session_state.dati = carica_dati(email)
+                st.session_state.pagina = "Profilo"
+
+                st.rerun()
+
     # -------------------
     # LOGIN
     # -------------------
-    else:  # Login
+    else:
 
         if st.button("Entra"):
 
@@ -123,7 +130,6 @@ if not st.session_state.auth:
 # 🚨 DA QUI IN POI: INCOLLA IL TUO CODICE B IDENTICO
 # =====================================================
 
-import streamlit as st
 import os
 import base64
 import json
@@ -140,9 +146,6 @@ def salva_dati_su_file(dati):
 
 # --- 2. CONFIGURAZIONE E STATO ---
 st.set_page_config(page_title="LoopBaby", layout="centered")
-
-if "auth" not in st.session_state:
-    st.session_state.auth = False
 
 if "user" not in st.session_state:
     st.session_state.user = None

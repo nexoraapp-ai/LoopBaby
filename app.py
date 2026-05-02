@@ -1,28 +1,28 @@
 import streamlit as st
-import requests
-import json
 import os
+import json
 import base64
-from datetime import date
 
+# =========================
+# SETUP
+# =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 DB_FILE = "db.json"
-SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 # =========================
 # ASSETS
 # =========================
-def img(file):
-    if os.path.exists(file):
-        return base64.b64encode(open(file,"rb").read()).decode()
+def load_img(path):
+    if os.path.exists(path):
+        return base64.b64encode(open(path,"rb").read()).decode()
     return ""
 
-logo = img("logo.png")
-baby = img("bimbo.jpg")
+logo = load_img("logo.png")
+baby = load_img("bimbo.jpg")
 
 # =========================
-# DB
+# DB PROFILO
 # =========================
 def load():
     if os.path.exists(DB_FILE):
@@ -33,8 +33,9 @@ def load():
         "telefono":"",
         "bimbo":"",
         "taglia":"50-56",
-        "locker":"",
-        "paese":"Italia"
+        "paese":"Italia",
+        "citta":"",
+        "locker":""
     }
 
 def save(d):
@@ -53,49 +54,57 @@ def go(p):
     st.session_state.page = p
 
 # =========================
-# CSS SHOPIFY STYLE
+# LOCKER DATABASE
 # =========================
-st.markdown("""
-<style>
-.stApp{max-width:450px;margin:auto;font-family:Arial;}
-.logo{width:180px;margin:auto;display:block;}
-
-.card{
-background:white;
-border-radius:20px;
-padding:15px;
-margin:10px 0;
-border:1px solid #eee;
+LOCKERS = {
+    "Italia": {
+        "Milano": ["Milano Centrale", "Porta Romana"],
+        "Lecco": ["Calolziocorte", "Lecco Centro"],
+        "Roma": ["Termini", "Tiburtina"]
+    }
 }
 
-.row{display:flex;gap:10px;}
-
-.btn{
-background:#ff2d55;
-color:white;
-padding:10px;
-border-radius:12px;
-text-align:center;
-}
-</style>
-""", unsafe_allow_html=True)
+def locker_system():
+    paese = st.selectbox("Paese", list(LOCKERS.keys()))
+    citta = st.selectbox("Città", list(LOCKERS[paese].keys()))
+    locker = st.selectbox("Locker", LOCKERS[paese][citta])
+    return paese, citta, locker
 
 # =========================
-# HEADER LOGO
+# SIDEBAR (HAMBURGER MENU)
+# =========================
+with st.sidebar:
+    st.image("logo.png", width=140)
+
+    if st.button("🏠 Home"): go("Home")
+    if st.button("📦 Box"): go("Box")
+    if st.button("🛍️ Vetrina"): go("Vetrina")
+    if st.button("ℹ️ Info"): go("Info")
+    if st.button("🔥 Promo"): go("Promo")
+    if st.button("👤 Profilo"): go("Profilo")
+    if st.button("🛒 Carrello"): go("Carrello")
+
+    st.markdown("---")
+    st.markdown("📞 WhatsApp: https://wa.me/393921404637")
+    st.markdown("✉️ assistenza.loopbaby@gmail.com")
+
+# =========================
+# LOGO HEADER
 # =========================
 st.image("logo.png", width=180)
 
 # =========================
 # HOME
 # =========================
-if st.session_state.page=="Home":
+if st.session_state.page == "Home":
 
     d = st.session_state.dati
+    nome = d.get("nome","")
 
-    col1,col2 = st.columns([2,1])
+    col1, col2 = st.columns([2,1])
 
     with col1:
-        st.markdown("## Ciao 👋")
+        st.markdown(f"## Ciao {nome or '👋'}")
         st.markdown("""
 **LoopBaby non è un e-commerce.**
 
@@ -111,49 +120,46 @@ if st.session_state.page=="Home":
             st.image("bimbo.jpg")
 
     st.markdown("### 🔥 Promo Mamme Fondatrici")
-    if st.button("Accedi"):
-        go("promo")
+    if st.button("Accedi alla promo"):
+        go("Promo")
 
 # =========================
 # PROMO
 # =========================
-if st.session_state.page=="promo":
+if st.session_state.page == "Promo":
 
     st.title("Promo Mamme Fondatrici")
 
-    st.markdown("""
-Dona 10 capi → ricevi BOX OMAGGIO
-""")
+    st.markdown("Dona 10 capi → ricevi BOX OMAGGIO")
 
     peso = st.text_input("Peso pacco")
     dim = st.text_input("Dimensioni")
 
-    paese = st.selectbox("Paese",["Italia"])
-    città = st.text_input("Città locker")
+    paese, citta, locker = locker_system()
 
-    if st.button("Invia"):
-        st.success("Entro 48h ricevi etichetta")
+    if st.button("Invia richiesta"):
+        st.success("Entro 48h riceverai etichetta")
 
 # =========================
 # BOX
 # =========================
-if st.session_state.page=="Box":
+if st.session_state.page == "Box":
 
-    st.title("Box")
+    st.title("Box LoopBaby")
 
-    tipo = st.radio("Tipo",["Standard","Premium"])
+    tipo = st.radio("Seleziona", ["Standard","Premium"])
 
-    if tipo=="Standard":
+    if tipo == "Standard":
 
         boxes = [
-            ("SOLE ☀️","#FFD600"),
-            ("LUNA 🌙","#E5E7EB"),
-            ("NUVOLA ☁️","#94A3B8")
+            ("SOLE ☀️", "#FFD600"),
+            ("LUNA 🌙", "#E5E7EB"),
+            ("NUVOLA ☁️", "#94A3B8")
         ]
 
         for name,color in boxes:
             st.markdown(f"""
-            <div class="card" style="background:{color}">
+            <div style="background:{color};padding:15px;border-radius:20px;margin:10px 0">
             <b>{name}</b><br>
             14,90€ spedizione inclusa
             </div>
@@ -163,10 +169,11 @@ if st.session_state.page=="Box":
                 st.session_state.cart.append({"name":name,"price":14.90})
 
     else:
+
         st.markdown("""
-        <div class="card" style="background:#4F46E5;color:white">
-        <b>PREMIUM 💎</b><br>
-        24,90€ nuovi/seminuovi
+        <div style="background:#4F46E5;color:white;padding:15px;border-radius:20px">
+        <b>BOX PREMIUM 💎</b><br>
+        24,90€ capi nuovi/semi nuovi
         </div>
         """, unsafe_allow_html=True)
 
@@ -176,115 +183,89 @@ if st.session_state.page=="Box":
 # =========================
 # VETRINA
 # =========================
-if st.session_state.page=="Vetrina":
+if st.session_state.page == "Vetrina":
 
     st.title("Vetrina")
 
     st.markdown("""
-I capi restano per sempre.
+I capi acquistati restano per sempre.
 
-Spedizione:
-- gratis sopra 50€
+🚚 Spedizione:
+- gratuita sopra 50€
 - oppure con Box
 """)
 
     if st.button("Aggiungi capo"):
-        st.session_state.cart.append({"name":"Body","price":9.90})
+        st.session_state.cart.append({"name":"Body Bio","price":9.90})
 
 # =========================
 # CARRELLO
 # =========================
-if st.session_state.page=="Carrello":
+if st.session_state.page == "Carrello":
 
     st.title("Carrello")
 
-    total=0
+    total = 0
 
     for i,item in enumerate(st.session_state.cart):
         col1,col2,col3 = st.columns([3,1,1])
         col1.write(item["name"])
         col2.write(str(item["price"])+"€")
-        if col3.button("X",key=i):
+
+        if col3.button("❌", key=i):
             st.session_state.cart.pop(i)
             st.rerun()
-        total+=item["price"]
 
-    st.write("Totale:",total)
+        total += item["price"]
+
+    st.markdown(f"### Totale: {total}€")
 
     if st.button("Checkout (domani)"):
-        st.success("Pagamento placeholder")
+        st.success("Pagamento da integrare")
 
 # =========================
 # INFO
 # =========================
-if st.session_state.page=="Info":
+if st.session_state.page == "Info":
 
     st.title("Come funziona")
 
     st.markdown("""
-1. Ricevi box
-2. Usi vestiti
+LoopBaby è un sistema:
+
+1. Ricevi Box
+2. Usi capi
 3. Dopo 90 giorni:
    - nuova taglia
    - restituzione
 
-📍 10 giorni: controllo qualità  
-♻️ patto del 10: equilibrio capi
+⏱ 10 giorni: controllo qualità  
+♻️ Patto del 10: equilibrio circolare
 """)
 
 # =========================
-# CHI SIAMO
+# PROFILO
 # =========================
-if st.session_state.page=="ChiSiamo":
-
-    st.title("Chi siamo")
-
-    st.write("""
-LoopBaby è uno stile, non un negozio.
-
-È un sistema per:
-- crescere bambini
-- ridurre sprechi
-- semplificare la vita
-""")
-
-# =========================
-# PROFILO COMPLETO
-# =========================
-if st.session_state.page=="Profilo":
+if st.session_state.page == "Profilo":
 
     d = st.session_state.dati
 
     st.title("Profilo")
 
-    d["nome"] = st.text_input("Nome",d["nome"])
-    d["email"] = st.text_input("Email",d["email"])
-    d["telefono"] = st.text_input("Telefono",d["telefono"])
-    d["bimbo"] = st.text_input("Nome bambino",d["bimbo"])
-    d["taglia"] = st.selectbox("Taglia",["50-56","62-68","74-80","86-92"])
-    d["paese"] = st.selectbox("Paese",["Italia"])
-    d["locker"] = st.text_input("Locker città")
+    d["nome"] = st.text_input("Nome", d["nome"])
+    d["email"] = st.text_input("Email", d["email"])
+    d["telefono"] = st.text_input("Telefono", d["telefono"])
+    d["bimbo"] = st.text_input("Nome bambino", d["bimbo"])
+    d["taglia"] = st.selectbox("Taglia", ["50-56","62-68","74-80","86-92"])
+
+    d["paese"], d["citta"], d["locker"] = locker_system()
 
     if st.button("Salva"):
         save(d)
-        st.success("Salvato")
+        st.success("Profilo salvato")
 
 # =========================
-# NAV
+# FOOTER INFO
 # =========================
 st.markdown("---")
-
-cols = st.columns(5)
-
-menu = [
-    ("Home","Home"),
-    ("Box","Box"),
-    ("Cart","Carrello"),
-    ("Info","Info"),
-    ("Profilo","Profilo")
-]
-
-for i,(n,p) in enumerate(menu):
-    if cols[i].button(n):
-        go(p)
-        st.rerun()
+st.markdown("📞 WhatsApp: https://wa.me/393921404637 | ✉️ assistenza.loopbaby@gmail.com")

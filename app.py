@@ -1,188 +1,154 @@
 import streamlit as st
 import requests
 import bcrypt
-from datetime import date
 
-# =========================
-# CONFIG
-# =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 # =========================
-# SAFE UTILS (NO CRASH)
+# SAFE
 # =========================
-def safe(d, key, default=""):
-    return (d or {}).get(key, default)
+def g(d,k,default=""):
+    return (d or {}).get(k,default)
 
 def hash_password(p):
     return bcrypt.hashpw(p.encode(), bcrypt.gensalt()).decode()
 
-def check_password(p, h):
-    return bcrypt.checkpw(p.encode(), h.encode())
+def check_password(p,h):
+    return bcrypt.checkpw(p.encode(),h.encode())
 
 # =========================
-# LOCKER SYSTEM
+# DATA
 # =========================
-LOCKER = {
-    "Calolziocorte": ["InPost Centro", "Esselunga", "Poste Italiane"],
-    "Milano": ["Duomo Locker", "Stazione Centrale"],
-    "Lecco": ["Lecco Centro", "Bione Locker"]
-}
-
-# =========================
-# DATABASE
-# =========================
-def get_users():
+def users():
     try:
         return requests.get(SHEETDB_URL).json()
     except:
         return []
 
-def find_user(email):
-    for u in get_users():
-        if safe(u,"email").lower() == email.lower():
+def find(email):
+    for u in users():
+        if g(u,"email").lower()==email.lower():
             return u
     return None
 
-def save_user(user):
-    requests.post(SHEETDB_URL, json={"data":[user]})
+def save(u):
+    requests.post(SHEETDB_URL,json={"data":[u]})
+
+# =========================
+# LOCKER SMART
+# =========================
+LOCKER = {
+    "Milano": ["Duomo Locker","Centrale","Porta Garibaldi"],
+    "Lecco": ["Lecco Centro","Bione"],
+    "Calolziocorte": ["InPost","Esselunga","Poste"]
+}
+
+def suggest_city(address):
+    a = address.lower()
+    if "milano" in a: return "Milano"
+    if "lecco" in a: return "Lecco"
+    return "Calolziocorte"
 
 # =========================
 # SESSION
 # =========================
-if "user" not in st.session_state:
-    st.session_state.user = None
-
+if "u" not in st.session_state:
+    st.session_state.u = None
 if "page" not in st.session_state:
     st.session_state.page = "login"
-
 if "cart" not in st.session_state:
     st.session_state.cart = []
 
 # =========================
-# DESIGN (BEIGE SHOPIFY STYLE)
+# DESIGN
 # =========================
 st.markdown("""
 <style>
-.stApp { background:#f6f1e8; }
-
-.card{
-    background:white;
-    padding:18px;
-    border-radius:18px;
-    margin:10px 0;
-    box-shadow:0 4px 12px rgba(0,0,0,0.05);
-}
-
-.title{
-    font-size:26px;
-    font-weight:800;
-}
-
-.small{
-    font-size:13px;
-    color:#555;
-}
+.stApp{background:#f5f1e8;}
+.card{background:white;padding:18px;border-radius:18px;margin:10px 0;}
+.big{font-size:26px;font-weight:800;}
 </style>
-""", unsafe_allow_html=True)
+""",unsafe_allow_html=True)
 
 # =========================
-# SIDEBAR (SHOPIFY STYLE)
+# LOGIN / REGISTER
 # =========================
-menu = st.sidebar.selectbox("Menu", [
-    "Home", "Box", "Vetrina", "Profilo",
-    "Come funziona", "Contatti", "Logout"
-])
-
-# =========================
-# LOGIN / REGISTER (BULLETPROOF)
-# =========================
-if st.session_state.page == "login":
+if st.session_state.page=="login":
 
     st.title("LoopBaby 🌸")
 
-    mode = st.radio("Accesso", ["Login", "Registrati"])
+    mode=st.radio("Accesso",["Login","Registrati"])
 
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
+    email=st.text_input("Email")
+    pw=st.text_input("Password",type="password")
 
-    # ---------------- REGISTER ----------------
-    if mode == "Registrati":
+    if mode=="Registrati":
 
-        nome = st.text_input("Nome e Cognome")
-        bambino = st.text_input("Nome bambino")
-        nascita = st.date_input("Data nascita")
+        nome=st.text_input("Nome e Cognome")
+        bambino=st.text_input("Nome bambino")
+        nascita=st.date_input("Data nascita")
+        taglia=st.selectbox("Taglia",["50-56","62-68","74-80"])
 
-        taglia = st.selectbox("Taglia", ["50-56", "62-68", "74-80"])
-
-        città = st.selectbox("Città", list(LOCKER.keys()))
-        locker = st.selectbox("Locker", LOCKER[città])
+        indirizzo=st.text_input("Dove abiti?")
+        città=suggest_city(indirizzo)
+        locker=st.selectbox("Locker",LOCKER[città])
 
         if st.button("Crea account"):
 
-            if find_user(email):
+            if find(email):
                 st.error("Email già registrata")
                 st.stop()
 
-            if not email or "@" not in email:
-                st.error("Email non valida")
-                st.stop()
-
-            user = {
-                "email": email,
-                "password": hash_password(password),
-                "nome": nome,
-                "bambino": bambino,
-                "nascita": str(nascita),
-                "taglia": taglia,
-                "città": città,
-                "locker": locker
+            u={
+                "email":email,
+                "password":hash_password(pw),
+                "nome":nome,
+                "bambino":bambino,
+                "nascita":str(nascita),
+                "taglia":taglia,
+                "indirizzo":indirizzo,
+                "città":città,
+                "locker":locker
             }
 
-            save_user(user)
-
-            st.success("Account creato!")
-            st.session_state.user = user
-            st.session_state.page = "home"
+            save(u)
+            st.session_state.u=u
+            st.session_state.page="home"
             st.rerun()
 
-    # ---------------- LOGIN ----------------
     else:
         if st.button("Entra"):
-
-            u = find_user(email)
-
-            if not u:
-                st.error("Utente non trovato")
-                st.stop()
-
-            if not check_password(password, safe(u,"password")):
-                st.error("Password errata")
-                st.stop()
-
-            st.session_state.user = u
-            st.session_state.page = "home"
-            st.rerun()
+            u=find(email)
+            if u and check_password(pw,g(u,"password")):
+                st.session_state.u=u
+                st.session_state.page="home"
+                st.rerun()
+            else:
+                st.error("Errore login")
 
     st.stop()
 
 # =========================
-# USER SAFE LOAD
+# USER
 # =========================
-u = st.session_state.user or {}
-
-nome = (safe(u,"nome") or "Utente").split()[0]
+u=st.session_state.u or {}
+nome=(g(u,"nome") or "Utente").split()[0]
 
 # =========================
-# HOME (SHOPIFY DASHBOARD)
+# HOME
 # =========================
-if menu == "Home":
+if st.session_state.page=="home":
 
-    st.markdown(f"""
-    <div class="title">Ciao {nome} 👋</div>
+    st.markdown("""
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <img src="https://via.placeholder.com/80" style="border-radius:15px;">
+        <div class="big">Ciao """+nome+""" 👋</div>
+    </div>
+    """,unsafe_allow_html=True)
 
+    st.markdown("""
     <div class="card">
     👶 Capi selezionati<br>
     🔄 Cresce con il bambino<br>
@@ -191,87 +157,97 @@ if menu == "Home":
     ♻️ Zero sprechi
     </div>
 
-    <div class="card">
-    <b>✨ Promo Mamme Fondatrici</b><br>
-    Dona 10+ capi → gift card box entro 3 mesi (OBBLIGATORIO)
+    <div class="card" style="border:2px solid #f43f5e;">
+    <b>✨ PROMO MAMME FONDATRICI (CLICCA)</b><br>
+    Dona 10+ capi → gift card box entro 3 mesi
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
+
+    if st.button("Apri Promo"):
+        st.session_state.page="promo"
+        st.rerun()
+
+# =========================
+# PROMO
+# =========================
+elif st.session_state.page=="promo":
+
+    st.title("Promo Mamme Fondatrici")
+
+    peso=st.text_input("Peso pacco")
+    dim=st.text_input("Dimensioni")
+    locker=g(u,"locker")
+
+    if st.button("Invia richiesta"):
+
+        st.success("Etichetta inviata entro 24h al tuo locker: "+locker)
 
 # =========================
 # BOX
 # =========================
-elif menu == "Box":
+elif st.session_state.page=="box":
 
     st.title("Box")
 
-    tipo = st.radio("Scegli", ["Standard 14,90€", "Premium 24,90€"])
+    tipo=st.radio("Tipo",["Standard 14,90","Premium 24,90"])
 
     if tipo.startswith("Standard"):
-
-        scelta = st.selectbox("Seleziona Box", ["Luna 🌙", "Sole ☀️", "Nuvola ☁️"])
-
-        st.info(f"Taglia automatica: {safe(u,'taglia')}")
-
-        st.markdown("👕 Apri box e vedi contenuto selezionato")
-
+        st.markdown("👕 Usati in buono stato")
     else:
-        st.success("Premium: capi selezionati manualmente")
+        st.markdown("✨ Seminuovi o nuovi")
 
 # =========================
 # VETRINA
 # =========================
-elif menu == "Vetrina":
+elif st.session_state.page=="vetrina":
 
-    st.title("Vetrina 🛍️")
+    st.title("Vetrina")
 
-    st.write("Tutto quello che acquisti resta tuo per sempre")
+    st.write("💰 Spedizione gratis sopra 50€")
+    st.write("📦 Sotto 50€ → 7,90€ locker")
 
 # =========================
 # PROFILO
 # =========================
-elif menu == "Profilo":
+elif st.session_state.page=="profilo":
 
     st.title("Profilo")
 
-    st.write("Nome:", safe(u,"nome"))
-    st.write("Bambino:", safe(u,"bambino"))
-    st.write("Taglia:", safe(u,"taglia"))
-    st.write("Locker:", safe(u,"locker"))
-
-    if st.button("Modifica"):
-        st.info("Editor completo nel prossimo step")
+    st.write("Nome:",g(u,"nome"))
+    st.write("Bambino:",g(u,"bambino"))
+    st.write("Taglia:",g(u,"taglia"))
+    st.write("Locker:",g(u,"locker"))
 
 # =========================
 # COME FUNZIONA
 # =========================
-elif menu == "Come funziona":
+elif st.session_state.page=="come":
 
     st.title("Come funziona")
 
     st.write("""
-LoopBaby è un sistema circolare:
-1. scegli box
-2. ricevi a casa/locker
-3. usi capi
-4. restituisci
-5. ricevi nuova taglia
+1. scegli box  
+2. ricevi al locker  
+3. usi  
+4. restituisci  
+5. cambi taglia
 """)
 
 # =========================
 # CONTATTI
 # =========================
-elif menu == "Contatti":
+elif st.session_state.page=="contatti":
 
     st.title("Contatti")
 
     st.write("📧 assistenza.loopbaby@gmail.com")
-    st.write("📞 3921404637")
-    st.write("Rispondiamo il prima possibile")
+    st.write("📱 WhatsApp 3921404637")
+    st.write("❌ NO chiamate")
 
 # =========================
 # LOGOUT
 # =========================
-elif menu == "Logout":
-    st.session_state.user = None
-    st.session_state.page = "login"
+elif st.session_state.page=="logout":
+    st.session_state.u=None
+    st.session_state.page="login"
     st.rerun()

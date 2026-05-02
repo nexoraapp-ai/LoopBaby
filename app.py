@@ -1,11 +1,36 @@
 import streamlit as st
+import requests
 import os
+import base64
+import json
 import webbrowser
+from datetime import date
 
+# =========================
+# CONFIG
+# =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 # =========================
-# SESSION
+# LOGO CENTER (COME TUO CODICE)
+# =========================
+def get_base64(path):
+    if os.path.exists(path):
+        with open(path,"rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return ""
+
+logo = get_base64("logo.png")
+bimbo = get_base64("bimbo.jpg")
+
+st.markdown(f"""
+<div style="text-align:center; margin-top:10px;">
+    <img src="data:image/png;base64,{logo}" style="width:140px;">
+</div>
+""", unsafe_allow_html=True)
+
+# =========================
+# SESSION STATE
 # =========================
 if "pagina" not in st.session_state:
     st.session_state.pagina = "Home"
@@ -13,25 +38,34 @@ if "pagina" not in st.session_state:
 if "carrello" not in st.session_state:
     st.session_state.carrello = []
 
-if "utente" not in st.session_state:
-    st.session_state.utente = {"nome": "Mamma"}
+if "user" not in st.session_state:
+    st.session_state.user = {
+        "nome_genitore": "Mamma",
+        "email": "",
+        "telefono": "",
+        "bambino": "",
+        "nascita": "",
+        "taglia": "50-56 cm",
+        "locker": ""
+    }
 
 # =========================
-# LOCKER (TUTTA ITALIA + GENERICI)
+# LOCKER ITALIA (REALI + GENERICI)
 # =========================
 LOCKER = [
-    "InPost Italia (Tutti i punti)",
-    "Poste Italiane (Tutti i punti)",
+    "InPost Italia",
+    "Poste Italiane Italia",
     "Amazon Locker Italia",
     "Esselunga Locker",
     "Carrefour Locker",
-    "Locker Milano",
-    "Locker Roma",
-    "Locker Torino",
-    "Locker Napoli",
-    "Locker Calolziocorte (LC)",
-    "Locker Bergamo",
-    "Locker Brescia",
+    "Milano Centro",
+    "Roma Termini",
+    "Torino Porta Nuova",
+    "Napoli Centro",
+    "Calolziocorte (LC)",
+    "Bergamo Centro",
+    "Brescia Centro",
+    "Tutta Italia (rete completa)"
 ]
 
 # =========================
@@ -49,7 +83,7 @@ def whatsapp():
     webbrowser.open("https://wa.me/393921404637")
 
 # =========================
-# STYLE
+# STYLE (TUO + MIGLIORATO)
 # =========================
 st.markdown("""
 <style>
@@ -60,50 +94,69 @@ div.stButton > button {background:#f43f5e;color:white;border-radius:18px;width:1
 """, unsafe_allow_html=True)
 
 # =========================
-# LOGO SOLO
-# =========================
-st.image("logo.png", width=120)
-
-# =========================
-# MENU
+# MENU (SIDEBAR HAMBURGER)
 # =========================
 with st.sidebar:
-    st.radio("Menu", ["Home","Box","Vetrina","Profilo","Carrello","Info","ChiSiamo","Contatti"], key="menu")
-    vai(st.session_state.menu)
+    st.markdown("## 🍔 Menu")
+    scelta = st.radio("", [
+        "Home","Box","Vetrina","Profilo",
+        "Carrello","Info","ChiSiamo","Contatti"
+    ])
+    vai(scelta)
 
 # =========================
-# HOME
+# HOME (COMPLETA COME BRAND)
 # =========================
 if st.session_state.pagina == "Home":
 
-    nome = st.session_state.utente.get("nome","Mamma")
+    nome = st.session_state.user.get("nome_genitore","Mamma")
 
     st.markdown(f"### Ciao {nome} 👋")
 
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+        **LoopBaby è la moda circolare per bambini**
+
+        👶 Capi selezionati  
+        🔄 Cambio taglia automatico  
+        ♻️ Zero sprechi  
+        💰 Risparmio reale  
+        """)
+
+    with col2:
+        if bimbo:
+            st.image("bimbo.jpg")
+
     st.markdown("""
-    LoopBaby è il sistema circolare per vestire i bambini senza sprechi.
-    """)
+    <div class="card">
+    ✨ Scopri la tua Box personalizzata e inizia il ciclo LoopBaby
+    </div>
+    """, unsafe_allow_html=True)
 
 # =========================
-# BOX (COME HAI CHIESTO IDENTICO STRUTTURA)
+# BOX (IDENTICO CONCEPT TUO)
 # =========================
 elif st.session_state.pagina == "Box":
 
+    st.markdown("## 📦 Scegli la tua Box")
+
     col1, col2 = st.columns(2)
 
-    # ================= STANDARD
+    # STANDARD
     with col1:
-        st.markdown("## 📦 STANDARD")
-        st.markdown("**14,90€ (spedizione inclusa)**")
+        st.markdown("### STANDARD")
+        st.markdown("**14,90€ spedizione inclusa**")
 
         st.markdown("""
         ✔ Capi usati in buono stato  
-        ✔ Igienizzati  
-        ✔ Selezione qualità LoopBaby  
+        ✔ Igienizzati e selezionati  
+        ✔ Qualità LoopBaby  
         """)
 
         colori = st.multiselect(
-            "Colori disponibili",
+            "Colori",
             ["Neutro","Rosa","Azzurro","Mix","Pastello"]
         )
 
@@ -115,15 +168,15 @@ elif st.session_state.pagina == "Box":
         if st.button("Aggiungi Box Standard"):
             add_cart("Box Standard", 14.90)
 
-    # ================= PREMIUM
+    # PREMIUM
     with col2:
-        st.markdown("## 💎 PREMIUM")
+        st.markdown("### PREMIUM 💎")
         st.markdown("**24,90€**")
 
         st.markdown("""
         ✔ Vestiti nuovi o seminuovi  
-        ✔ Alta qualità selezionata  
-        ✔ Brand premium baby  
+        ✔ Alta qualità  
+        ✔ Brand selezionati  
         """)
 
         colori2 = st.multiselect(
@@ -173,13 +226,19 @@ elif st.session_state.pagina == "Profilo":
 
     st.markdown("## 👤 Profilo")
 
-    nome = st.text_input("Nome", st.session_state.utente["nome"])
-    st.session_state.utente["nome"] = nome
+    u = st.session_state.user
 
-    st.selectbox("Locker Italia", LOCKER)
+    u["nome_genitore"] = st.text_input("Nome", u["nome_genitore"])
+    u["email"] = st.text_input("Email", u["email"])
+    u["telefono"] = st.text_input("Telefono", u["telefono"])
+    u["bambino"] = st.text_input("Nome Bambino", u["bambino"])
+    u["taglia"] = st.selectbox("Taglia", ["50-56 cm","62-68 cm","74-80 cm"])
+    u["locker"] = st.selectbox("Locker Italia", LOCKER)
+
+    st.session_state.user = u
 
 # =========================
-# CARRELLO (STILE AMAZON)
+# CARRELLO (AMAZON STYLE)
 # =========================
 elif st.session_state.pagina == "Carrello":
 
@@ -194,7 +253,7 @@ elif st.session_state.pagina == "Carrello":
             st.write(f"{item['nome']} - {item['prezzo']}€")
 
         with col2:
-            if st.button("❌", key=i):
+            if st.button("❌", key=f"del{i}"):
                 remove_item(i)
                 st.rerun()
 
@@ -202,27 +261,27 @@ elif st.session_state.pagina == "Carrello":
 
     st.markdown(f"### Totale: {totale}€")
 
-    st.button("Procedi al pagamento (domani)")
+    st.button("Procedi al pagamento (attivo domani)")
 
 # =========================
-# INFO
+# INFO (COMPLETO)
 # =========================
 elif st.session_state.pagina == "Info":
 
     st.markdown("## 🔄 Come funziona LoopBaby")
 
     st.markdown("""
-    1. Scegli Box  
+    1. Scegli la tua Box  
     2. Ricevi al locker  
     3. Provi i capi  
-    4. Cambi taglia quando cresce  
-    5. Restituisci e ricevi nuova box  
+    4. Se il bambino cresce cambi taglia  
+    5. Restituisci e continui il ciclo  
 
-    ♻️ Sistema circolare intelligente
+    ♻️ Sistema circolare reale, senza sprechi
     """)
 
 # =========================
-# CHI SIAMO
+# CHI SIAMO (COMPLETO)
 # =========================
 elif st.session_state.pagina == "ChiSiamo":
 
@@ -233,9 +292,9 @@ elif st.session_state.pagina == "ChiSiamo":
 
     LoopBaby nasce per:
 
-    - ridurre sprechi  
-    - far risparmiare famiglie  
-    - creare moda circolare reale  
+    - Ridurre sprechi nell’abbigliamento baby  
+    - Far risparmiare famiglie  
+    - Creare un sistema circolare vero  
 
     Ogni capo ha una seconda vita.
     """)
@@ -248,8 +307,9 @@ elif st.session_state.pagina == "Contatti":
     st.markdown("## 📞 Contatti")
 
     st.markdown("""
-    📧 assistenza.loopbaby@gmail.com
+    📧 assistenza.loopbaby@gmail.com  
+    📱 WhatsApp: 392 140 4637  
     """)
 
-    if st.button("💬 Contattaci su WhatsApp"):
+    if st.button("Apri WhatsApp"):
         whatsapp()

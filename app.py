@@ -108,12 +108,13 @@ if not st.session_state.auth:
 
         if st.button("Entra"):
 
-            if login(email, password):
-
-                st.session_state.auth = True
-
-                dati = carica_dati(email)
-                st.session_state.dati = dati
+         if login(email, password):
+    st.session_state.auth = True
+    st.session_state.dati = carica_dati(email)
+    st.session_state.pagina = "Profilo"
+    st.rerun()
+else:
+    st.error("Errore nel login automatico")
 
                 if dati.get("nome_genitore", "") == "":
                     st.session_state.pagina = "Profilo"

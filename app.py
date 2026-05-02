@@ -30,15 +30,16 @@ def login(email, password):
             return True
     return False
 
+
 # =========================
-# LOGIN PAGE
+# LOGIN
 # =========================
 if "auth" not in st.session_state:
     st.session_state.auth = False
 
 if not st.session_state.auth:
 
-    st.markdown("<h1 style='text-align:center;'>LoopBaby 🌸</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>LOOPBABY</h1>", unsafe_allow_html=True)
 
     mode = st.radio("Accesso", ["Login","Registrati"])
 
@@ -48,11 +49,11 @@ if not st.session_state.auth:
     if mode == "Registrati":
         nome = st.text_input("Nome e Cognome")
         bambino = st.text_input("Nome Bambino")
-        taglia = st.selectbox("Taglia iniziale", ["50-56","62-68","74-80","86-92"])
+        taglia = st.selectbox("Taglia", ["50-56","62-68","74-80","86-92"])
 
         if st.button("Crea account"):
             register(nome, email, password, bambino, taglia)
-            st.success("Profilo creato")
+            st.success("Account creato")
 
     if mode == "Login":
         if st.button("Entra"):
@@ -63,6 +64,7 @@ if not st.session_state.auth:
                 st.error("Errore login")
 
     st.stop()
+
 
 # =========================
 # SESSION
@@ -93,6 +95,7 @@ st.markdown("""
     background:#FDFBF7;
 }
 
+/* BUTTON */
 div.stButton > button{
     width:100%;
     border-radius:14px;
@@ -101,6 +104,7 @@ div.stButton > button{
     font-weight:700;
 }
 
+/* CARD */
 .card{
     background:white;
     padding:15px;
@@ -109,19 +113,42 @@ div.stButton > button{
     box-shadow:0 2px 10px rgba(0,0,0,0.05);
 }
 
+/* LOGO */
 .logo{
+    width:100%;
     text-align:center;
-    padding:10px 0;
+    margin-top:10px;
+}
+.logo img{
+    width:80%;
+    max-width:320px;
 }
 
-.logo img{
-    height:70px;
+/* HOME */
+.home{
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+.home-text{
+    flex:1;
+    font-size:13px;
+    color:#334155;
+    line-height:1.4;
+}
+.home-img{
+    flex:1;
+}
+.home-img img{
+    width:100%;
+    border-radius:18px;
 }
 </style>
 """, unsafe_allow_html=True)
 
+
 # =========================
-# LOGO
+# LOGO HEADER
 # =========================
 st.markdown("""
 <div class="logo">
@@ -129,88 +156,96 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+
 # =========================
-# MENU (HAMBURGER)
+# SIDEBAR MENU (HAMBURGER)
 # =========================
 with st.sidebar:
-    st.title("☰ Menu")
-
+    st.title("Menu")
     pages = ["Home","Box","Promo","Info","ChiSiamo","Carrello","Profilo","Contatti"]
 
     for p in pages:
         if st.button(p):
             st.session_state.page = p
 
+
 # =========================
-# HOME (FIX DEFINITIVO)
+# HOME
 # =========================
 if st.session_state.page == "Home":
 
     st.markdown(f"## Ciao {nome if nome else '👋'}")
 
-    col1, col2 = st.columns([1,1])
+    st.markdown("""
+<div class="home">
 
-    with col1:
-        st.image("bimbo.jpg")
+    <div class="home-text">
 
-    with col2:
-        st.markdown("""
-<b>LoopBaby non è un e-commerce.</b><br><br>
+        <b>LoopBaby non è un e-commerce.</b><br><br>
 
-È uno stile. Una scelta. Un sistema.<br><br>
+        È uno stile. Una scelta. Un sistema.<br><br>
 
-♻️ crescita circolare<br>
-👶 bambini al centro<br>
-🔄 riuso intelligente
-""", unsafe_allow_html=True)
+        ♻️ crescita circolare<br>
+        👶 bambini al centro<br>
+        🔄 riuso intelligente<br><br>
 
-        st.markdown("""
-<div class="card">
-<b>🔥 Promo Mamme Fondatrici</b><br>
-Dona 10 capi → Box omaggio
+        <div class="card">
+            <b>🔥 Promo Mamme Fondatrici</b><br>
+            Dona 10 capi → Box omaggio
+        </div>
+
+    </div>
+
+    <div class="home-img">
+        <img src="bimbo.jpg">
+    </div>
+
 </div>
 """, unsafe_allow_html=True)
 
-    if st.button("Scopri Promo"):
-        go("Promo")
 
 # =========================
 # BOX
 # =========================
 elif st.session_state.page == "Box":
 
-    st.markdown("## 📦 Box")
+    st.markdown("## 📦 Box Standard")
 
-    c1,c2 = st.columns(2)
+    scelta = st.radio("Scegli:", ["Sole ☀️","Luna 🌙","Nuvola ☁️"], horizontal=True)
 
-    with c1:
-        st.markdown("""
-<div class="card">
-<h3>STANDARD</h3>
+    if scelta == "Sole ☀️":
+        st.markdown("""<div class='card' style='background:#FFD600'>
+        <h3>Sole ☀️</h3> Outfit vivaci<br><b>14,90€</b></div>""", unsafe_allow_html=True)
+        if st.button("Aggiungi Sole"):
+            add("Box Sole",14.90)
 
-🌙 ☀️ ☁️
+    elif scelta == "Luna 🌙":
+        st.markdown("""<div class='card' style='background:#e2e8f0'>
+        <h3>Luna 🌙</h3> Toni neutri<br><b>14,90€</b></div>""", unsafe_allow_html=True)
+        if st.button("Aggiungi Luna"):
+            add("Box Luna",14.90)
 
-<b>14,90€</b><br>
-spedizione inclusa<br>
-capi usati buono stato
-</div>
-""", unsafe_allow_html=True)
+    else:
+        st.markdown("""<div class='card' style='background:#94A3B8;color:white'>
+        <h3>Nuvola ☁️</h3> Soft style<br><b>14,90€</b></div>""", unsafe_allow_html=True)
+        if st.button("Aggiungi Nuvola"):
+            add("Box Nuvola",14.90)
 
-        if st.button("Aggiungi Standard"):
-            add("Box Standard",14.90)
+    st.markdown("---")
 
-    with c2:
-        st.markdown("""
-<div class="card">
-<h3>PREMIUM 💎</h3>
+    st.markdown("## 💎 Premium")
 
-<b>24,90€</b><br>
-capi nuovi o seminuovi
-</div>
-""", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="card">
+        <h3>Box Premium</h3>
+        Nuovi o seminuovi<br>
+        <b>24,90€</b>
+    </div>
+    """, unsafe_allow_html=True)
 
-        if st.button("Aggiungi Premium"):
-            add("Box Premium",24.90)
+    if st.button("Aggiungi Premium"):
+        add("Box Premium",24.90)
+
 
 # =========================
 # PROMO
@@ -220,19 +255,20 @@ elif st.session_state.page == "Promo":
     st.markdown("## 🔥 Promo Mamme Fondatrici")
 
     st.markdown("""
-✔ 10 capi minimo  
-✔ spedizione gratuita  
-✔ risposta 48h  
+✔ 10 capi  
+✔ spedizione gratis  
+✔ etichetta 48h  
 """)
 
     with st.form("promo"):
-        peso = st.text_input("Peso pacco")
+        peso = st.text_input("Peso")
         dim = st.text_input("Dimensioni")
         città = st.text_input("Città")
         locker = st.text_input("Locker")
 
         if st.form_submit_button("Invia"):
-            st.success("Etichetta entro 48h")
+            st.success("Ti contattiamo entro 48h")
+
 
 # =========================
 # INFO
@@ -242,15 +278,16 @@ elif st.session_state.page == "Info":
     st.markdown("## 🔄 Come funziona")
 
     st.markdown("""
-📦 Box 90 giorni  
-⚠️ 48h controllo  
+📦 90 giorni utilizzo  
+⚠️ 48h controllo qualità  
 
-Dopo 90 giorni:
+➡ poi:
 - nuova Box gratis
-- oppure restituzione 7,90€
+- oppure reso 7,90€
 
-♻️ 10 capi = nuova Box
+♻️ sistema circolare vero
 """)
+
 
 # =========================
 # CHI SIAMO
@@ -260,15 +297,17 @@ elif st.session_state.page == "ChiSiamo":
     st.markdown("## ❤️ Chi siamo")
 
     st.markdown("""
-LoopBaby non è un negozio.
+LoopBaby non è un e-commerce.
 
-È un sistema di vita:
+È una scelta di vita:
 
+👶 bambini al centro  
 ♻️ sostenibilità  
-👶 crescita intelligente  
 💛 fiducia  
-🌍 impatto reale  
+🔄 riuso intelligente  
+🌍 futuro migliore
 """)
+
 
 # =========================
 # CARRELLO
@@ -284,7 +323,7 @@ elif st.session_state.page == "Carrello":
         c1,c2 = st.columns([3,1])
 
         with c1:
-            st.write(item["name"], "-", item["price"], "€")
+            st.write(item["name"], item["price"], "€")
 
         with c2:
             if st.button("❌", key=i):
@@ -294,6 +333,7 @@ elif st.session_state.page == "Carrello":
         total += item["price"]
 
     st.markdown(f"### Totale: {total}€")
+
 
 # =========================
 # PROFILO
@@ -306,6 +346,7 @@ elif st.session_state.page == "Profilo":
     st.write("Email:", user.get("email",""))
     st.write("Bambino:", user.get("bambino",""))
     st.write("Taglia:", user.get("taglia",""))
+
 
 # =========================
 # CONTATTI

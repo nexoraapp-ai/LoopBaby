@@ -106,7 +106,7 @@ if not st.session_state.auth:
     # -------------------
     else:
 
-    if st.button("Entra"):
+        if st.button("Entra"):
 
         if login(email, password):
 

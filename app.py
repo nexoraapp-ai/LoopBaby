@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import json
 
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
@@ -20,7 +19,7 @@ def login(email, password):
         pass
     return False
 
-def registra(email, password):
+def register(email,password):
     requests.post(SHEETDB_URL, json={"data":[{"email":email,"password":password}]})
 
 # =========================
@@ -35,9 +34,9 @@ if "page" not in st.session_state:
 if "cart" not in st.session_state:
     st.session_state.cart = []
 
-if "user_data" not in st.session_state:
-    st.session_state.user_data = {
-        "nome_genitore":"",
+if "profile" not in st.session_state:
+    st.session_state.profile = {
+        "nome":"",
         "bimbo":"",
         "locker":"",
         "taglia":""
@@ -46,7 +45,7 @@ if "user_data" not in st.session_state:
 def go(p): st.session_state.page = p
 
 def add(name, price):
-    st.session_state.cart.append({"n":name,"p":price})
+    st.session_state.cart.append({"name":name,"price":price})
 
 def remove(i):
     st.session_state.cart.pop(i)
@@ -62,12 +61,13 @@ if not st.session_state.auth:
     st.title("LoopBaby 🌸")
 
     mode = st.radio("Accesso", ["Login","Registrati"])
+
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
     if mode == "Registrati":
-        if st.button("Crea account"):
-            registra(email,password)
+        if st.button("Crea"):
+            register(email,password)
             st.success("Creato!")
 
     if mode == "Login":
@@ -76,44 +76,39 @@ if not st.session_state.auth:
                 st.session_state.auth = True
                 st.rerun()
             else:
-                st.error("Errore")
+                st.error("Errore login")
 
     st.stop()
 
 # =========================
-# HEADER LOGO
+# HEADER (LOGO COME VOLEVI)
 # =========================
 st.markdown("""
-<div style='text-align:center;padding:10px'>
-    <img src='logo.png' width='160'>
+<div style="text-align:center;margin-bottom:10px">
+    <img src="logo.png" style="width:180px">
 </div>
 """, unsafe_allow_html=True)
 
 # =========================
-# NAVBAR
+# NAVBAR (APP STYLE)
 # =========================
-st.markdown(f"""
-<div style='display:flex;justify-content:space-around;background:#fff;
-padding:10px;border-radius:15px;box-shadow:0 2px 10px #00000010;margin-bottom:10px'>
+col1,col2,col3,col4 = st.columns(4)
 
-<button onclick="">Home</button>
-<button onclick="">Box</button>
-<button onclick="">Promo</button>
-<button onclick="">Carrello ({len(st.session_state.cart)})</button>
-
-</div>
-""", unsafe_allow_html=True)
+if col1.button("🏠"): go("home")
+if col2.button("📦"): go("box")
+if col3.button("🔥"): go("promo")
+if col4.button(f"🛒 {len(st.session_state.cart)}"): go("cart")
 
 # =========================
-# HOME
+# HOME (TUO DESIGN MIGLIORATO)
 # =========================
 if st.session_state.page == "home":
 
-    st.markdown(f"### Ciao {nome} 👋")
+    st.markdown(f"## Ciao {nome} 👋")
 
-    col1,col2 = st.columns([2,1])
+    colA,colB = st.columns([2,1])
 
-    with col1:
+    with colA:
         st.markdown("""
 ### LoopBaby non è un e-commerce.
 
@@ -122,39 +117,43 @@ if st.session_state.page == "home":
 ♻️ crescita circolare  
 👶 bambini al centro  
 🔄 riuso intelligente  
-
----
-
-### 🔥 Promo Mamme Fondatrici
-Dona 10 capi → Box omaggio
+💛 moda consapevole per bambini  
 """)
 
-    with col2:
-        st.image("bimbo.jpg", width=150)
+        st.markdown("""
+<div style="background:#fff0f3;padding:15px;border-radius:15px">
+<b>🔥 Promo Mamme Fondatrici</b><br>
+Dona 10 capi → Box omaggio
+</div>
+""", unsafe_allow_html=True)
 
-    if st.button("Scopri Box"):
-        go("box")
+        if st.button("Partecipa"):
+            go("promo")
+
+    with colB:
+        st.image("bimbo.jpg", use_container_width=True)
 
 # =========================
-# BOX
+# BOX (TUO SISTEMA ORIGINALE)
 # =========================
 elif st.session_state.page == "box":
 
-    st.title("📦 Box LoopBaby")
+    st.title("📦 Box")
 
     st.markdown("## Standard 14,90€ (spedizione inclusa)")
 
-    standard = [
-        ("SOLE ☀️","#FFD600"),
-        ("LUNA 🌙","#E2E8F0"),
-        ("NUVOLA ☁️","#94A3B8")
+    box_standard = [
+        ("SOLE ☀️","#FFD600","Colori vivaci"),
+        ("LUNA 🌙","#E2E8F0","Neutro elegante"),
+        ("NUVOLA ☁️","#94A3B8","Toni soft")
     ]
 
-    for name,color in standard:
+    for name,color,desc in box_standard:
+
         st.markdown(f"""
-        <div style='background:{color};padding:15px;border-radius:15px;margin-bottom:10px'>
+        <div style="background:{color};padding:15px;border-radius:15px;margin-bottom:10px">
         <b>{name}</b><br>
-        Capo selezionato in base alla box
+        {desc}
         </div>
         """, unsafe_allow_html=True)
 
@@ -164,8 +163,8 @@ elif st.session_state.page == "box":
     st.markdown("## 💎 Premium 24,90€")
 
     st.markdown("""
-<div style='background:#4F46E5;color:white;padding:15px;border-radius:15px'>
-<b>Box Premium</b><br>
+<div style="background:#4F46E5;color:white;padding:15px;border-radius:15px">
+<b>BOX PREMIUM</b><br>
 Capi nuovi o seminuovi selezionati
 </div>
 """, unsafe_allow_html=True)
@@ -174,29 +173,31 @@ Capi nuovi o seminuovi selezionati
         add("Premium Box",24.90)
 
 # =========================
-# PROMO
+# PROMO MAMME FONDATRICI
 # =========================
 elif st.session_state.page == "promo":
 
     st.title("🔥 Promo Mamme Fondatrici")
 
     st.markdown("""
-### Come funziona:
-- Dona almeno 10 capi
-- Noi paghiamo il trasporto
-- Ricevi Box gratuita
+### Cos'è:
+Un programma speciale per le prime mamme della community.
 
-⏱ Entro 48h ricevi etichetta
+### Come funziona:
+- 10 capi in buono stato
+- ritiro gratuito
+- ricevi Box omaggio
+- etichetta entro 48h
 """)
 
     peso = st.text_input("Peso stimato")
     dim = st.text_input("Dimensioni pacco")
 
-    if st.button("Invia richiesta"):
-        st.success("Ricevuto! Ti contatteremo via email entro 48h")
+    if st.button("Invia"):
+        st.success("Entro 48h riceverai etichetta via email")
 
 # =========================
-# CART
+# CART (AMAZON STYLE BASE)
 # =========================
 elif st.session_state.page == "cart":
 
@@ -205,45 +206,42 @@ elif st.session_state.page == "cart":
     total = 0
 
     for i,item in enumerate(st.session_state.cart):
+
         c1,c2 = st.columns([3,1])
 
         with c1:
-            st.write(item["n"], item["p"], "€")
+            st.write(item["name"], "-", item["price"], "€")
 
         with c2:
             if st.button("❌", key=str(i)):
                 remove(i)
                 st.rerun()
 
-        total += item["p"]
+        total += item["price"]
 
     st.markdown(f"## Totale: {total}€")
 
 # =========================
-# PROFILO
+# PROFILO (SISTEMATO)
 # =========================
 elif st.session_state.page == "profile":
 
     st.title("👤 Profilo")
 
-    st.write("Email:", user.get("email",""))
+    nome_p = st.text_input("Nome genitore", st.session_state.profile["nome"])
+    bimbo = st.text_input("Nome bambino", st.session_state.profile["bimbo"])
 
-    nome_g = st.text_input("Nome genitore", st.session_state.user_data["nome_genitore"])
-    bimbo = st.text_input("Nome bimbo", st.session_state.user_data["bimbo"])
+    st.session_state.profile["locker"] = st.selectbox(
+        "Locker Italia",
+        ["InPost", "Poste Italiane", "Amazon Locker", "SDA Point"]
+    )
 
-    paese = st.text_input("Città / Paese")
-
-    locker = st.selectbox("Locker disponibili", [
-        "InPost Italia",
-        "Poste Italiane",
-        "Amazon Locker",
-        "SDA Point"
-    ])
+    st.session_state.profile["taglia"] = st.selectbox(
+        "Taglia",
+        ["50-56","62-68","74-80","86-92"]
+    )
 
     if st.button("Salva"):
-        st.session_state.user_data.update({
-            "nome_genitore":nome_g,
-            "bimbo":bimbo,
-            "locker":locker
-        })
-        st.success("Salvato")
+        st.session_state.profile["nome"] = nome_p
+        st.session_state.profile["bimbo"] = bimbo
+        st.success("Profilo aggiornato")

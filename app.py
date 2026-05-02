@@ -101,11 +101,10 @@ if not st.session_state.auth:
 
                 st.rerun()
 
-   # -------------------
+# -------------------
 # LOGIN
 # -------------------
 else:
-
     if st.button("Entra"):
 
         if login(email, password):
@@ -124,6 +123,7 @@ else:
 
         else:
             st.error("Email o password errati")
+
     st.stop()
 # =====================================================
 # 🚨 DA QUI IN POI: INCOLLA IL TUO CODICE B IDENTICO

@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from datetime import date
 
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
@@ -38,8 +39,8 @@ if "profile" not in st.session_state:
     st.session_state.profile = {
         "nome":"",
         "bimbo":"",
-        "locker":"",
         "citta":"",
+        "locker":"",
         "taglia":""
     }
 
@@ -67,7 +68,7 @@ if not st.session_state.auth:
     password = st.text_input("Password",type="password")
 
     if mode=="Registrati":
-        if st.button("Crea account"):
+        if st.button("Crea"):
             register(email,password)
             st.success("Creato!")
 
@@ -77,16 +78,16 @@ if not st.session_state.auth:
                 st.session_state.auth = True
                 st.rerun()
             else:
-                st.error("Errore")
+                st.error("Errore login")
 
     st.stop()
 
 # =========================
-# HEADER LOGO
+# LOGO ALLUNGATO HEADER
 # =========================
 st.markdown("""
 <div style="text-align:center;margin-bottom:10px">
-    <img src="logo.png" width="180">
+    <img src="logo.png" style="width:260px">
 </div>
 """, unsafe_allow_html=True)
 
@@ -97,12 +98,12 @@ col1,col2,col3,col4,col5 = st.columns(5)
 
 if col1.button("🏠"): go("home")
 if col2.button("📦"): go("box")
-if col3.button("🔥"): go("promo")
+if col3.button("🔥"): go("info")
 if col4.button("👤"): go("profile")
 if col5.button(f"🛒 {len(st.session_state.cart)}"): go("cart")
 
 # =========================
-# HOME (CORRETTA DEFINITIVA)
+# HOME (COMPLETA COME VOLEVI)
 # =========================
 if st.session_state.page == "home":
 
@@ -120,7 +121,7 @@ if st.session_state.page == "home":
 ♻️ crescita circolare  
 👶 bambini al centro  
 🔄 riuso intelligente  
-💛 moda che cresce con il tuo bambino  
+💛 moda che cresce con il bambino  
 
 ---
 
@@ -130,14 +131,14 @@ Dona 10 capi → Box omaggio
 </div>
 """, unsafe_allow_html=True)
 
-        if st.button("Attiva Promo"):
-            go("promo")
+        if st.button("Partecipa alla Promo"):
+            go("info")
 
     with colB:
         st.image("bimbo.jpg", use_container_width=True)
 
 # =========================
-# BOX (TUO SISTEMA ORIGINALE RESTORED)
+# BOX (IDENTICHE AL TUO SISTEMA)
 # =========================
 elif st.session_state.page == "box":
 
@@ -146,17 +147,17 @@ elif st.session_state.page == "box":
     st.markdown("## STANDARD 14,90€ (spedizione inclusa)")
 
     standard = [
-        ("SOLE ☀️","#FFD600"),
-        ("LUNA 🌙","#E2E8F0"),
-        ("NUVOLA ☁️","#94A3B8")
+        ("SOLE ☀️","#FFD600","Colori vivaci"),
+        ("LUNA 🌙","#E2E8F0","Neutro"),
+        ("NUVOLA ☁️","#94A3B8","Toni soft")
     ]
 
-    for name,color in standard:
+    for name,color,desc in standard:
 
         st.markdown(f"""
         <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0">
         <b>{name}</b><br>
-        Box selezionata in base alla crescita del bambino
+        {desc}
         </div>
         """, unsafe_allow_html=True)
 
@@ -167,8 +168,8 @@ elif st.session_state.page == "box":
 
     st.markdown("""
 <div style="background:#4F46E5;color:white;padding:15px;border-radius:15px">
-<b>Box Premium</b><br>
-Capi nuovi o seminuovi selezionati
+<b>BOX PREMIUM</b><br>
+Capi nuovi o seminuovi
 </div>
 """, unsafe_allow_html=True)
 
@@ -176,32 +177,74 @@ Capi nuovi o seminuovi selezionati
         add("Premium Box",24.90)
 
 # =========================
-# PROMO (COMPLETE)
+# INFO (COME FUNZIONA + PROMO)
+# =========================
+elif st.session_state.page == "info":
+
+    st.title("🔄 Come funziona LoopBaby")
+
+    st.markdown("""
+### 1. Ricevi la Box
+Scegli e ricevi nel locker.
+
+### 2. Uso (90 giorni)
+Usa la box per 3 mesi.
+
+### 3. Dopo 90 giorni:
+- nuova box (taglia successiva) → ritiro gratis  
+- restituzione → 7,90€  
+
+### 4. Regole 10 giorni:
+- 48h per segnalare problemi  
+- sostituzione jeans x jeans  
+- oppure 5€  
+
+---
+
+## 🔥 Promo Mamme Fondatrici
+Dona 10 capi → Box omaggio (etichetta entro 48h)
+""")
+
+    if st.button("Vai alla promo"):
+        go("promo")
+
+# =========================
+# PROMO
 # =========================
 elif st.session_state.page == "promo":
 
     st.title("🔥 Promo Mamme Fondatrici")
 
     st.markdown("""
-### Cos’è LoopBaby:
-Un sistema circolare per vestire i bambini in modo sostenibile.
+Compila per richiedere il ritiro gratuito.
 
-### Come funziona:
-- raccogli 10 capi
-- noi inviamo etichetta
-- ritiro gratuito
-- ricevi Box omaggio
-- risposta entro 48h
+Riceverai etichetta entro 48h.
 """)
 
     peso = st.text_input("Peso pacco")
     dim = st.text_input("Dimensioni")
+    locker = st.text_input("Locker / Città")
 
-    if st.button("Invia richiesta"):
-        st.success("Riceverai etichetta entro 48h")
+    if st.button("Invia"):
+        st.success("Richiesta inviata!")
 
 # =========================
-# CART (AMAZON STYLE)
+# VETRINA
+# =========================
+elif st.session_state.page == "vetrina":
+
+    st.title("🛍️ Vetrina")
+
+    st.markdown("""
+I capi della vetrina rimangono per sempre a te.
+
+- spedizione gratuita sopra 50€
+- oppure con acquisto box
+- altrimenti 7,90€
+""")
+
+# =========================
+# CART
 # =========================
 elif st.session_state.page == "cart":
 
@@ -226,22 +269,20 @@ elif st.session_state.page == "cart":
     st.markdown(f"## Totale: {total}€")
 
 # =========================
-# PROFILO (FIXED)
+# PROFILE
 # =========================
 elif st.session_state.page == "profile":
 
-    st.title("👤 Profilo LoopBaby")
+    st.title("👤 Profilo")
 
     nome = st.text_input("Nome genitore",st.session_state.profile["nome"])
     bimbo = st.text_input("Nome bambino",st.session_state.profile["bimbo"])
-
-    citta = st.text_input("Città (es: Calolziocorte)")
+    citta = st.text_input("Città")
 
     locker = st.selectbox("Locker Italia",[
         "InPost",
         "Poste Italiane",
-        "Amazon Locker",
-        "SDA Point"
+        "Amazon Locker"
     ])
 
     taglia = st.selectbox("Taglia",["50-56","62-68","74-80","86-92"])

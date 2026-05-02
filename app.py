@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import os
+from datetime import date
 
 # =========================
 # CONFIG
@@ -9,7 +10,7 @@ import os
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 # =========================
-# AUTH
+# LOGIN
 # =========================
 SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
@@ -27,14 +28,10 @@ def login(email, password):
 def register(email, password):
     requests.post(SHEETDB_URL, json={"data":[{"email":email,"password":password}]})
 
-# =========================
-# LOGIN
-# =========================
 if "auth" not in st.session_state:
     st.session_state.auth = False
 
 if not st.session_state.auth:
-
     st.title("LoopBaby 🌸")
 
     mode = st.radio("Accesso", ["Login","Registrati"])
@@ -42,7 +39,7 @@ if not st.session_state.auth:
     password = st.text_input("Password", type="password")
 
     if mode == "Registrati":
-        if st.button("Crea account"):
+        if st.button("Crea"):
             register(email,password)
             st.success("Account creato")
 
@@ -61,7 +58,7 @@ if not st.session_state.auth:
 # =========================
 DB_FILE = "db.json"
 
-def load():
+def load_data():
     if os.path.exists(DB_FILE):
         return json.load(open(DB_FILE))
     return {
@@ -72,11 +69,11 @@ def load():
         "citta":""
     }
 
-def save(d):
+def save_data(d):
     json.dump(d, open(DB_FILE,"w"))
 
 if "data" not in st.session_state:
-    st.session_state.data = load()
+    st.session_state.data = load_data()
 
 if "page" not in st.session_state:
     st.session_state.page = "Home"
@@ -87,14 +84,14 @@ if "cart" not in st.session_state:
 def go(p):
     st.session_state.page = p
 
-def add_item(name, price):
+def add(name, price):
     st.session_state.cart.append({"name":name,"price":price})
 
 # =========================
 # SIDEBAR (HAMBURGER)
 # =========================
 with st.sidebar:
-    st.markdown("## ☰ LoopBaby")
+    st.title("☰ LoopBaby")
 
     pages = ["Home","Box","Promo","Info","ChiSiamo","Carrello","Profilo","Contatti"]
 
@@ -112,14 +109,12 @@ st.markdown("""
     margin:auto;
     background:#FDFBF7;
 }
-
 div.stButton > button{
     width:100%;
     border-radius:15px;
     background:#f43f5e;
     color:white;
 }
-
 .card{
     background:white;
     padding:15px;
@@ -130,11 +125,11 @@ div.stButton > button{
 """, unsafe_allow_html=True)
 
 # =========================
-# LOGO HEADER
+# LOGO (SOLO CENTRO)
 # =========================
 st.markdown("""
 <div style="text-align:center;padding:10px 0 15px 0;">
-    <img src="logo.png" style="height:80px;">
+    <img src="logo.png" style="height:80px;object-fit:contain;">
 </div>
 """, unsafe_allow_html=True)
 
@@ -154,9 +149,7 @@ if st.session_state.page == "Home":
     gap:15px;
     align-items:center;
 }
-.left{
-    flex:1;
-}
+.left{flex:1;}
 .right{
     flex:1;
     font-size:14px;
@@ -166,7 +159,7 @@ if st.session_state.page == "Home":
 </style>
 """, unsafe_allow_html=True)
 
-    st.markdown(f"""
+    st.markdown("""
 <div class="home">
 
     <div class="left">
@@ -193,17 +186,17 @@ if st.session_state.page == "Home":
 </div>
 """, unsafe_allow_html=True)
 
-    if st.button("Partecipa alla Promo"):
+    if st.button("Vai alla Promo"):
         go("Promo")
 
 # =========================
-# BOX
+# BOX (IDENTICO TUO STILE)
 # =========================
 elif st.session_state.page == "Box":
 
-    st.markdown("## 📦 Box LoopBaby")
+    st.markdown("## 📦 Box")
 
-    col1,col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
     with col1:
         st.markdown("""
@@ -213,14 +206,15 @@ elif st.session_state.page == "Box":
 ☀️ SOLE  
 ☁️ NUVOLA  
 
-14,90€ spedizione inclusa  
+14,90€  
+spedizione inclusa  
 capi usati in buono stato
 """)
 
-        style = st.selectbox("Stile",["Sole","Luna","Nuvola"])
+        style = st.selectbox("Scegli stile", ["Sole","Luna","Nuvola"])
 
         if st.button("Aggiungi Standard"):
-            add_item(f"Box Standard {style}",14.90)
+            add(f"Box Standard {style}", 14.90)
 
     with col2:
         st.markdown("""
@@ -231,7 +225,7 @@ capi nuovi o seminuovi
 """)
 
         if st.button("Aggiungi Premium"):
-            add_item("Box Premium",24.90)
+            add("Box Premium", 24.90)
 
 # =========================
 # PROMO
@@ -241,9 +235,9 @@ elif st.session_state.page == "Promo":
     st.markdown("## 🔥 Promo Mamme Fondatrici")
 
     st.markdown("""
-✔ 10 capi minimo  
+✔ minimo 10 capi  
 ✔ spedizione pagata da noi  
-✔ etichetta in 48h  
+✔ etichetta entro 48h  
 """)
 
     with st.form("promo"):
@@ -254,7 +248,7 @@ elif st.session_state.page == "Promo":
         locker = st.text_input("Locker")
 
         if st.form_submit_button("Invia"):
-            st.success("Etichetta inviata entro 48h")
+            st.success("Ti invieremo etichetta entro 48h")
 
 # =========================
 # INFO
@@ -264,7 +258,7 @@ elif st.session_state.page == "Info":
     st.markdown("## 🔄 Come funziona")
 
     st.markdown("""
-📦 ricevi Box  
+📦 Ricevi Box  
 👶 90 giorni utilizzo  
 ⚠️ 48h controllo problemi  
 
@@ -290,10 +284,10 @@ Non è un negozio.
 
 È un sistema:
 
-♻️ meno sprechi  
+♻️ sostenibilità  
 👶 crescita intelligente  
-🌍 impatto positivo  
 💛 semplicità reale  
+🌍 impatto positivo  
 """)
 
 # =========================
@@ -330,11 +324,11 @@ elif st.session_state.page == "Profilo":
 
     st.markdown("## 👤 Profilo")
 
-    d["nome"] = st.text_input("Nome genitore", d["nome"])
-    d["bambino"] = st.text_input("Nome bambino", d["bambino"])
-    d["taglia"] = st.selectbox("Taglia",["50-56","62-68","74-80","86-92"])
+    d["nome"] = st.text_input("Nome", d["nome"])
+    d["bambino"] = st.text_input("Bambino", d["bambino"])
+    d["taglia"] = st.selectbox("Taglia", ["50-56","62-68","74-80","86-92"])
 
-    save(d)
+    save_data(d)
 
 # =========================
 # CONTATTI
@@ -346,5 +340,6 @@ elif st.session_state.page == "Contatti":
     st.write("📧 assistenza.loopbaby@gmail.com")
 
     st.markdown("""
-📱 WhatsApp: https://wa.me/393921404637
+📱 WhatsApp:
+https://wa.me/393921404637
 """)

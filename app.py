@@ -20,16 +20,16 @@ def check_password(p, h):
     return bcrypt.checkpw(p.encode(), h.encode())
 
 # =========================
-# DATI LOCKER REALI (ESEMPIO)
+# LOCKER REALI (ESEMPIO)
 # =========================
 LOCKERS = {
     "Milano": ["Milano Centrale", "Milano Porta Romana", "Milano Lambrate"],
     "Calolziocorte": ["Calolziocorte Centro", "Lecco Nord Locker"],
-    "Lecco": ["Lecco Stazione", "Lecco Centro"]
+    "Lecco": ["Lecco Centro", "Lecco Stazione"]
 }
 
 # =========================
-# SHEETDB
+# DATABASE
 # =========================
 def get_users():
     try:
@@ -37,8 +37,8 @@ def get_users():
     except:
         return []
 
-def save_user(data):
-    requests.post(SHEETDB_URL, json={"data":[data]})
+def save_user(user):
+    requests.post(SHEETDB_URL, json={"data":[user]})
 
 def find_user(email):
     for u in get_users():
@@ -62,7 +62,7 @@ if "carrello" not in st.session_state:
     st.session_state.carrello = []
 
 # =========================
-# SIDEBAR MENU (HAMBURGER)
+# SIDEBAR MENU
 # =========================
 if st.session_state.auth:
     with st.sidebar:
@@ -77,7 +77,7 @@ if st.session_state.auth:
             st.rerun()
 
 # =========================
-# LOGIN / REGISTER
+# LOGIN / REGISTRAZIONE
 # =========================
 if not st.session_state.auth:
 
@@ -92,17 +92,17 @@ if not st.session_state.auth:
 
         nome = st.text_input("Nome e Cognome")
         bambino = st.text_input("Nome bambino")
-        nascita = st.date_input("Data nascita bambino")
+        nascita = st.date_input("Data nascita")
 
         taglia = st.selectbox("Taglia suggerita", ["50-56", "62-68", "74-80", "86-92"])
 
         citta = st.selectbox("Città", list(LOCKERS.keys()))
-        locker = st.selectbox("Locker vicino", LOCKERS[citta])
+        locker = st.selectbox("Locker", LOCKERS[citta])
 
         if st.button("Crea account"):
 
             if find_user(email):
-                st.error("Email già registrata → usa LOGIN")
+                st.error("Email già registrata")
             elif "@" not in email:
                 st.error("Email non valida")
             else:
@@ -116,7 +116,8 @@ if not st.session_state.auth:
                     "citta": citta,
                     "locker": locker
                 })
-                st.success("Account creato!")
+
+                st.success("Account creato")
                 st.session_state.auth = True
                 st.session_state.user = find_user(email)
                 st.rerun()
@@ -130,21 +131,29 @@ if not st.session_state.auth:
                 st.session_state.user = u
                 st.rerun()
             else:
-                st.error("Credenziali errate")
+                st.error("Errore login")
 
     st.stop()
 
 # =========================
-# STYLE (BEIGE CLEAN + CARD)
+# STYLE (BEIGE CLEAN)
 # =========================
 st.markdown("""
 <style>
 .stApp { background:#F5F1EA; }
-.card {background:white;padding:18px;border-radius:18px;margin:10px 0;}
-.title {font-size:28px;font-weight:800;}
-.small {font-size:13px;color:#555;}
-.btn button {background:#F43F5E;color:white;border-radius:12px;}
+.card { background:white; padding:18px; border-radius:18px; margin:10px 0; }
+.title { font-size:28px; font-weight:800; }
+.small { font-size:13px; color:#555; }
 </style>
+""", unsafe_allow_html=True)
+
+# =========================
+# LOGO (SEMPRE SOPRA)
+# =========================
+st.markdown("""
+<div style="text-align:center;padding:10px 0;">
+    <img src="https://via.placeholder.com/160x50?text=LOOPBABY+LOGO" height="45">
+</div>
 """, unsafe_allow_html=True)
 
 # =========================
@@ -158,6 +167,7 @@ if st.session_state.page == "Home":
     col1, col2 = st.columns([2,1])
 
     with col1:
+
         st.markdown(f"<div class='title'>Ciao {nome} 👋</div>", unsafe_allow_html=True)
 
         st.markdown("""
@@ -173,16 +183,16 @@ if st.session_state.page == "Home":
         st.markdown("""
         <div class="card">
         <b>✨ Promo Mamme Fondatrici</b><br>
-        Dona 10 capi → ricevi gift card box entro 3 mesi
+        Dona 10 capi → gift card valida 3 mesi
         </div>
         """, unsafe_allow_html=True)
 
         if st.button("Partecipa Promo"):
-            st.session_state.page = "Promo"
+            st.session_state.page="Promo"
             st.rerun()
 
     with col2:
-        st.image("https://via.placeholder.com/200x300", width=150)
+        st.image("https://images.unsplash.com/photo-1601758123927-196e1f6d4b5d", width=160)
 
 # =========================
 # PROMO
@@ -194,17 +204,17 @@ elif st.session_state.page == "Promo":
     with st.form("promo"):
 
         peso = st.text_input("Peso pacco")
-        dim = st.text_input("Dimensioni pacco")
+        dim = st.text_input("Dimensioni")
 
         lock = st.selectbox("Locker", LOCKERS[st.session_state.user["citta"]])
 
-        submit = st.form_submit_button("Invia")
+        ok = st.form_submit_button("Invia")
 
-        if submit:
-            st.success("Etichetta inviata entro 24h al tuo email 📦")
-            st.info("Ritiro a carico nostro")
+        if ok:
+            st.success("📦 Etichetta inviata entro 24h")
+            st.info("Ritiro a nostro carico")
 
-    if st.button("⬅️ Indietro"):
+    if st.button("Indietro"):
         st.session_state.page="Home"
         st.rerun()
 
@@ -215,13 +225,11 @@ elif st.session_state.page == "Box":
 
     st.title("Box")
 
-    st.markdown("### Standard 14,90€")
-    st.markdown("Luna / Sole / Nuvola")
-
+    st.markdown("Standard 14,90€")
     if st.button("Aggiungi Standard"):
         st.session_state.carrello.append("Box Standard")
 
-    st.markdown("### Premium 24,90€")
+    st.markdown("Premium 24,90€")
     if st.button("Aggiungi Premium"):
         st.session_state.carrello.append("Box Premium")
 
@@ -232,11 +240,9 @@ elif st.session_state.page == "Vetrina":
 
     st.title("Vetrina")
 
-    st.markdown("""
-    Tutti i capi rimangono tuoi per sempre.
-    Spedizione gratis sopra 50€ o con box.
-    Sotto 50€ spedizione 7,90€.
-    """)
+    st.write("✔ Rimangono tuoi per sempre")
+    st.write("✔ Gratis sopra 50€ o con box")
+    st.write("✔ Sotto 50€ spedizione 7,90€")
 
 # =========================
 # PROFILO
@@ -247,10 +253,10 @@ elif st.session_state.page == "Profilo":
 
     st.title("Profilo")
 
-    st.write("Nome:", u.get("nome"))
-    st.write("Bambino:", u.get("bambino"))
-    st.write("Taglia:", u.get("taglia"))
-    st.write("Locker:", u.get("locker"))
+    st.write("Nome:", u.get("nome",""))
+    st.write("Bambino:", u.get("bambino",""))
+    st.write("Taglia:", u.get("taglia",""))
+    st.write("Locker:", u.get("locker",""))
 
 # =========================
 # CONTATTI

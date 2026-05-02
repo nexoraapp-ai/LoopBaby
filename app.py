@@ -79,7 +79,7 @@ if not st.session_state.auth:
     # -------------------
     if mode == "Registrati":
 
-        if st.button("Crea"):
+        if st.button("Crea account"):
 
             if not email or "@" not in email:
                 st.error("Inserisci una email valida")
@@ -95,18 +95,15 @@ if not st.session_state.auth:
                 st.success("Account creato!")
 
     # -------------------
-    # LOGIN ✅ (QUESTO TI MANCAVA)
+    # LOGIN
     # -------------------
-    elif mode == "Login":
+    else:  # Login
 
         if st.button("Entra"):
 
             if login(email, password):
 
                 st.session_state.auth = True
-
-                # ⚠️ NON sovrascrivere user dopo!
-                # login() già salva u dentro session_state.user
 
                 dati = carica_dati(email)
                 st.session_state.dati = dati
@@ -122,7 +119,6 @@ if not st.session_state.auth:
                 st.error("Email o password errati")
 
     st.stop()
-
 # =====================================================
 # 🚨 DA QUI IN POI: INCOLLA IL TUO CODICE B IDENTICO
 # =====================================================

@@ -8,7 +8,7 @@ from datetime import date
 # =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
-SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
+API = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 # =========================
 # PASSWORD
@@ -20,24 +20,24 @@ def check_pw(p, h):
     return bcrypt.checkpw(p.encode(), h.encode())
 
 # =========================
-# LOCKER REALISTICO
+# LOCKER REALI
 # =========================
 LOCKERS = {
-    "Calolziocorte": ["Esselunga Locker", "Poste Italiane", "InPost Centro"],
-    "Milano": ["Duomo Locker", "Centrale FS", "CityLife Point"],
+    "Calolziocorte": ["Esselunga Locker", "Poste Italiane", "InPost Point"],
+    "Milano": ["Duomo Locker", "Centrale", "CityLife"],
 }
 
 # =========================
-# API
+# DB
 # =========================
 def get_users():
-    return requests.get(SHEETDB_URL).json()
+    return requests.get(API).json()
 
 def email_exists(email):
     return any(u["email"].lower() == email.lower() for u in get_users())
 
 def save_user(data):
-    requests.post(SHEETDB_URL, json={"data":[data]})
+    requests.post(API, json={"data":[data]})
 
 def login(email, pw):
     for u in get_users():
@@ -65,13 +65,13 @@ def add(n,p):
     st.toast("Aggiunto!")
 
 # =========================
-# STYLE (BEIGE CLEAN)
+# STYLE BASE BEIGE
 # =========================
 st.markdown("""
 <style>
 .stApp {background:#F5F1E8;}
-.header {text-align:center;font-size:28px;font-weight:900;padding:10px;}
-.card {background:white;padding:20px;border-radius:20px;margin:10px 0;}
+.card {background:white;padding:18px;border-radius:18px;margin:10px 0;}
+.header {text-align:center;font-size:28px;font-weight:900;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -94,7 +94,7 @@ if not st.session_state.auth:
         bambino = st.text_input("Nome bambino")
         nascita = st.date_input("Data nascita")
 
-        # auto taglia
+        # taglia automatica
         if nascita.year >= 2024:
             taglia = "50-56"
         elif nascita.year >= 2023:
@@ -108,7 +108,7 @@ if not st.session_state.auth:
         if st.button("Registrati"):
 
             if email_exists(email):
-                st.error("Email già usata")
+                st.error("Email già registrata")
             else:
                 save_user({
                     "nome":nome,
@@ -121,7 +121,6 @@ if not st.session_state.auth:
                     "citta":città,
                     "locker":locker
                 })
-
                 st.success("Account creato")
                 st.rerun()
 
@@ -141,23 +140,21 @@ if not st.session_state.auth:
 user = st.session_state.user
 
 # =========================
-# SIDEBAR MENU (vero stile app)
+# MENU
 # =========================
-st.sidebar.title("Menu")
-page = st.sidebar.radio("",[
+page = st.sidebar.radio("Menu",[
     "Home","Box","Vetrina","Profilo",
-    "Come funziona","Contatti","Carrello"
+    "Come funziona","Promo","Contatti","Carrello"
 ])
 
-st.session_state.page = page
-
 # =========================
-# HOME (COME VOLEVI TU)
+# HOME (COMPLETA COME VOLEVI)
 # =========================
 if page == "Home":
 
     st.markdown(f"""
     <div style="display:flex;gap:20px;">
+
         <div style="width:60%;">
             <h2>Ciao {user['nome']} 👋</h2>
 
@@ -169,13 +166,15 @@ if page == "Home":
 
             <div class="card">
             <b>✨ Promo Mamme Fondatrici</b><br>
-            Dona 10 capi → gift card box entro 3 mesi
+            Dona 10+ capi → gift card Box valida 3 mesi
             </div>
         </div>
 
         <div style="width:40%;">
-            <img src="https://via.placeholder.com/180" style="border-radius:20px;width:100%;">
+            <img src="https://via.placeholder.com/180"
+            style="border-radius:20px;width:100%;">
         </div>
+
     </div>
     """, unsafe_allow_html=True)
 
@@ -187,14 +186,14 @@ if page == "Home":
 # =========================
 elif page == "Box":
 
-    st.title("BOX")
+    st.title("Box")
 
-    tipo = st.radio("Scegli",["Standard 14.90","Premium 24.90"])
+    tipo = st.radio("Seleziona",["Standard 14,90","Premium 24,90"])
 
     if "Standard" in tipo:
-        box = st.selectbox("Tipi",["Luna","Sole","Nuvola"])
+        scelta = st.radio("Tipo",["Luna","Sole","Nuvola"])
         if st.button("Aggiungi"):
-            add(box,14.90)
+            add(scelta,14.90)
     else:
         if st.button("Premium"):
             add("Premium",24.90)
@@ -215,11 +214,18 @@ elif page == "Profilo":
 
     st.title("Profilo")
 
-    st.write(f"""
-    Nome: {user['nome']}  
-    Bambino: {user['bambino']}  
-    Taglia: {user['taglia']}  
-    Locker: {user['locker']}
+    st.write(user)
+
+# =========================
+# PROMO
+# =========================
+elif page == "Promo":
+
+    st.title("Promo Mamme Fondatrici")
+
+    st.write("""
+    Dona 10 capi → noi ritiro gratuito  
+    Ricevi gift card box valida 3 mesi
     """)
 
 # =========================
@@ -231,7 +237,6 @@ elif page == "Contatti":
 
     st.write("📧 assistenza.loopbaby@gmail.com")
     st.write("📞 3921404637")
-    st.write("Rispondiamo il prima possibile")
 
 # =========================
 # CARRELLO
@@ -240,13 +245,9 @@ elif page == "Carrello":
 
     st.title("Carrello")
 
-    totale = 0
+    tot = 0
     for n,p in st.session_state.cart:
-        st.write(n, p)
-        totale += p
+        st.write(n,p)
+        tot += p
 
-    st.write("Totale:", totale)
-
-    if st.button("Paga"):
-        st.success("Pagamento simulato")
-        st.session_state.cart = []
+    st.write("Totale:", tot)

@@ -74,6 +74,9 @@ if not st.session_state.auth:
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
+    # -------------------
+    # REGISTRAZIONE
+    # -------------------
     if mode == "Registrati":
 
         if st.button("Crea"):
@@ -91,6 +94,9 @@ if not st.session_state.auth:
                 registra(email, password)
                 st.success("Account creato!")
 
+    # -------------------
+    # LOGIN ✅ (QUESTO TI MANCAVA)
+    # -------------------
     elif mode == "Login":
 
         if st.button("Entra"):
@@ -98,22 +104,22 @@ if not st.session_state.auth:
             if login(email, password):
 
                 st.session_state.auth = True
-                st.session_state.user = {"email": email}
+
+                # ⚠️ NON sovrascrivere user dopo!
+                # login() già salva u dentro session_state.user
 
                 dati = carica_dati(email)
                 st.session_state.dati = dati
 
                 if dati.get("nome_genitore", "") == "":
-                    st.session_state.profilo_completo = False
-                    st.session_state.pagina = "CompletaProfilo"
+                    st.session_state.pagina = "Profilo"
                 else:
-                    st.session_state.profilo_completo = True
                     st.session_state.pagina = "Home"
 
                 st.rerun()
 
             else:
-                st.error("Errore login")
+                st.error("Email o password errati")
 
     st.stop()
 
@@ -145,7 +151,7 @@ if "auth" not in st.session_state:
 if "user" not in st.session_state:
     st.session_state.user = None
 
-if st.session_state.auth and st.session_state.user:
+if st.session_state.auth and st.session_state.user and "dati" not in st.session_state:
     st.session_state.dati = carica_dati(st.session_state.user["email"])
     
 if "pagina" not in st.session_state:

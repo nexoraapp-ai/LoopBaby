@@ -101,29 +101,29 @@ if not st.session_state.auth:
 
                 st.rerun()
 
-    # -------------------
-    # LOGIN
-    # -------------------
-    else:
+   # -------------------
+# LOGIN
+# -------------------
+else:
 
-if st.button("Entra"):
+    if st.button("Entra"):
 
-    if login(email, password):
+        if login(email, password):
 
-        st.session_state.auth = True
+            st.session_state.auth = True
 
-        dati = carica_dati(email)
-        st.session_state.dati = dati
+            dati = carica_dati(email)
+            st.session_state.dati = dati
 
-        if dati.get("nome_genitore", "") == "":
-            st.session_state.pagina = "Profilo"
+            if dati.get("nome_genitore", "") == "":
+                st.session_state.pagina = "Profilo"
+            else:
+                st.session_state.pagina = "Home"
+
+            st.rerun()
+
         else:
-            st.session_state.pagina = "Home"
-
-        st.rerun()
-
-    else:
-        st.error("Email o password errati")
+            st.error("Email o password errati")
     st.stop()
 # =====================================================
 # 🚨 DA QUI IN POI: INCOLLA IL TUO CODICE B IDENTICO

@@ -59,7 +59,7 @@ if not st.session_state.auth:
     st.stop()
 
 # =========================
-# DATABASE LOCALE
+# DB LOCALE
 # =========================
 DB_FILE = "db_loopbaby.json"
 
@@ -74,8 +74,6 @@ def carica():
             pass
     return {
         "nome_genitore":"",
-        "email":"",
-        "telefono":"",
         "nome_bambino":"",
         "nascita":date(2024,1,1),
         "taglia":"50-56 cm",
@@ -110,6 +108,22 @@ def add(nome, prezzo):
     st.session_state.carrello.append({"nome":nome,"prezzo":prezzo})
 
 # =========================
+# HAMBURGER MENU (SIDEBAR)
+# =========================
+with st.sidebar:
+
+    st.markdown("## ☰ LoopBaby")
+
+    if st.button("🏠 Home"): st.session_state.pagina="Home"
+    if st.button("📦 Box"): st.session_state.pagina="Box"
+    if st.button("🔥 Promo"): st.session_state.pagina="Promo"
+    if st.button("ℹ️ Info"): st.session_state.pagina="Info"
+    if st.button("❤️ Chi Siamo"): st.session_state.pagina="ChiSiamo"
+    if st.button("🛒 Carrello"): st.session_state.pagina="Carrello"
+    if st.button("👤 Profilo"): st.session_state.pagina="Profilo"
+    if st.button("📞 Contatti"): st.session_state.pagina="Contatti"
+
+# =========================
 # STYLE
 # =========================
 st.markdown("""
@@ -121,45 +135,36 @@ div.stButton > button{background:#f43f5e;color:white;width:100%;border-radius:15
 """, unsafe_allow_html=True)
 
 # =========================
-# HEADER LOGO
-# =========================
-st.markdown("""
-<div style="text-align:center;padding:10px;">
-    <h2>LOOPBABY</h2>
-</div>
-""", unsafe_allow_html=True)
-
-# =========================
 # HOME
 # =========================
 if st.session_state.pagina == "Home":
 
-    nome = st.session_state.user["email"].split("@")[0]
+    nome = st.session_state.dati["nome_genitore"]
 
-    st.markdown(f"## Ciao {nome} 👋")
-
-    st.markdown("""
-    LoopBaby non è un e-commerce.
-
-    È uno stile. Una scelta. Un sistema.
-
-    ♻️ crescita circolare  
-    👶 vestiti selezionati  
-    🔄 riuso continuo  
-    """)
+    st.markdown(f"## Ciao {nome if nome else '👋'}")
 
     st.markdown("""
-    <div class="card" style="background:#fff1f2;">
-    <b>🔥 PROMO MAMME FONDATRICI</b><br>
-    Dona 10 capi → ricevi BOX omaggio
-    </div>
-    """, unsafe_allow_html=True)
+LoopBaby non è un e-commerce.
 
-    if st.button("Partecipa"):
+È uno stile. Una scelta. Un sistema.
+
+♻️ crescita circolare  
+👶 vestiti selezionati  
+🔄 riuso continuo  
+""")
+
+    st.markdown("""
+<div class="card" style="background:#fff1f2;">
+<b>🔥 PROMO MAMME FONDATRICI</b><br>
+Dona 10 capi → BOX omaggio
+</div>
+""", unsafe_allow_html=True)
+
+    if st.button("Partecipa alla Promo"):
         vai("Promo")
 
 # =========================
-# BOX (TUO ORIGINALE RIPULITO)
+# BOX (TUO SISTEMA ORIGINALE)
 # =========================
 elif st.session_state.pagina == "Box":
 
@@ -170,25 +175,29 @@ elif st.session_state.pagina == "Box":
     col1,col2 = st.columns(2)
 
     with col1:
-        st.markdown("### STANDARD")
-
         st.markdown("""
-        ☀️ SOLE  
+        ### STANDARD
+
         🌙 LUNA  
+        ☀️ SOLE  
         ☁️ NUVOLA  
+
+        14,90€ spedizione inclusa  
+        capi usati in buono stato
         """)
 
-        st.markdown("14,90€ spedizione inclusa")
-
-        tipo = st.selectbox("Stile",["Neutro","Rosa","Azzurro","Mix"])
+        style = st.selectbox("Stile",["Neutro","Rosa","Azzurro","Mix"])
 
         if st.button("Aggiungi Standard"):
-            add(f"Box Standard {tipo}",14.90)
+            add(f"Box Standard {style}",14.90)
 
     with col2:
-        st.markdown("### PREMIUM 💎")
+        st.markdown("""
+        ### PREMIUM 💎
 
-        st.markdown("24,90€")
+        24,90€  
+        capi nuovi o seminuovi
+        """)
 
         if st.button("Aggiungi Premium"):
             add("Box Premium",24.90)
@@ -200,36 +209,38 @@ elif st.session_state.pagina == "Promo":
 
     st.markdown("## 🔥 Promo Mamme Fondatrici")
 
+    st.markdown("Compila per ricevere etichetta entro 48h")
+
     with st.form("promo"):
 
         nome = st.text_input("Nome")
-        peso = st.text_input("Peso pacco")
+        peso = st.text_input("Peso")
         dim = st.text_input("Dimensioni")
-        citta = st.text_input("Città")
+        città = st.text_input("Città")
 
         ok = st.form_submit_button("Invia")
 
         if ok:
-            st.success("Entro 48h riceverai etichetta")
+            st.success("Riceverai etichetta entro 48 ore")
 
 # =========================
-# INFO
+# INFO (COME FUNZIONA)
 # =========================
 elif st.session_state.pagina == "Info":
 
-    st.markdown("## 🔄 Come funziona")
+    st.markdown("## 🔄 Come funziona LoopBaby")
 
     st.markdown("""
-📦 Ricevi box  
-👶 Usi 90 giorni  
-⚠️ 48h controllo problemi  
+📦 1. Ricevi Box  
+👶 2. Usi 90 giorni  
+⚠️ 3. 48h controllo problemi  
 
 🔁 Dopo 90 giorni:
-- nuova box gratis ritiro
-- oppure reso 7,90€
+- nuova Box (ritiro gratis)
+- oppure restituzione (7,90€)
 
 ♻️ Patto del 10:
-10 capi = nuova box
+10 capi = nuova Box
 """)
 
 # =========================
@@ -256,7 +267,7 @@ elif st.session_state.pagina == "Carrello":
 
     st.markdown("## 🛒 Carrello")
 
-    totale = 0
+    tot = 0
 
     for i,item in enumerate(st.session_state.carrello):
 
@@ -270,9 +281,9 @@ elif st.session_state.pagina == "Carrello":
                 st.session_state.carrello.pop(i)
                 st.rerun()
 
-        totale += item["prezzo"]
+        tot += item["prezzo"]
 
-    st.markdown(f"### Totale: {totale}€")
+    st.markdown(f"### Totale: {tot}€")
 
 # =========================
 # PROFILO
@@ -299,17 +310,3 @@ elif st.session_state.pagina == "Contatti":
 
     st.write("📧 assistenza.loopbaby@gmail.com")
     st.write("📱 3921404637 (WhatsApp)")
-
-# =========================
-# NAV
-# =========================
-st.markdown("---")
-
-cols = st.columns(6)
-menu = ["Home","Box","Promo","Info","Carrello","Profilo"]
-
-for i,p in enumerate(menu):
-    with cols[i]:
-        if st.button(p):
-            vai(p)
-            st.rerun()

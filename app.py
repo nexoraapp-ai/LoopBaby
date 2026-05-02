@@ -76,45 +76,40 @@ if not st.session_state.auth:
     # -------------------
     # REGISTRAZIONE
     # -------------------
-    if mode == "Registrati":
+  if mode == "Registrati":
 
-        if st.button("Crea account"):
+    if st.button("Crea account"):
 
-            if not email or "@" not in email:
-                st.error("Inserisci una email valida")
+        if not email or "@" not in email:
+            st.error("Inserisci una email valida")
 
-            elif len(password) < 4:
-                st.error("Password troppo corta")
+        elif len(password) < 4:
+            st.error("Password troppo corta")
 
-            elif email_esiste(email):
-                st.error("Email già registrata")
+        elif email_esiste(email):
+            st.error("Email già registrata")
 
-            else:
-                registra(email, password)
-                st.success("Account creato!")
+        else:
+            registra(email, password)
+            st.success("Account creato!")
 
-                # LOGIN AUTOMATICO
-                login(email, password)
-                st.session_state.auth = True
-                st.session_state.dati = carica_dati(email)
-                st.session_state.pagina = "Profilo"
+            login(email, password)
+            st.session_state.auth = True
+            st.session_state.dati = carica_dati(email)
+            st.session_state.pagina = "Profilo"
 
-                st.rerun()
+            st.rerun()
 
-# -------------------
-# LOGIN
-# -------------------
 else:
+
     if st.button("Entra"):
 
         if login(email, password):
 
             st.session_state.auth = True
+            st.session_state.dati = carica_dati(email)
 
-            dati = carica_dati(email)
-            st.session_state.dati = dati
-
-            if dati.get("nome_genitore", "") == "":
+            if st.session_state.dati.get("nome_genitore", "") == "":
                 st.session_state.pagina = "Profilo"
             else:
                 st.session_state.pagina = "Home"
@@ -237,10 +232,8 @@ if st.session_state.pagina == "Home":
     nome = dati.get("nome_genitore", "")
     u_nome = nome.split()[0] if nome else ""
 
-    saluto = f"Ciao {u_nome}!" if u_nome else "Ciao!"
     st.markdown(f"""<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; padding: 0 20px; align-items: start;">
-        <div>
-            <div style="font-size:28px; font-weight:800; color:#1e293b;">{saluto} 👋</div>
+            <div><div style="font-size:28px; font-weight:800; color:#1e293b;">Ciao {u_nome} 👋</div>
             <div style="font-size:14px; font-weight:600; color:#334155; line-height:1.3;">L'armadio circolare che cresce con il tuo bambino: capi scelti con amore, per un futuro senza sprechi.</div>
             <div style="margin-top:15px;">
                 <div style="display:flex; align-items:center; gap:10px; font-size:11px; color:#475569; margin-bottom:8px; font-weight:500;">👶 Capi di qualità selezionati</div>

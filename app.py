@@ -1,294 +1,290 @@
 import streamlit as st
 import requests
 import bcrypt
+import base64
 from datetime import date
 
+# =========================
+# CONFIG
+# =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 SHEETDB_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 # =========================
-# SAFE GET
-# =========================
-def g(d,k,default=""):
-    return (d or {}).get(k,default)
-
-# =========================
-# PASSWORD
-# =========================
-def hash_password(p):
-    return bcrypt.hashpw(p.encode(), bcrypt.gensalt()).decode()
-
-def check_password(p,h):
-    return bcrypt.checkpw(p.encode(),h.encode())
-
-# =========================
-# LOCKER REALI (ESPANDIBILI)
-# =========================
-LOCKER = {
-    "Milano": ["Duomo Locker", "Centrale FS", "Porta Garibaldi"],
-    "Lecco": ["Lecco Centro", "Meridiana", "Bione"],
-    "Calolziocorte": ["Esselunga", "Poste Italiane", "Centro Paese"]
-}
-
-# =========================
-# TAGLIA AUTOMATICA
-# =========================
-def suggest_taglia(nascita):
-    try:
-        year = int(str(nascita)[:4])
-        age_months = (2026 - year) * 12
-        if age_months < 6: return "50-56"
-        if age_months < 12: return "62-68"
-        if age_months < 24: return "74-80"
-        return "86-92"
-    except:
-        return "62-68"
-
-# =========================
-# DB
-# =========================
-def get_users():
-    try:
-        return requests.get(SHEETDB_URL).json()
-    except:
-        return []
-
-def find_user(email):
-    for u in get_users():
-        if g(u,"email").lower() == email.lower():
-            return u
-    return None
-
-def save_user(u):
-    requests.post(SHEETDB_URL, json={"data":[u]})
-
-# =========================
-# SESSION
-# =========================
-if "user" not in st.session_state:
-    st.session_state.user = None
-
-if "page" not in st.session_state:
-    st.session_state.page = "login"
-
-# =========================
-# DESIGN
+# STYLE BASE (BEIGE SHOPIFY)
 # =========================
 st.markdown("""
 <style>
-.stApp{background:#f5f1e8;}
-.card{background:white;padding:18px;border-radius:18px;margin:10px 0;}
-.title{font-size:26px;font-weight:800;}
-.small{font-size:13px;color:#555;}
+.stApp {
+    background-color: #f5f0e8;
+}
+
+.block-container {
+    padding-top: 20px;
+    max-width: 500px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 20px;
+    margin: 10px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.logo {
+    text-align:center;
+    font-size:28px;
+    font-weight:900;
+    margin-bottom:10px;
+}
+
+button {
+    border-radius: 15px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# MENU HAMBURGER (SIDEBAR)
+# UTILS
 # =========================
-menu = st.sidebar.selectbox("Menu",[
-    "Home","Box","Vetrina","Profilo",
-    "Come funziona","Promo","Contatti","Logout"
-])
+def hash_password(p):
+    return bcrypt.hashpw(p.encode(), bcrypt.gensalt()).decode()
+
+def check_password(p, h):
+    return bcrypt.checkpw(p.encode(), h.encode())
+
+def carica_dati(email):
+    try:
+        r = requests.get(SHEETDB_URL)
+        for u in r.json():
+            if u.get("email","").lower() == email.lower():
+                return u
+    except:
+        pass
+    return None
+
+def email_esiste(email):
+    try:
+        r = requests.get(SHEETDB_URL)
+        return any(u.get("email","").lower() == email.lower() for u in r.json())
+    except:
+        return False
+
+def registra(user):
+    requests.post(SHEETDB_URL, json={"data":[user]})
 
 # =========================
-# LOGIN / REGISTER (OBBLIGATORIO COMPLETO)
+# LOCKER REALI (SIMULATI)
 # =========================
-if st.session_state.page == "login":
+LOCKERS = {
+    "Milano": ["Milano Centrale", "Milano Porta Romana", "Milano Lambrate"],
+    "Monza": ["Monza Centro", "Monza Est"],
+    "Lecco": ["Lecco Stazione", "Calolziocorte Centro"]
+}
 
-    st.title("LoopBaby 🌸")
+# =========================
+# SESSION
+# =========================
+if "auth" not in st.session_state:
+    st.session_state.auth = False
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "login"
+if "user" not in st.session_state:
+    st.session_state.user = {}
 
-    mode = st.radio("Accesso",["Login","Registrati"])
+# =========================
+# LOGO TOP
+# =========================
+st.markdown('<div class="logo">LOOPBABY 👶</div>', unsafe_allow_html=True)
+
+# =========================
+# SIDEBAR MENU (HAMBURGER)
+# =========================
+if st.session_state.auth:
+    menu = st.sidebar.selectbox("Menu", [
+        "Home","Box","Vetrina","Profilo","Promo","Come funziona","Contatti"
+    ])
+    st.session_state.pagina = menu
+
+# =========================
+# LOGIN / REGISTER
+# =========================
+if not st.session_state.auth:
+
+    st.title("Accedi / Registrati")
+
+    mode = st.radio("Modalità", ["Login", "Registrazione"])
 
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
-    # ================= REGISTER =================
-    if mode == "Registrati":
+    # ============ REGISTRAZIONE ============
+    if mode == "Registrazione":
 
         nome = st.text_input("Nome e Cognome")
-        bambino = st.text_input("Nome bambino")
+        bambino = st.text_input("Nome Bambino")
         nascita = st.date_input("Data nascita")
 
-        # TAGLIA AUTOMATICA SUGGERITA
-        auto_taglia = suggest_taglia(nascita)
-        st.info(f"Taglia suggerita: {auto_taglia}")
+        taglia = st.selectbox("Taglia suggerita", [
+            "50-56","62-68","74-80","86-92"
+        ])
 
-        taglia = st.selectbox("Conferma taglia",["50-56","62-68","74-80","86-92"],index=["50-56","62-68","74-80","86-92"].index(auto_taglia))
-
-        città = st.selectbox("Città", list(LOCKER.keys()))
-        locker = st.selectbox("Locker vicino", LOCKER[città])
+        citta = st.selectbox("Città", list(LOCKERS.keys()))
+        locker = st.selectbox("Locker vicino", LOCKERS[citta])
 
         if st.button("Crea account"):
 
-            if not email or "@" not in email:
-                st.error("Email non valida")
-                st.stop()
-
-            if find_user(email):
+            if email_esiste(email):
                 st.error("Email già registrata")
-                st.stop()
+            else:
+                user = {
+                    "email": email,
+                    "password": hash_password(password),
+                    "nome": nome,
+                    "bambino": bambino,
+                    "nascita": str(nascita),
+                    "taglia": taglia,
+                    "citta": citta,
+                    "locker": locker,
+                    "telefono": "",
+                }
+                registra(user)
 
-            user = {
-                "email": email,
-                "password": hash_password(password),
-                "nome": nome,
-                "bambino": bambino,
-                "nascita": str(nascita),
-                "taglia": taglia,
-                "città": città,
-                "locker": locker
-            }
+                st.session_state.user = user
+                st.session_state.auth = True
+                st.session_state.pagina = "Home"
+                st.rerun()
 
-            save_user(user)
-
-            st.session_state.user = user
-            st.session_state.page = "home"
-            st.rerun()
-
-    # ================= LOGIN =================
+    # ============ LOGIN ============
     else:
         if st.button("Entra"):
 
-            u = find_user(email)
+            data = carica_dati(email)
 
-            if not u:
-                st.error("Utente non trovato")
-                st.stop()
-
-            if not check_password(password, g(u,"password")):
-                st.error("Password errata")
-                st.stop()
-
-            st.session_state.user = u
-            st.session_state.page = "home"
-            st.rerun()
+            if data and check_password(password, data["password"]):
+                st.session_state.user = data
+                st.session_state.auth = True
+                st.session_state.pagina = "Home"
+                st.rerun()
+            else:
+                st.error("Credenziali errate")
 
     st.stop()
 
 # =========================
-# USER
+# HEADER USER
 # =========================
-u = st.session_state.user or {}
-nome = (g(u,"nome") or "Utente").split()[0]
+user = st.session_state.user
+nome = user.get("nome","Utente").split()[0]
+
+st.markdown(f"### Ciao {nome} 👋")
 
 # =========================
-# HOME (DESIGN CORRETTO)
+# HOME
 # =========================
-if menu == "Home":
+if st.session_state.pagina == "Home":
 
-    st.markdown(f"""
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-        <img src="https://via.placeholder.com/80" style="border-radius:15px;">
-        <div class="title">Ciao {nome} 👋</div>
-    </div>
+    col1, col2 = st.columns([2,1])
 
-    <div class="card">
-    👶 Capi selezionati<br>
-    🔄 Cresce con il bambino<br>
-    💰 Risparmio reale<br>
-    🏠 Locker vicino a te<br>
-    ♻️ Zero sprechi
-    </div>
+    with col1:
+        st.markdown("""
+        <div class="card">
+        👶 Capi selezionati<br>
+        🔄 Cresce con il bambino<br>
+        💰 Risparmio reale<br>
+        🏠 Locker vicino a te<br>
+        ♻️ Zero sprechi
+        </div>
+        """, unsafe_allow_html=True)
 
-    <div class="card" style="border:2px solid #f43f5e;">
-    <b>✨ Promo Mamme Fondatrici</b><br>
-    Dona 10+ capi → gift card valida 3 mesi
-    </div>
-    """, unsafe_allow_html=True)
+        st.markdown("""
+        <div class="card">
+        <b>✨ Promo Mamme Fondatrici</b><br>
+        Dona 10+ capi → gift card valida 3 mesi
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("Vai alla promo"):
+            st.session_state.pagina = "Promo"
+            st.rerun()
+
+    with col2:
+        st.image("https://via.placeholder.com/160", caption="Il tuo bambino")
 
 # =========================
-# PROMO (COMPLETA + BACK)
+# PROMO
 # =========================
-elif menu == "Promo":
+elif st.session_state.pagina == "Promo":
 
     st.title("Promo Mamme Fondatrici")
 
-    st.info("Dona 10 o più capi → noi ritiriamo tutto + regalo box (valido 3 mesi)")
-
     peso = st.text_input("Peso pacco")
-    dim = st.text_input("Dimensioni pacco")
+    dimensioni = st.text_input("Dimensioni")
 
-    città = g(u,"città")
-    locker = st.selectbox("Locker di ritiro", LOCKER.get(città, []))
+    locker = user.get("locker")
 
-    if st.button("Invia richiesta etichetta"):
+    st.info(f"Locker di default: {locker}")
 
-        st.success(f"Etichetta inviata entro 24h al locker: {locker}")
-        st.info("La tua gift card sarà valida 3 mesi")
+    if st.button("Invia richiesta"):
 
-    if st.button("⬅ Torna indietro"):
-        st.session_state.page = "home"
-        st.rerun()
+        st.success("Etichetta inviata entro 24h al tuo locker 📦")
 
 # =========================
 # BOX
 # =========================
-elif menu == "Box":
+elif st.session_state.pagina == "Box":
 
-    st.title("Box")
+    st.title("BOX")
 
-    tipo = st.radio("Scegli",["Standard 14,90€","Premium 24,90€"])
+    tipo = st.radio("Tipo box", ["Standard","Premium"])
 
-    if tipo.startswith("Standard"):
-        st.write("👕 Capi usati in buono stato")
+    if tipo == "Standard":
+
+        st.markdown("### 14,90€")
+
+        scelta = st.selectbox("Scegli box", ["Luna","Sole","Nuvola"])
+
+        st.write("Stile selezionato:", scelta)
+
     else:
-        st.write("✨ Capi seminuovi o nuovi")
+        st.markdown("### 24,90€ Premium")
 
 # =========================
 # VETRINA
 # =========================
-elif menu == "Vetrina":
+elif st.session_state.pagina == "Vetrina":
 
     st.title("Vetrina")
 
-    st.write("🚚 Gratis sopra 50€")
-    st.write("📦 Sotto 50€ → 7,90€ locker")
+    st.info("Spedizione gratis sopra 50€ o con box")
+
+    st.markdown("""
+    <div class="card">
+    Body Bio LoopBaby - 9,90€
+    </div>
+    """, unsafe_allow_html=True)
 
 # =========================
 # PROFILO
 # =========================
-elif menu == "Profilo":
+elif st.session_state.pagina == "Profilo":
 
     st.title("Profilo")
 
-    st.write("Nome:",g(u,"nome"))
-    st.write("Bambino:",g(u,"bambino"))
-    st.write("Taglia:",g(u,"taglia"))
-    st.write("Locker:",g(u,"locker"))
+    st.write(user)
 
-# =========================
-# COME FUNZIONA
-# =========================
-elif menu == "Come funziona":
-
-    st.title("Come funziona")
-
-    st.write("""
-LoopBaby è semplice:
-1. scegli box
-2. ricevi al locker
-3. usi i capi
-4. restituisci
-5. cambi taglia automaticamente
-""")
+    if st.button("Modifica dati"):
+        st.warning("Funzione modifica (step successivo la rendiamo completa)")
 
 # =========================
 # CONTATTI
 # =========================
-elif menu == "Contatti":
+elif st.session_state.pagina == "Contatti":
 
     st.title("Contatti")
 
     st.write("📧 assistenza.loopbaby@gmail.com")
-    st.write("📱 WhatsApp 3921404637")
-    st.write("❌ No chiamate")
-
-# =========================
-# LOGOUT
-# =========================
-elif menu == "Logout":
-    st.session_state.user = None
-    st.session_state.page = "login"
-    st.rerun()
+    st.write("📱 3921404637")
+    st.write("Rispondiamo entro poche ore (no chiamate)")

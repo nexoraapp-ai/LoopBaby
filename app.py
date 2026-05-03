@@ -129,6 +129,9 @@ if st.session_state.page == "Login":
                     st.error("Telefono errato")
             else:
                 st.error("Utente non trovato")
+            if not st.session_state.logged:
+    st.warning("🔐 Devi accedere per continuare")
+    st.stop()
 
     # ===== REGISTRAZIONE =====
     with tab2:
@@ -203,7 +206,7 @@ if st.session_state.page == "Home":
            st.image(
     "bimbo.jpg",
     width=120,
-    caption=d.get("bimbo", "Il tuo bambino")
+   caption="👶 Il tuo bambino"
 )
 
     st.markdown("### 🔥 Promo Mamme Fondatrici")

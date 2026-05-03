@@ -9,7 +9,7 @@ st.set_page_config(page_title="LoopBaby", layout="centered")
 API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 # =========================
-# SESSION STATE
+# STATE
 # =========================
 if "user" not in st.session_state:
     st.session_state.user = None
@@ -23,11 +23,8 @@ if "menu" not in st.session_state:
 if "cart" not in st.session_state:
     st.session_state.cart = []
 
-# =========================
-# NAV
-# =========================
-def go(page):
-    st.session_state.page = page
+def go(p):
+    st.session_state.page = p
     st.session_state.menu = False
     st.rerun()
 
@@ -45,8 +42,12 @@ def get_user(email):
 def create_user(data):
     return requests.post(API_URL, json={"data": data})
 
+def update_user(user):
+    # SheetDB update (dipende dalla tua config)
+    return requests.patch(API_URL, json={"data": user})
+
 # =========================
-# STYLE BASE
+# STYLE
 # =========================
 st.markdown("""
 <style>
@@ -54,6 +55,15 @@ st.markdown("""
     background:#F5F1E8;
     max-width:480px;
     margin:auto;
+    font-family:Arial;
+}
+
+/* TITLE */
+.title{
+    text-align:center;
+    font-size:28px;
+    font-weight:900;
+    color:#5a4636;
 }
 
 /* BUTTON */
@@ -81,16 +91,18 @@ div.stButton > button{
 # =========================
 if st.session_state.user is None:
 
-    st.title("🌸 LoopBaby")
+    st.markdown("## 🌸 LoopBaby")
 
     tab1, tab2 = st.tabs(["Login", "Registrati"])
 
     # ---------------- LOGIN ----------------
     with tab1:
+
         email = st.text_input("Email", key="login_email")
         password = st.text_input("Password", type="password", key="login_pass")
 
         if st.button("Entra", key="login_btn"):
+
             users = get_user(email)
 
             if len(users) == 0:
@@ -103,9 +115,10 @@ if st.session_state.user is None:
 
     # ---------------- REGISTER ----------------
     with tab2:
+
         nome = st.text_input("Nome", key="reg_nome")
         email_r = st.text_input("Email", key="reg_email")
-        pass_r = st.text_input("Password", key="reg_pass")
+        pass_r = st.text_input("Password", type="password", key="reg_pass")
         tel = st.text_input("Telefono", key="reg_tel")
 
         if st.button("Registrati", key="reg_btn"):
@@ -118,12 +131,17 @@ if st.session_state.user is None:
                 if len(check) > 0:
                     st.error("Email già registrata")
                 else:
+
                     create_user({
                         "nome": nome,
                         "email": email_r,
                         "password": pass_r,
-                        "telefono": tel
+                        "telefono": tel,
+                        "bimbo": "",
+                        "taglia": "50-56",
+                        "locker": ""
                     })
+
                     st.success("Registrazione completata")
 
     st.stop()
@@ -137,25 +155,26 @@ nome = user.get("nome","")
 col1,col2 = st.columns([8,1])
 
 with col1:
-    st.markdown(f"## 👋 Ciao {nome}")
+    st.markdown(f"<div class='title'>Ciao {nome} 👋</div>", unsafe_allow_html=True)
 
 with col2:
     if st.button("☰", key="menu_btn"):
         st.session_state.menu = not st.session_state.menu
 
 # =========================
-# MENU OVERLAY (NO DUPLICATI)
+# MENU
 # =========================
 if st.session_state.menu:
 
     st.markdown("### MENU")
 
-    if st.button("Home", key="m_home"): go("home")
-    if st.button("Box", key="m_box"): go("box")
-    if st.button("Vetrina", key="m_vetrina"): go("vetrina")
-    if st.button("Info", key="m_info"): go("info")
-    if st.button("Promo", key="m_promo"): go("promo")
-    if st.button("Carrello", key="m_cart"): go("carrello")
+    if st.button("Home", key="m1"): go("home")
+    if st.button("Box", key="m2"): go("box")
+    if st.button("Vetrina", key="m3"): go("vetrina")
+    if st.button("Info", key="m4"): go("info")
+    if st.button("Promo", key="m5"): go("promo")
+    if st.button("Profilo", key="m6"): go("profilo")
+    if st.button("Carrello", key="m7"): go("carrello")
 
 # =========================
 # HOME
@@ -182,25 +201,24 @@ if st.session_state.page == "home":
 # =========================
 if st.session_state.page == "box":
 
-    st.title("📦 Box")
+    st.title("📦 Box LoopBaby")
 
     boxes = [
-        ("SOLE ☀️","#FFD600"),
-        ("LUNA 🌙","#E5E7EB"),
-        ("NUVOLA ☁️","#94A3B8"),
-        ("PREMIUM 💎","#4F46E5")
+        ("SOLE ☀️",14.90),
+        ("LUNA 🌙",14.90),
+        ("NUVOLA ☁️",14.90),
+        ("PREMIUM 💎",24.90)
     ]
 
-    for i,(name,color) in enumerate(boxes):
+    for i,(name,price) in enumerate(boxes):
 
         st.markdown(f"""
-        <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0;font-weight:700">
-        {name}
+        <div class="card">
+        <b>{name}</b><br>{price}€
         </div>
         """, unsafe_allow_html=True)
 
         if st.button(f"Aggiungi {name}", key=f"box_{i}"):
-            price = 24.90 if "PREMIUM" in name else 14.90
             st.session_state.cart.append({"name":name,"price":price})
 
 # =========================
@@ -231,7 +249,7 @@ if st.session_state.page == "info":
     st.markdown("""
 <div class="card">
 ✔ box gratis andata<br>
-✔ 90 giorni utilizzo<br>
+✔ uso 90 giorni<br>
 ✔ ritorno 7,90€ senza box
 </div>
 """, unsafe_allow_html=True)
@@ -250,6 +268,21 @@ if st.session_state.page == "promo":
 ✔ spedizione inclusa
 </div>
 """, unsafe_allow_html=True)
+
+# =========================
+# PROFILO
+# =========================
+if st.session_state.page == "profilo":
+
+    st.title("👤 Profilo")
+
+    user["nome"] = st.text_input("Nome", user.get("nome",""), key="p1")
+    user["telefono"] = st.text_input("Telefono", user.get("telefono",""), key="p2")
+
+    if st.button("Salva", key="save_profile"):
+        update_user(user)
+        st.session_state.user = user
+        st.success("Profilo aggiornato")
 
 # =========================
 # CARRELLO

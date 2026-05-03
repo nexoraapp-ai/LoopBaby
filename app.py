@@ -3,51 +3,47 @@ import os
 import json
 import base64
 
+# =========================
+# CONFIG
+# =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
+DB_FILE = "db.json"
+
 # =========================
-# STILE BEIGE
+# STYLE (BEIGE UNIFORME)
 # =========================
 st.markdown("""
 <style>
 .stApp {
-    background-color: #F5F1E8;
-    max-width: 480px;
-    margin: auto;
+    background-color:#F5F1E8;
+    max-width:520px;
+    margin:auto;
 }
+
 button {
-    border-radius: 12px !important;
+    border-radius:12px !important;
+    font-weight:600 !important;
+}
+
+[data-testid="stSidebar"] {
+    background:#efe7da;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# IMMAGINI
+# DB
 # =========================
-def load_img(path):
-    if os.path.exists(path):
-        return base64.b64encode(open(path, "rb").read()).decode()
-    return ""
-
-logo = load_img("logo.png")
-
-# =========================
-# DB SICURO
-# =========================
-DB_FILE = "db.json"
-
 def load_users():
     if os.path.exists(DB_FILE):
-        try:
-            data = json.load(open(DB_FILE))
-            if isinstance(data, list):
-                return data
-        except:
-            pass
+        return json.load(open(DB_FILE))
     return []
 
 def save_users(data):
     json.dump(data, open(DB_FILE, "w"))
+
+users = load_users()
 
 # =========================
 # SESSION
@@ -69,7 +65,7 @@ def go(p):
     st.session_state.menu = False
 
 # =========================
-# HEADER
+# HEADER + HAMBURGER
 # =========================
 col1, col2 = st.columns([1,6])
 
@@ -78,68 +74,76 @@ with col1:
         st.session_state.menu = not st.session_state.menu
 
 with col2:
-    if logo:
-        st.markdown(f"<img src='data:image/png;base64,{logo}' width='140'>", unsafe_allow_html=True)
+    st.title("LoopBaby 🌿")
 
 # MENU
 if st.session_state.menu:
     st.button("Home", on_click=lambda: go("Home"))
     st.button("Box", on_click=lambda: go("Box"))
     st.button("Vetrina", on_click=lambda: go("Vetrina"))
-    st.button("Promo", on_click=lambda: go("Promo"))
     st.button("Info", on_click=lambda: go("Info"))
     st.button("Chi siamo", on_click=lambda: go("Chi"))
     st.button("Profilo", on_click=lambda: go("Profilo"))
     st.button("Carrello", on_click=lambda: go("Carrello"))
+    st.markdown("---")
 
 # =========================
-# LOGIN / REGISTER
+# AUTH
 # =========================
-if not st.session_state.user:
+def register(nome, email, password):
+    for u in users:
+        if u.get("email") == email:
+            return False
 
-    st.title("LoopBaby")
+    users.append({
+        "nome": nome,
+        "email": email,
+        "password": password,
+        "taglia": "50-56",
+        "telefono": "",
+        "bimbo": "",
+        "indirizzo": ""
+    })
+
+    save_users(users)
+    return True
+
+def login(email, password):
+    for u in users:
+        if u.get("email") == email and u.get("password") == password:
+            st.session_state.user = u
+            return True
+    return False
+
+# =========================
+# LOGIN PAGE
+# =========================
+if st.session_state.user is None:
+
+    st.title("LoopBaby Login")
 
     tab1, tab2 = st.tabs(["Login", "Registrati"])
-
-    users = load_users()
 
     with tab1:
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
 
         if st.button("Accedi"):
-            for u in users:
-                if isinstance(u, dict) and u.get("email") == email and u.get("password") == password:
-                    st.session_state.user = u
-                    st.rerun()
-            st.error("Credenziali errate")
+            if login(email, password):
+                st.rerun()
+            else:
+                st.error("Errore login")
 
     with tab2:
         nome = st.text_input("Nome")
-        email_r = st.text_input("Email registrazione")
-        telefono = st.text_input("Telefono")
+        email_r = st.text_input("Email")
         password_r = st.text_input("Password", type="password")
 
         if st.button("Registrati"):
-            if any(isinstance(u, dict) and u.get("email") == email_r for u in users):
-                st.error("Email già registrata")
+            if register(nome, email_r, password_r):
+                st.success("Registrazione ok")
             else:
-                new_user = {
-                    "nome": nome,
-                    "email": email_r,
-                    "telefono": telefono,
-                    "password": password_r,
-                    "nome_bimbo": "",
-                    "taglia": "",
-                    "via": "",
-                    "citta": "",
-                    "cap": "",
-                    "note": ""
-                }
-                users.append(new_user)
-                save_users(users)
-                st.session_state.user = new_user
-                st.rerun()
+                st.error("Email già registrata")
 
     st.stop()
 
@@ -148,87 +152,94 @@ if not st.session_state.user:
 # =========================
 if st.session_state.page == "Home":
 
-    nome = st.session_state.user.get("nome","")
+    u = st.session_state.user
 
-    st.markdown(f"## 👋 Ciao {nome}")
+    st.markdown(f"## 👋 Ciao {u.get('nome','')}")
 
     st.markdown("""
-LoopBaby è un sistema circolare per vestire i bambini.
-
 ♻️ crescita circolare  
 🔄 riuso intelligente  
 💛 risparmio reale  
-👶 meno sprechi  
 """)
 
-    st.markdown("### 🔥 Mamme Fondatrici")
-    st.write("Dona almeno 10 capi → ricevi Box gratuita")
-
-    if st.button("Partecipa"):
-        go("Promo")
-
 # =========================
-# PROMO
-# =========================
-if st.session_state.page == "Promo":
-
-    st.title("Mamme Fondatrici")
-
-    st.markdown("""
-Diventa fondatrice LoopBaby.
-
-🎁 Dona 10 capi  
-📦 Ricevi Box gratis  
-🚚 Spedizione inclusa  
-
-Ricevi etichetta entro 48h
-""")
-
-    peso = st.text_input("Peso pacco")
-    dim = st.text_input("Dimensioni")
-
-    if st.button("Invia richiesta"):
-        st.success("Etichetta inviata entro 48h")
-
-# =========================
-# BOX
+# BOX (ZALANDO STYLE)
 # =========================
 if st.session_state.page == "Box":
 
-    st.title("Box")
+    st.title("📦 Box LoopBaby")
 
-    st.markdown("Standard 14,90€")
+    taglia = st.session_state.user.get("taglia")
 
-    boxes = [
-        ("SOLE ☀️", "#FFD600"),
-        ("LUNA 🌙", "#E5E7EB"),
-        ("NUVOLA ☁️", "#94A3B8")
-    ]
+    st.info(f"Taglia: {taglia}")
 
-    for name, color in boxes:
-        st.markdown(f"<div style='background:{color};padding:15px;border-radius:10px'>{name}</div>", unsafe_allow_html=True)
+    tipo = st.radio("Scegli", ["Standard", "Premium"], horizontal=True)
 
-        if st.button(f"Aggiungi {name}", key=name):
-            st.session_state.cart.append({"name": name, "price": 14.90})
+    # STANDARD
+    if tipo == "Standard":
+
+        st.subheader("🧸 Standard — 14,90€")
+
+        boxes = [
+            ("SOLE ☀️", "#FFD600", "vivaci"),
+            ("LUNA 🌙", "#EDEDED", "neutri"),
+            ("NUVOLA ☁️", "#C7D2FE", "soft")
+        ]
+
+        for i, (name, color, desc) in enumerate(boxes):
+
+            st.markdown(f"""
+            <div style="
+                background:{color};
+                padding:14px;
+                border-radius:12px;
+                margin:8px 0;
+            ">
+                <b>{name}</b><br>{desc}
+            </div>
+            """, unsafe_allow_html=True)
+
+            if st.button(f"Aggiungi {name}", key=f"s{i}"):
+                st.session_state.cart.append((f"Box {name}", 14.90))
+
+    # PREMIUM
+    else:
+
+        st.subheader("💎 Premium — 24,90€")
+
+        st.markdown("""
+        <div style="
+            background:linear-gradient(135deg,#0f172a,#4f46e5);
+            color:white;
+            padding:18px;
+            border-radius:14px;
+            text-align:center;
+        ">
+        ✨ SELEZIONE PREMIUM<br>
+        qualità superiore
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("Aggiungi Premium"):
+            st.session_state.cart.append(("Box Premium", 24.90))
 
 # =========================
 # VETRINA
 # =========================
 if st.session_state.page == "Vetrina":
 
-    st.title("Vetrina")
+    st.title("🛍️ Vetrina")
 
-    st.markdown("""
-I capi acquistati rimangono a te.
+    st.write("I capi rimangono tuoi per sempre")
 
+    st.write("""
 🚚 Spedizione:
-- GRATIS sopra 50€
-- GRATIS con Box
-- 7,90€ senza Box
+- gratis sopra 50€
+- 7,90€ sotto
 """)
 
     if st.button("Aggiungi Body 9,90€"):
-        st.session_state.cart.append({"name": "Body", "price": 9.90})
+        st.session_state.cart.append(("Body", 9.90))
 
 # =========================
 # INFO
@@ -237,22 +248,13 @@ if st.session_state.page == "Info":
 
     st.title("Come funziona")
 
-    st.markdown("""
+    st.write("""
 Ricevi Box → usi → restituisci → continui
 
-Durata: 90 giorni
-
-Se continui:
-✔ spedizione gratis
-
-Se ti fermi:
-✔ 7,90€
-
 ♻️ Patto 10x10:
-Ricevi 10 capi → restituisci 10
+10 capi → 10 capi o 5€ a capo mancante
 
-Se rompi:
-👖 jeans x jeans oppure 5€
+Durata: 90 giorni
 """)
 
 # =========================
@@ -262,23 +264,18 @@ if st.session_state.page == "Chi":
 
     st.title("Chi siamo")
 
-    st.markdown("""
-LoopBaby nasce da un problema reale:
+    st.write("""
+LoopBaby nasce per un problema reale:
 
-i bambini crescono troppo in fretta.
-
-Troppi vestiti inutilizzati,
-troppi soldi sprecati.
-
-Abbiamo creato un sistema:
+bambini crescono troppo velocemente.
 
 ✔ meno sprechi  
 ✔ più riuso  
 ✔ più risparmio  
 
-Non vendiamo solo vestiti.
+Non vendiamo vestiti.
 
-Cambiamo il modo di usarli.
+Costruiamo un sistema.
 """)
 
 # =========================
@@ -288,67 +285,45 @@ if st.session_state.page == "Carrello":
 
     st.title("Carrello")
 
-    totale = 0
+    total = 0
 
     for i, item in enumerate(st.session_state.cart):
+
+        name, price = item
         col1, col2, col3 = st.columns([3,1,1])
 
-        col1.write(item["name"])
-        col2.write(f"{item['price']}€")
+        col1.write(name)
+        col2.write(f"{price}€")
 
-        if col3.button("❌", key=f"del{i}"):
+        if col3.button("❌", key=f"d{i}"):
             st.session_state.cart.pop(i)
             st.rerun()
 
-        totale += item["price"]
+        total += price
 
-    st.write(f"Totale: {totale}€")
+    st.markdown(f"### Totale: {total}€")
 
 # =========================
-# PROFILO COMPLETO
+# PROFILO
 # =========================
 if st.session_state.page == "Profilo":
 
     st.title("Profilo")
 
-    users = load_users()
-    user = st.session_state.user
+    u = st.session_state.user
 
-    st.markdown(f"### Ciao {user.get('nome','')} 👋")
+    u["nome"] = st.text_input("Nome", u.get("nome",""))
+    u["telefono"] = st.text_input("Telefono", u.get("telefono",""))
+    u["taglia"] = st.selectbox("Taglia", ["50-56","62-68","74-80","86-92"])
 
-    nome = st.text_input("Nome", user.get("nome",""))
-    telefono = st.text_input("Telefono", user.get("telefono",""))
+    u["bimbo"] = st.text_input("Nome bambino", u.get("bimbo",""))
 
-    st.subheader("Bambino")
-
-    nome_bimbo = st.text_input("Nome bambino", user.get("nome_bimbo",""))
-    taglia = st.selectbox("Taglia", ["50-56","62-68","74-80","86-92"])
-
-    st.subheader("Indirizzo")
-
-    via = st.text_input("Via", user.get("via",""))
-    citta = st.text_input("Città", user.get("citta",""))
-    cap = st.text_input("CAP", user.get("cap",""))
-
-    note = st.text_area("Note", user.get("note",""))
+    u["indirizzo"] = st.text_area("Indirizzo", u.get("indirizzo",""))
 
     if st.button("Salva"):
-
-        user.update({
-            "nome": nome,
-            "telefono": telefono,
-            "nome_bimbo": nome_bimbo,
-            "taglia": taglia,
-            "via": via,
-            "citta": citta,
-            "cap": cap,
-            "note": note
-        })
-
-        for u in users:
-            if isinstance(u, dict) and u.get("email") == user.get("email"):
-                u.update(user)
+        for i, x in enumerate(users):
+            if x.get("email") == u.get("email"):
+                users[i] = u
 
         save_users(users)
-
         st.success("Salvato")

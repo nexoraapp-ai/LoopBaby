@@ -195,21 +195,79 @@ Ricevi etichetta entro 48h
 # =========================
 if st.session_state.page == "Box":
 
-    st.title("Box")
+    st.title("📦 Box LoopBaby")
 
-    st.markdown("Standard 14,90€")
+    taglia = st.session_state.dati.get("taglia", "50-56")
 
-    boxes = [
-        ("SOLE ☀️", "#FFD600"),
-        ("LUNA 🌙", "#E5E7EB"),
-        ("NUVOLA ☁️", "#94A3B8")
-    ]
+    st.markdown(f"### 📏 Taglia attuale: {taglia}")
 
-    for name, color in boxes:
-        st.markdown(f"<div style='background:{color};padding:15px;border-radius:10px'>{name}</div>", unsafe_allow_html=True)
+    tipo = st.radio("Scegli tipologia", ["Standard", "Premium"])
 
-        if st.button(f"Aggiungi {name}", key=name):
-            st.session_state.cart.append({"name": name, "price": 14.90})
+    # =========================
+    # STANDARD
+    # =========================
+    if tipo == "Standard":
+
+        st.markdown("### 🧸 Box Standard — 14,90€")
+        st.markdown("Capi usati in **buono stato**, selezionati e igienizzati.")
+
+        boxes = [
+            ("SOLE ☀️", "#FFD600", "Colorati e vivaci"),
+            ("LUNA 🌙", "#E5E7EB", "Neutri e minimal"),
+            ("NUVOLA ☁️", "#94A3B8", "Toni soft")
+        ]
+
+        for i, (name, color, desc) in enumerate(boxes):
+
+            st.markdown(f"""
+            <div style="
+                background:{color};
+                padding:18px;
+                border-radius:18px;
+                margin:12px 0;
+                color:#1e293b;
+                font-weight:600;
+            ">
+                <div style="font-size:18px;"><b>{name}</b></div>
+                <div style="font-size:13px;">{desc}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if st.button(f"Aggiungi {name}", key=f"std_{i}"):
+                st.session_state.cart.append({
+                    "name": f"Box {name} ({taglia})",
+                    "price": 14.90
+                })
+                st.success(f"{name} aggiunta")
+
+    # =========================
+    # PREMIUM
+    # =========================
+    else:
+
+        st.markdown("### 💎 Box Premium — 24,90€")
+        st.markdown("Capi **nuovi o seminuovi**, qualità superiore.")
+
+        st.markdown("""
+        <div style="
+            background:linear-gradient(135deg,#4F46E5,#312E81);
+            color:white;
+            padding:20px;
+            border-radius:20px;
+            margin:15px 0;
+            text-align:center;
+        ">
+            <div style="font-size:20px;"><b>BOX PREMIUM 💎</b></div>
+            <div style="font-size:14px;">Selezione top qualità</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("Aggiungi Box Premium", key="premium_btn"):
+            st.session_state.cart.append({
+                "name": f"Box Premium ({taglia})",
+                "price": 24.90
+            })
+            st.success("Premium aggiunta")
 
 # =========================
 # VETRINA

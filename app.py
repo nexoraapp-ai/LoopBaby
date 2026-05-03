@@ -140,6 +140,7 @@ if st.session_state.page == "Login":
         email_r = st.text_input("Email", key="reg_email")
         telefono_r = st.text_input("Telefono", key="reg_tel")
         bimbo = st.text_input("Nome bambino")
+        password = st.text_input("Password", type="password")
 
         paese, citta, locker = locker_ui()
 
@@ -150,6 +151,7 @@ if st.session_state.page == "Login":
                     "nome": nome,
                     "email": email_r,
                     "telefono": telefono_r,
+                    "password": password,
                     "bimbo": bimbo,
                     "paese": paese,
                     "citta": citta,

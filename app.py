@@ -22,38 +22,49 @@ def go(p):
     st.rerun()
 
 # =========================
-# DB FUNCTIONS (FIXED)
+# DB
 # =========================
-def get_all_users():
+def get_users():
     try:
         return requests.get(API_URL).json()
     except:
         return []
 
-def get_user(email):
-    for u in get_all_users():
+def find_user(email):
+    for u in get_users():
         if u.get("email","").lower() == email.lower():
             return u
     return None
 
 def create_user(data):
-    if get_user(data["email"]):
-        return False
+    users = get_users()
+
+    for u in users:
+        if u.get("email","").lower() == data["email"].lower():
+            return False
+
+    data["fondatrice"] = "SI" if len(users) < 100 else "NO"
+    data["locker"] = ""
+
     requests.post(API_URL, json={"data": data})
     return True
 
-def update_user(email, new_data):
+def update_user(email, data):
     requests.patch(API_URL, json={
-        "data": new_data,
+        "data": data,
         "query": {"email": email}
     })
 
 # =========================
-# LOGIN SYSTEM
+# LOGIN
 # =========================
 if not st.session_state.auth:
 
-    st.title("LoopBaby 🌸")
+    st.markdown("""
+    <div style='text-align:center;margin-bottom:20px'>
+        <h1 style='color:#5a4636'>🌸 LoopBaby</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
     mode = st.radio("Accesso", ["Login", "Registrati", "Reset Password"])
 
@@ -61,8 +72,8 @@ if not st.session_state.auth:
     password = st.text_input("Password", type="password")
 
     if mode == "Login":
-        if st.button("Accedi"):
-            u = get_user(email)
+        if st.button("Entra"):
+            u = find_user(email)
             if u and u.get("password") == password:
                 st.session_state.auth = True
                 st.session_state.user = u
@@ -73,31 +84,30 @@ if not st.session_state.auth:
     if mode == "Registrati":
         nome = st.text_input("Nome")
         telefono = st.text_input("Telefono")
-        bambino = st.text_input("Nome bambino")
+        bambino = st.text_input("Bambino")
         citta = st.text_input("Città")
 
         if st.button("Crea account"):
-            if not email or not password:
-                st.error("Email e password obbligatorie")
+            ok = create_user({
+                "email": email,
+                "password": password,
+                "nome": nome,
+                "telefono": telefono,
+                "bambino": bambino,
+                "citta": citta
+            })
+
+            if ok:
+                st.success("Account creato")
             else:
-                data = {
-                    "email": email,
-                    "password": password,
-                    "nome": nome,
-                    "telefono": telefono,
-                    "bambino": bambino,
-                    "citta": citta
-                }
-                if create_user(data):
-                    st.success("Account creato ✅")
-                else:
-                    st.error("Email già registrata")
+                st.error("Email già registrata")
 
     if mode == "Reset Password":
-        new_pass = st.text_input("Nuova password", type="password")
+        newp = st.text_input("Nuova password", type="password")
+
         if st.button("Aggiorna"):
-            if get_user(email):
-                update_user(email, {"password": new_pass})
+            if find_user(email):
+                update_user(email, {"password": newp})
                 st.success("Password aggiornata")
             else:
                 st.error("Email non trovata")
@@ -105,80 +115,101 @@ if not st.session_state.auth:
     st.stop()
 
 # =========================
-# DESIGN
+# DESIGN SYSTEM
 # =========================
 st.markdown("""
 <style>
-.stApp {
-    background-color: #FDFBF7;
-    max-width: 480px;
-    margin: auto;
+.stApp{
+    background:#F5F1E8;
+    max-width:480px;
+    margin:auto;
 }
-div.stButton > button {
-    background-color: #f43f5e;
-    color: white;
-    border-radius: 14px;
-    font-weight: bold;
-    width: 100%;
+
+div.stButton > button{
+    background:#f43f5e;
+    color:white;
+    border-radius:14px;
+    width:100%;
+    font-weight:bold;
+    border:none;
 }
-.card {
-    background: white;
-    padding: 15px;
-    border-radius: 18px;
-    margin: 10px 0;
-    border: 1px solid #eee;
+
+.card{
+    background:#fffdf9;
+    padding:14px;
+    border-radius:16px;
+    margin:10px 0;
+    border:1px solid #e7dfd2;
+}
+
+.badge{
+    background:#fff1f2;
+    padding:10px;
+    border-radius:12px;
+    text-align:center;
+    border:1px solid #fda4af;
+}
+
+.header{
+    text-align:center;
+    font-size:26px;
+    font-weight:800;
+    color:#5a4636;
+    margin-bottom:10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# SIDEBAR (HAMBURGER)
+# SIDEBAR
 # =========================
 with st.sidebar:
     st.title("☰ Menu")
-    if st.button("🏠 Home"): go("Home")
-    if st.button("📦 Box"): go("Box")
-    if st.button("🛍️ Vetrina"): go("Vetrina")
-    if st.button("📖 Info"): go("Info")
-    if st.button("🛒 Carrello"): go("Carrello")
-    if st.button("👤 Profilo"): go("Profilo")
+    if st.button("Home"): go("Home")
+    if st.button("Box"): go("Box")
+    if st.button("Vetrina"): go("Vetrina")
+    if st.button("Info"): go("Info")
+    if st.button("Carrello"): go("Carrello")
+    if st.button("Profilo"): go("Profilo")
 
 # =========================
 # HOME
 # =========================
 if st.session_state.page == "Home":
 
-    nome = st.session_state.user.get("nome","")
+    u = st.session_state.user
+    nome = u.get("nome","")
+    fond = u.get("fondatrice","NO")
+
+    st.markdown("<div class='header'>🌸 LoopBaby</div>", unsafe_allow_html=True)
 
     st.title(f"Ciao {nome} 👋")
 
-    st.markdown("""
-LoopBaby non è un e-commerce. È un sistema.
+    if fond == "SI":
+        st.markdown('<div class="badge">🌸 Mamma Fondatrice</div>', unsafe_allow_html=True)
 
+    st.markdown("""
 ♻️ crescita circolare  
 👶 bambini al centro  
-🔄 riuso intelligente  
 💛 risparmio reale  
 """)
-
-    st.markdown('<div class="card">🔥 Promo Mamme Fondatrici → Dona 10 capi e ricevi BOX GRATIS</div>', unsafe_allow_html=True)
 
 # =========================
 # BOX
 # =========================
 if st.session_state.page == "Box":
 
-    st.title("Scegli la tua Box")
+    st.title("Box")
 
-    for name, price in [
-        ("🌙 LUNA", 19.90),
-        ("☀️ SOLE", 19.90),
-        ("☁️ NUVOLA", 19.90),
-        ("💎 PREMIUM", 29.90)
+    for n,p in [
+        ("LUNA 🌙",19.9),
+        ("SOLE ☀️",19.9),
+        ("NUVOLA ☁️",19.9),
+        ("PREMIUM 💎",29.9)
     ]:
-        st.markdown(f'<div class="card">{name} - {price}€</div>', unsafe_allow_html=True)
-        if st.button(f"Aggiungi {name}"):
-            st.session_state.cart.append({"name": name, "price": price})
+        st.markdown(f'<div class="card">{n} - {p}€</div>', unsafe_allow_html=True)
+        if st.button(f"Aggiungi {n}"):
+            st.session_state.cart.append({"name": n, "price": p})
 
 # =========================
 # VETRINA
@@ -187,44 +218,23 @@ if st.session_state.page == "Vetrina":
 
     st.title("Vetrina")
 
-    st.write("I capi qui restano tuoi per sempre")
-
-    prodotti = [
-        ("Body", 9.90),
-        ("Maglietta", 8.90),
-        ("Pantaloni", 12.90)
-    ]
-
-    for p, prezzo in prodotti:
-        st.markdown(f'<div class="card">{p} - {prezzo}€</div>', unsafe_allow_html=True)
-        if st.button(f"Aggiungi {p}"):
-            st.session_state.cart.append({"name": p, "price": prezzo})
+    for n,p in [("Body",9.9),("Maglia",8.9),("Pantaloni",12.9)]:
+        st.markdown(f'<div class="card">{n} - {p}€</div>', unsafe_allow_html=True)
+        if st.button(f"Aggiungi {n}"):
+            st.session_state.cart.append({"name": n, "price": p})
 
 # =========================
-# INFO + CHI SIAMO
+# INFO
 # =========================
 if st.session_state.page == "Info":
 
     st.title("Come funziona")
 
-    st.markdown("""
-1. Scegli una Box  
-2. Usala fino a 3 mesi  
-3. Cambia quando cresce  
-4. Riduci sprechi  
-""")
-
-    st.markdown("## Chi siamo ❤️")
-
     st.write("""
-Siamo genitori.
-
-LoopBaby nasce per semplificare la vita e ridurre gli sprechi.
-
-💡 Obiettivo:
-- risparmiare oltre 1000€
-- meno spreco
-- sistema circolare
+1. Scegli Box  
+2. Ricevi al locker  
+3. Usa  
+4. Cambia taglia  
 """)
 
 # =========================
@@ -234,26 +244,16 @@ if st.session_state.page == "Carrello":
 
     st.title("Carrello")
 
-    totale = sum(i["price"] for i in st.session_state.cart)
+    tot = sum(i["price"] for i in st.session_state.cart)
     has_box = any("Box" in i["name"] for i in st.session_state.cart)
 
-    spedizione = 0
-    if totale < 50 and not has_box:
-        spedizione = 7.90
+    sped = 0 if tot > 50 or has_box else 7.90
 
-    totale_finale = totale + spedizione
+    for i,item in enumerate(st.session_state.cart):
+        st.write(f"{item['name']} - {item['price']}€")
 
-    for i, item in enumerate(st.session_state.cart):
-        c1,c2,c3 = st.columns([2,1,1])
-        c1.write(item["name"])
-        c2.write(f"{item['price']}€")
-        if c3.button("❌", key=i):
-            st.session_state.cart.pop(i)
-            st.rerun()
-
-    st.markdown(f"Totale: {totale}€")
-    st.markdown(f"Spedizione: {spedizione}€")
-    st.markdown(f"Totale finale: {totale_finale}€")
+    st.write("Spedizione:", sped)
+    st.write("Totale:", tot + sped)
 
 # =========================
 # PROFILO
@@ -265,17 +265,13 @@ if st.session_state.page == "Profilo":
     u = st.session_state.user
 
     nome = st.text_input("Nome", u.get("nome",""))
-    telefono = st.text_input("Telefono", u.get("telefono",""))
-    bambino = st.text_input("Bambino", u.get("bambino",""))
-    citta = st.text_input("Città", u.get("citta",""))
+    tel = st.text_input("Telefono", u.get("telefono",""))
+    city = st.text_input("Città", u.get("citta",""))
 
     if st.button("Salva"):
-        new_data = {
+        update_user(u["email"], {
             "nome": nome,
-            "telefono": telefono,
-            "bambino": bambino,
-            "citta": citta
-        }
-        update_user(u["email"], new_data)
-        st.session_state.user.update(new_data)
-        st.success("Profilo aggiornato")
+            "telefono": tel,
+            "citta": city
+        })
+        st.success("Salvato")

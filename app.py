@@ -199,22 +199,35 @@ if st.session_state.page == "Box":
 
     taglia = st.session_state.dati.get("taglia", "50-56")
 
-    st.markdown(f"### 📏 Taglia attuale: {taglia}")
+    st.markdown(
+        f"""
+        <div style="
+            background:#f5f1e8;
+            padding:12px 18px;
+            border-radius:12px;
+            font-weight:700;
+            margin-bottom:15px;
+        ">
+            📏 Taglia attuale: {taglia}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    tipo = st.radio("Scegli tipologia", ["Standard", "Premium"])
+    tipo = st.radio("Scegli tipologia", ["Standard", "Premium"], horizontal=True)
 
     # =========================
     # STANDARD
     # =========================
     if tipo == "Standard":
 
-        st.markdown("### 🧸 Box Standard — 14,90€")
-        st.markdown("Capi usati in **buono stato**, selezionati e igienizzati.")
+        st.markdown("## 🧸 Box Standard — 14,90€")
+        st.caption("Capi usati in buono stato, selezionati e igienizzati.")
 
         boxes = [
-            ("SOLE ☀️", "#FFD600", "Colorati e vivaci"),
-            ("LUNA 🌙", "#E5E7EB", "Neutri e minimal"),
-            ("NUVOLA ☁️", "#94A3B8", "Toni soft")
+            ("SOLE ☀️", "#FFD600", "Colori vivaci e allegri"),
+            ("LUNA 🌙", "#EDEDED", "Toni neutri e puliti"),
+            ("NUVOLA ☁️", "#B8C0CC", "Colori soft e delicati")
         ]
 
         for i, (name, color, desc) in enumerate(boxes):
@@ -222,53 +235,66 @@ if st.session_state.page == "Box":
             st.markdown(f"""
             <div style="
                 background:{color};
-                padding:18px;
-                border-radius:18px;
-                margin:12px 0;
-                color:#1e293b;
-                font-weight:600;
+                padding:16px;
+                border-radius:16px;
+                margin:10px 0;
+                color:#111827;
             ">
-                <div style="font-size:18px;"><b>{name}</b></div>
-                <div style="font-size:13px;">{desc}</div>
+                <div style="font-size:18px;font-weight:800;">{name}</div>
+                <div style="font-size:13px;opacity:0.8;">{desc}</div>
+                <div style="margin-top:8px;font-size:12px;">
+                    💰 14,90€
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
-            if st.button(f"Aggiungi {name}", key=f"std_{i}"):
+            if st.button(f"➕ Aggiungi {name}", key=f"std_{i}"):
+
                 st.session_state.cart.append({
-                    "name": f"Box {name} ({taglia})",
+                    "name": f"Box Standard {name} ({taglia})",
                     "price": 14.90
                 })
-                st.success(f"{name} aggiunta")
+
+                st.toast("Aggiunto al carrello ✔")
 
     # =========================
     # PREMIUM
     # =========================
     else:
 
-        st.markdown("### 💎 Box Premium — 24,90€")
-        st.markdown("Capi **nuovi o seminuovi**, qualità superiore.")
+        st.markdown("## 💎 Box Premium — 24,90€")
+        st.caption("Capi nuovi o seminuovi di qualità superiore.")
 
-        st.markdown("""
-        <div style="
-            background:linear-gradient(135deg,#4F46E5,#312E81);
-            color:white;
-            padding:20px;
-            border-radius:20px;
-            margin:15px 0;
-            text-align:center;
-        ">
-            <div style="font-size:20px;"><b>BOX PREMIUM 💎</b></div>
-            <div style="font-size:14px;">Selezione top qualità</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div style="
+                background:linear-gradient(135deg,#111827,#4F46E5);
+                color:white;
+                padding:18px;
+                border-radius:18px;
+                margin:15px 0;
+                text-align:center;
+            ">
+                <div style="font-size:20px;font-weight:900;">BOX PREMIUM 💎</div>
+                <div style="font-size:13px;opacity:0.9;">
+                    Selezione premium curata a mano
+                </div>
+                <div style="margin-top:8px;font-size:14px;">
+                    💰 24,90€
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-        if st.button("Aggiungi Box Premium", key="premium_btn"):
+        if st.button("➕ Aggiungi Box Premium", key="premium_btn"):
+
             st.session_state.cart.append({
                 "name": f"Box Premium ({taglia})",
                 "price": 24.90
             })
-            st.success("Premium aggiunta")
 
+            st.toast("Premium aggiunta ✔")
 # =========================
 # VETRINA
 # =========================

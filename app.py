@@ -234,46 +234,80 @@ if st.session_state.page == "Info":
 
 ---
 
-## 📦 Sistema
+## 📦 Sistema LoopBaby
 
-Ricevi Box → Usi capi → ciclo continuo
+Ricevi Box → Usi i capi → il ciclo continua senza sprechi.
 
-⏱ 2 giorni dalla consegna: controllo qualità  
-👉 Se qualcosa non va: CONTATTACI SUBITO
+⏱ **2 giorni dalla consegna: controllo qualità**
+- verifichiamo tutto
+- assistenza attiva
 
 ---
 
-## ⏳ Utilizzo
+## ⏳ Utilizzo reale
 
-Usi i capi fino a 90 giorni
+I capi vengono usati per un massimo di **90 giorni**, cioè il tempo reale in cui il bambino cresce.
 
 Se il bambino cresce prima:
-👉 contattaci subito
+👉 puoi **cambiare taglia in qualsiasi momento**
 
 ---
 
-## 🔄 Fine ciclo
+## 🔄 Fine ciclo intelligente
 
-10 giorni prima:
-ti contattiamo noi
+10 giorni prima della fine del ciclo:
+- ti contattiamo noi automaticamente
+- scegli tu cosa fare:
+  - 📦 nuova Box (spedizione GRATIS)
+  - 🔁 restituzione (7,90€)
 
-Decidi:
-- nuova Box (spedizione GRATIS)
-- oppure restituzione (7,90€)
+---
+
+## 🚚 Spedizione
+
+- GRATIS sopra 50€
+- GRATIS con Box
+- 7,90€ senza Box
 
 ---
 
 ## 🌍 Chi siamo
 
-Siamo genitori.
+LoopBaby nasce da un’idea semplice ma concreta: **cambiare il modo in cui i bambini vestono, eliminando sprechi e acquisti inutili**.
 
-LoopBaby nasce per:
-- ridurre sprechi
-- creare moda circolare
-- far risparmiare famiglie
-- eliminare acquisti inutili
+Non siamo un negozio tradizionale.
+
+Siamo un sistema circolare pensato per:
+- ridurre lo spreco tessile (uno dei più alti al mondo)
+- far risparmiare le famiglie in modo continuo
+- riutilizzare capi in perfette condizioni
+- creare un ciclo intelligente tra crescita del bambino e vestiti
+
+Il problema dei vestiti per bambini è semplice:
+crescono troppo in fretta.
+
+LoopBaby risponde a questo problema con un modello nuovo:
+👉 non compri tutto, lo usi nel tempo giusto.
+
+---
+
+## 📍 Perché i locker
+
+Abbiamo scelto i locker perché danno libertà reale:
+
+- niente attese del corriere
+- ritiro quando vuoi
+- più sostenibilità ambientale
+- rete diffusa in tutta Italia
+
+---
+
+## 📞 Contatti
+
+Se hai bisogno di aiuto o vuoi parlare con noi:
+
+👉 <u><a href="https://wa.me/393921404637" target="_blank" style="color:#ef4444;font-weight:bold">CONTATTACI SUBITO</a></u>
 """, unsafe_allow_html=True)
-
 
 # =========================
 # CARRELLO

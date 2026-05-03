@@ -1,267 +1,221 @@
-import streamlit as st
-import requests
+<!DOCTYPE html>
+<html lang="it">
 
-API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progetto Ecommerce</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
 
-st.set_page_config(page_title="LoopBaby", layout="centered")
+<body>
+    <!-- Header with Hamburger Menu -->
+    <header>
+        <div class="logo">
+            <h1>La Mia Vetrina</h1>
+        </div>
+        <nav class="navbar">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#box">Box</a></li>
+                <li><a href="#vetrina">Vetrina</a></li>
+                <li><a href="#info">Chi Siamo</a></li>
+                <li><a href="#carrello">Carrello</a></li>
+                <li><a href="#login">Login</a></li>
+            </ul>
+        </nav>
+        <div class="hamburger-menu" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+    </header>
 
-# =========================
-# SESSION
-# =========================
-if "auth" not in st.session_state:
-    st.session_state.auth = False
+    <!-- Main Section -->
+    <main>
+        <!-- Home Section -->
+        <section id="home" class="section-home">
+            <div class="welcome-message">
+                <h2>Benvenuto nella nostra piattaforma</h2>
+                <p>Scopri i nostri box personalizzati e acquista i tuoi capi di abbigliamento preferiti.</p>
+            </div>
+        </section>
 
-if "user" not in st.session_state:
-    st.session_state.user = {}
+        <!-- Box Section -->
+        <section id="box" class="section-box">
+            <h2>Personalizza il tuo Box</h2>
+            <p>Seleziona i capi che desideri ricevere a casa.</p>
+            <!-- Add dynamic content here (e.g., products) -->
+            <button class="box-button">Aggiungi al tuo Box</button>
+        </section>
 
-if "cart" not in st.session_state:
-    st.session_state.cart = []
+        <!-- Vetrina Section -->
+        <section id="vetrina" class="section-vetrina">
+            <h2>Vetrina</h2>
+            <div class="product-display">
+                <div class="product-item">
+                    <img src="product1.jpg" alt="Prodotto 1">
+                    <p>Maglietta Uomo</p>
+                    <button>Aggiungi al Carrello</button>
+                </div>
+                <div class="product-item">
+                    <img src="product2.jpg" alt="Prodotto 2">
+                    <p>Pantaloni Donna</p>
+                    <button>Aggiungi al Carrello</button>
+                </div>
+                <!-- Add more products here -->
+            </div>
+        </section>
 
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
+        <!-- Info Section -->
+        <section id="info" class="section-info">
+            <h2>Chi Siamo</h2>
+            <p>Offriamo un servizio di box personalizzati per abbigliamento, pensato per chi ama lo shopping comodamente da casa.</p>
+        </section>
 
-def go(p):
-    st.session_state.page = p
-    st.rerun()
+        <!-- Carrello Section -->
+        <section id="carrello" class="section-carrello">
+            <h2>Il Tuo Carrello</h2>
+            <div class="carrello-item">
+                <p>Maglietta Uomo - €25</p>
+                <button>Rimuovi</button>
+            </div>
+            <div class="carrello-item">
+                <p>Pantaloni Donna - €40</p>
+                <button>Rimuovi</button>
+            </div>
+            <p><strong>Totale: €65</strong></p>
+            <button class="checkout-btn">Checkout</button>
+        </section>
 
-# =========================
-# DATABASE FUNCTIONS (FIXED)
-# =========================
-def get_all_users():
-    try:
-        r = requests.get(API_URL)
-        if r.status_code == 200:
-            return r.json()
-    except:
-        pass
-    return []
+        <!-- Login Section -->
+        <section id="login" class="section-login">
+            <h2>Accedi al Tuo Account</h2>
+            <form id="loginForm">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit">Accedi</button>
+            </form>
+            <p><a href="#">Registrati</a> | <a href="#">Recupera Password</a></p>
+        </section>
+    </main>
 
-def get_user(email):
-    users = get_all_users()
-    for u in users:
-        if u.get("email","").lower() == email.lower():
-            return u
-    return None
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2023 La Mia Vetrina. Tutti i diritti riservati.</p>
+    </footer>
 
-def create_user(data):
-    if get_user(data["email"]):
-        return False
-    requests.post(API_URL, json={"data": data})
-    return True
+    <script src="scripts.js"></script>
+</body>
 
-def update_user(email, new_data):
-    requests.patch(API_URL, json={
-        "data": new_data,
-        "query": {"email": email}
-    })
+</html>
 
-# =========================
-# LOGIN SYSTEM
-# =========================
-if not st.session_state.auth:
-
-    st.title("LoopBaby 🌸")
-
-    mode = st.radio("Accesso", ["Login", "Registrati", "Reset Password"])
-
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-
-    # LOGIN
-    if mode == "Login":
-        if st.button("Accedi"):
-            u = get_user(email)
-            if u and u.get("password") == password:
-                st.session_state.auth = True
-                st.session_state.user = u
-                st.rerun()
-            else:
-                st.error("Credenziali errate")
-
-    # REGISTRAZIONE (UNA VOLTA)
-    if mode == "Registrati":
-
-        nome = st.text_input("Nome")
-        telefono = st.text_input("Telefono")
-        bambino = st.text_input("Nome bambino")
-        citta = st.text_input("Città")
-
-        if st.button("Crea account"):
-            if not email or not password:
-                st.error("Email e password obbligatorie")
-            else:
-                data = {
-                    "email": email,
-                    "password": password,
-                    "nome": nome,
-                    "telefono": telefono,
-                    "bambino": bambino,
-                    "citta": citta
-                }
-
-                if create_user(data):
-                    st.success("Account creato ✅")
-                else:
-                    st.error("Email già registrata")
-
-    # RESET PASSWORD
-    if mode == "Reset Password":
-        new_pass = st.text_input("Nuova password", type="password")
-
-        if st.button("Aggiorna password"):
-            if get_user(email):
-                update_user(email, {"password": new_pass})
-                st.success("Password aggiornata")
-            else:
-                st.error("Email non trovata")
-
-    st.stop()
-
-# =========================
-# DESIGN
-# =========================
-st.markdown("""
 <style>
-.stApp {
-    background-color: #FDFBF7;
-    max-width: 500px;
-    margin: auto;
-}
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
 
-/* bottoni */
-div.stButton > button {
-    background-color: #f43f5e;
-    color: white;
-    border-radius: 12px;
-    font-weight: bold;
-    width: 100%;
-}
+    header {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-/* card */
-.card {
-    background: white;
-    padding: 15px;
-    border-radius: 16px;
-    margin: 10px 0;
-    border: 1px solid #eee;
-}
-</style>
-""", unsafe_allow_html=True)
+    .logo h1 {
+        margin: 0;
+    }
 
-# =========================
-# SIDEBAR HAMBURGER
-# =========================
-with st.sidebar:
-    st.title("☰ Menu")
+    .navbar ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+    }
 
-    if st.button("🏠 Home"): go("Home")
-    if st.button("📦 Box"): go("Box")
-    if st.button("🛍️ Vetrina"): go("Vetrina")
-    if st.button("🛒 Carrello"): go("Carrello")
-    if st.button("👤 Profilo"): go("Profilo")
+    .navbar ul li {
+        margin: 0 15px;
+    }
 
-# =========================
-# HOME
-# =========================
-if st.session_state.page == "Home":
+    .navbar ul li a {
+        color: white;
+        text-decoration: none;
+        font-size: 18px;
+    }
 
-    nome = st.session_state.user.get("nome","")
+    .hamburger-menu {
+        display: none;
+        cursor: pointer;
+    }
 
-    st.title(f"Ciao {nome} 👋")
+    .hamburger-menu i {
+        color: white;
+        font-size: 24px;
+    }
 
-    st.write("Sistema circolare per bambini ♻️")
+    .section-home,
+    .section-box,
+    .section-vetrina,
+    .section-info,
+    .section-carrello,
+    .section-login {
+        padding: 40px;
+    }
 
-    st.markdown("""
-<div class="card">
-🔥 Promo: dona 10 capi → box GRATIS
-</div>
-""", unsafe_allow_html=True)
+    .product-display {
+        display: flex;
+        justify-content: space-between;
+    }
 
-# =========================
-# BOX
-# =========================
-if st.session_state.page == "Box":
+    .product-item {
+        text-align: center;
+        width: 45%;
+    }
 
-    st.title("Box")
+    .box-button,
+    .checkout-btn {
+        background-color: #f0a500;
+        border: none;
+        padding: 10px 20px;
+        color: white;
+        cursor: pointer;
+    }
 
-    if st.button("🌙 LUNA - 19,90€"):
-        st.session_state.cart.append({"name":"Box LUNA","price":19.90})
+    footer {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 20px;
+    }
 
-    if st.button("☀️ SOLE - 19,90€"):
-        st.session_state.cart.append({"name":"Box SOLE","price":19.90})
-
-    if st.button("☁️ NUVOLA - 19,90€"):
-        st.session_state.cart.append({"name":"Box NUVOLA","price":19.90})
-
-    if st.button("💎 PREMIUM - 29,90€"):
-        st.session_state.cart.append({"name":"Box PREMIUM","price":29.90})
-
-# =========================
-# VETRINA
-# =========================
-if st.session_state.page == "Vetrina":
-
-    st.title("Vetrina")
-
-    st.write("I capi qui restano tuoi")
-
-    st.markdown('<div class="card">Body 9,90€</div>', unsafe_allow_html=True)
-
-    if st.button("Aggiungi Body"):
-        st.session_state.cart.append({"name":"Body","price":9.90})
-
-# =========================
-# CARRELLO
-# =========================
-if st.session_state.page == "Carrello":
-
-    st.title("Carrello")
-
-    totale = sum(i["price"] for i in st.session_state.cart)
-    has_box = any("Box" in i["name"] for i in st.session_state.cart)
-
-    spedizione = 0
-    if totale < 50 and not has_box:
-        spedizione = 7.90
-
-    totale_finale = totale + spedizione
-
-    for i, item in enumerate(st.session_state.cart):
-        c1,c2,c3 = st.columns([2,1,1])
-        c1.write(item["name"])
-        c2.write(f"{item['price']}€")
-
-        if c3.button("❌", key=i):
-            st.session_state.cart.pop(i)
-            st.rerun()
-
-    st.markdown(f"Totale: {totale}€")
-    st.markdown(f"Spedizione: {spedizione}€")
-    st.markdown(f"Totale finale: {totale_finale}€")
-
-# =========================
-# PROFILO
-# =========================
-if st.session_state.page == "Profilo":
-
-    st.title("Profilo")
-
-    u = st.session_state.user
-
-    nome = st.text_input("Nome", u.get("nome",""))
-    telefono = st.text_input("Telefono", u.get("telefono",""))
-    bambino = st.text_input("Bambino", u.get("bambino",""))
-    citta = st.text_input("Città", u.get("citta",""))
-
-    if st.button("Salva"):
-        new_data = {
-            "nome": nome,
-            "telefono": telefono,
-            "bambino": bambino,
-            "citta": citta
+    @media (max-width: 768px) {
+        .navbar ul {
+            display: none;
+            flex-direction: column;
+            width: 100%;
         }
 
-        update_user(u["email"], new_data)
-        st.session_state.user.update(new_data)
+        .navbar ul li {
+            margin: 10px 0;
+        }
 
-        st.success("Profilo aggiornato")
+        .hamburger-menu {
+            display: block;
+        }
+
+        .navbar.active {
+            display: block;
+        }
+    }
+</style>
+
+<script>
+    function toggleMenu() {
+        document.querySelector('.navbar').classList.toggle('active');
+    }
+</script>

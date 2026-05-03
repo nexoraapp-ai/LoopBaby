@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import json
 import base64
+import requests
 API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 st.set_page_config(page_title="LoopBaby", layout="centered")
@@ -96,6 +97,7 @@ with st.sidebar:
     st.button("ℹ️ Info", on_click=lambda: go("Info"))
     st.button("🔥 Promo", on_click=lambda: go("Promo"))
     st.button("👤 Profilo", on_click=lambda: go("Profilo"))
+    st.button("🔐 Login", on_click=lambda: go("Login"))  # 👈 AGGIUNTO
     st.button("🛒 Carrello", on_click=lambda: go("Carrello"))
 # =========================
 # LOGIN / REGISTRAZIONE

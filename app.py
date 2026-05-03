@@ -75,7 +75,7 @@ def locker_ui():
 
 
 # =========================
-# SIDEBAR (HAMBURGER)
+# SIDEBAR
 # =========================
 with st.sidebar:
     if logo:
@@ -112,18 +112,28 @@ if st.session_state.page == "Home":
     d = st.session_state.dati
     nome = d.get("nome","")
 
-    st.markdown(f"## Ciao {nome or '👋'}")
-
     col1, col2 = st.columns([2,1])
 
     with col1:
+
+        st.markdown(f"## Ciao {nome or '👋'}")
+
         st.markdown("""
-**LoopBaby non è un e-commerce. È un sistema.**
+**LoopBaby non è un e-commerce. È un sistema circolare.**
 
 ♻️ crescita circolare  
 👶 bambini al centro  
 🔄 riuso intelligente  
 💛 risparmio reale  
+""")
+
+        st.markdown("""
+### 👕 Capi tuoi per sempre
+
+🚚 Spedizione:
+- GRATIS sopra 50€
+- GRATIS con abbinamento Box
+- oppure 7,90€ spedizione standard
 """)
 
     with col2:
@@ -155,8 +165,7 @@ Un programma speciale per mamme fondatrici.
 
     st.markdown("""
 ## ♻️ Obiettivo LoopBaby
-Ridurre sprechi tessili, creare un sistema di riuso reale,
-e far risparmiare le famiglie in modo continuo.
+Ridurre sprechi tessili e creare economia circolare reale.
 """)
 
     peso = st.text_input("Peso pacco")
@@ -183,7 +192,7 @@ if st.session_state.page == "Box":
 
         boxes = [
             ("SOLE ☀️","#FFD600","colorati e vivaci"),
-            ("LUNA 🌙","#E5E7EB","neutri e soft"),
+            ("LUNA 🌙","#E5E7EB","neutri soft"),
             ("NUVOLA ☁️","#94A3B8","delicati")
         ]
 
@@ -212,7 +221,7 @@ if st.session_state.page == "Box":
 
 
 # =========================
-# INFO (COMPLETA)
+# INFO
 # =========================
 if st.session_state.page == "Info":
 
@@ -227,31 +236,40 @@ if st.session_state.page == "Info":
 
 ## 📦 Sistema
 
-- Ricevi Box
-- Usi i capi
+📦 Ricevi Box  
+👕 Usi i capi  
+🔍 Controllo qualità
 
-⏱ **2 giorni dalla consegna: controllo qualità**
-
-Se qualcosa non va → **supporto immediato**
-
-👉 <a href='https://wa.me/393921404637' style='font-weight:bold;text-decoration:underline;color:#f43f5e'>CONTATTACI SUBITO</a>
+👉 Se qualcosa non va → <b>supporto immediato</b>  
+👉 <a href='https://wa.me/393921404637' style='font-weight:bold;color:#f43f5e'>CONTATTACI SUBITO</a>
 
 ---
 
-## 🔄 Ciclo 90 giorni
+## ⏱ Utilizzo
 
-- nuova taglia (ritiro gratuito)
-- oppure restituzione
+Usi i capi per **massimo 90 giorni**, tempo reale di crescita del bambino.
+
+Se il bambino cresce prima:
+👉 <a href='https://wa.me/393921404637' style='font-weight:bold;color:#f43f5e'>CONTATTACI SUBITO</a>
+
+---
+
+## 🔔 10 giorni prima
+
+Ti contattiamo noi:
+
+- nuova Box (spedizione gratuita)
+- restituzione
+- oppure reso 7,90€
 
 ---
 
 ## 📍 Perché i locker
 
 - libertà totale
-- niente attese corriere
+- zero attese corriere
 - ritiro quando vuoi
-- meno CO₂
-- rete nazionale
+- meno emissioni CO₂
 
 ---
 
@@ -261,13 +279,7 @@ LoopBaby nasce da genitori.
 
 Non da un’azienda.
 
-Creata per:
-- ridurre sprechi
-- creare moda circolare
-- far risparmiare famiglie
-- eliminare acquisti inutili
-
-👉 Non è un e-commerce. È un sistema.
+👉 È un sistema circolare, non un e-commerce.
 """, unsafe_allow_html=True)
 
 

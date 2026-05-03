@@ -112,33 +112,63 @@ if logo:
 
 
 # =========================
-# HOME
+# HOME (FIX UI MIGLIORE)
 # =========================
 if st.session_state.page == "Home":
 
     d = st.session_state.dati
     nome = d.get("nome", "")
 
-    st.markdown(f"## Ciao {nome or '👋'}")
+    # HEADER USER NAME
+    st.markdown(f"""
+    <div style="text-align:left;margin-bottom:10px;">
+        <div style="font-size:22px;font-weight:800;">
+            Ciao {nome or '👋'} ✨
+        </div>
+        <div style="font-size:12px;color:gray;">
+            Benvenuto in LoopBaby
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns([2, 1])
+    # LAYOUT 2 COLONNE
+    col1, col2 = st.columns([1.6, 1])
 
     with col1:
         st.markdown("""
-**LoopBaby non è un e-commerce. È un sistema.**
+<div style="font-size:14px; line-height:1.6">
 
-♻️ crescita circolare  
-👶 bambini al centro  
-🔄 riuso intelligente  
-💛 risparmio reale  
+<b>LoopBaby non è un e-commerce. È un sistema.</b><br><br>
+
+♻️ crescita circolare<br>
+👶 bambini al centro<br>
+🔄 riuso intelligente<br>
+💛 risparmio reale<br><br>
+
+<b>💡 Capi tuoi per sempre</b><br>
+Usi, restituisci, cresciamo insieme al tuo bambino.
+</div>
+""", unsafe_allow_html=True)
+
+        st.markdown("""
+### 🚚 Spedizione
+- GRATIS sopra 50€
+- GRATIS con Box
+- oppure 7,90€
 """)
 
     with col2:
         if baby:
-            st.image("bimbo.jpg", use_container_width=True)
+            st.image(
+                "bimbo.jpg",
+                use_container_width=True,
+                caption="LoopBaby Kids"
+            )
 
-    st.markdown("### 🔥 Promo Mamme Fondatrici")
-    st.markdown("Dona 10+ capi → Box omaggio")
+    st.markdown("""
+### 🔥 Promo Mamme Fondatrici
+Dona 10+ capi → Box omaggio
+""")
 
     if st.button("Partecipa alla promo"):
         go("Promo")

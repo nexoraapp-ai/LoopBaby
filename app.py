@@ -97,13 +97,16 @@ with st.sidebar:
     st.button("🔥 Promo", on_click=lambda: go("Promo"))
     st.button("👤 Profilo", on_click=lambda: go("Profilo"))
     st.button("🛒 Carrello", on_click=lambda: go("Carrello"))
-    if st.session_state.page == "Login":
+# =========================
+# LOGIN / REGISTRAZIONE
+# =========================
+if st.session_state.page == "Login":
 
     st.title("🔐 Accesso")
 
     tab1, tab2 = st.tabs(["Login", "Registrati"])
 
-    # ================= LOGIN =================
+    # ===== LOGIN =====
     with tab1:
         email = st.text_input("Email")
         telefono = st.text_input("Telefono")
@@ -125,13 +128,12 @@ with st.sidebar:
             else:
                 st.error("Utente non trovato")
 
-
-    # ================= REGISTRAZIONE =================
+    # ===== REGISTRAZIONE =====
     with tab2:
 
         nome = st.text_input("Nome")
-        email = st.text_input("Email")
-        telefono = st.text_input("Telefono")
+        email_r = st.text_input("Email", key="reg_email")
+        telefono_r = st.text_input("Telefono", key="reg_tel")
         bimbo = st.text_input("Nome bambino")
 
         paese, citta, locker = locker_ui()
@@ -141,8 +143,8 @@ with st.sidebar:
             data = {
                 "data": {
                     "nome": nome,
-                    "email": email,
-                    "telefono": telefono,
+                    "email": email_r,
+                    "telefono": telefono_r,
                     "bimbo": bimbo,
                     "paese": paese,
                     "citta": citta,
@@ -159,10 +161,6 @@ with st.sidebar:
                 go("Home")
             else:
                 st.error("Errore registrazione")
-
-    st.markdown("---")
-    st.markdown("📞 WhatsApp: https://wa.me/393921404637")
-    st.markdown("✉️ assistenza.loopbaby@gmail.com")
 
 
 # =========================

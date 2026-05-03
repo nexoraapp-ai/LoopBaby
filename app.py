@@ -136,11 +136,11 @@ if st.session_state.page == "Home":
 
     with col2:
         if baby:
-            st.image(
-                "bimbo.jpg",
-                use_container_width=True,
-                caption=d.get("bimbo", "Il tuo bambino")
-            )
+           st.image(
+    "bimbo.jpg",
+    width=120,
+    caption=d.get("bimbo", "Il tuo bambino")
+)
 
     st.markdown("### 🔥 Promo Mamme Fondatrici")
     st.markdown("Dona 10+ capi → Box omaggio")

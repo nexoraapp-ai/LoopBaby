@@ -1,126 +1,61 @@
 import streamlit as st
-import requests
-
-API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
+import os
+import json
+import base64
 
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
+DB_FILE = "db.json"
+
 # =========================
-# STATE
+# IMMAGINI
 # =========================
-if "auth" not in st.session_state:
-    st.session_state.auth = False
-if "user" not in st.session_state:
-    st.session_state.user = {}
+def load_img(path):
+    if os.path.exists(path):
+        return base64.b64encode(open(path, "rb").read()).decode()
+    return ""
+
+logo = load_img("logo.png")
+
+# =========================
+# DB
+# =========================
+def load():
+    if os.path.exists(DB_FILE):
+        return json.load(open(DB_FILE))
+    return {
+        "nome": "",
+        "email": "",
+        "telefono": "",
+        "bimbo": "",
+        "taglia": "50-56",
+        "paese": "Italia",
+        "citta": "",
+        "locker": ""
+    }
+
+def save(d):
+    json.dump(d, open(DB_FILE, "w"))
+
+if "dati" not in st.session_state:
+    st.session_state.dati = load()
+
 if "cart" not in st.session_state:
     st.session_state.cart = []
+
 if "page" not in st.session_state:
     st.session_state.page = "Home"
 
+if "menu_open" not in st.session_state:
+    st.session_state.menu_open = False
+
 def go(p):
     st.session_state.page = p
+    st.session_state.menu_open = False
     st.rerun()
 
 # =========================
-# DATABASE
-# =========================
-def get_users():
-    try:
-        return requests.get(API_URL).json()
-    except:
-        return []
-
-def find_user(email):
-    for u in get_users():
-        if u.get("email","").lower() == email.lower():
-            return u
-    return None
-
-def create_user(data):
-    users = get_users()
-
-    # ❌ EMAIL SOLO UNA VOLTA
-    for u in users:
-        if u.get("email","").lower() == data["email"].lower():
-            return False
-
-    data["fondatrice"] = "SI" if len(users) < 100 else "NO"
-    data["locker"] = ""
-
-    requests.post(API_URL, json={"data": data})
-    return True
-
-def update_user(email, data):
-    requests.patch(API_URL, json={
-        "data": data,
-        "query": {"email": email}
-    })
-
-# =========================
-# LOGIN / REGISTER
-# =========================
-if not st.session_state.auth:
-
-    st.markdown("""
-    <div style='text-align:center'>
-        <h1 style='color:#5a4636'>🌸 LoopBaby</h1>
-        <p style='color:#a38f7b'>Crescita circolare bambini</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    mode = st.radio("Accesso", ["Login", "Registrati", "Password dimenticata"])
-
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-
-    # LOGIN
-    if mode == "Login":
-        if st.button("Entra"):
-            u = find_user(email)
-            if u and u.get("password") == password:
-                st.session_state.auth = True
-                st.session_state.user = u
-                st.rerun()
-            else:
-                st.error("Credenziali errate")
-
-    # REGISTER
-    if mode == "Registrati":
-        nome = st.text_input("Nome e Cognome")
-        telefono = st.text_input("Telefono")
-        bambino = st.text_input("Nome bambino")
-        citta = st.text_input("Città")
-
-        if st.button("Crea account"):
-            ok = create_user({
-                "email": email,
-                "password": password,
-                "nome": nome,
-                "telefono": telefono,
-                "bambino": bambino,
-                "citta": citta
-            })
-
-            if ok:
-                st.success("Account creato con successo")
-            else:
-                st.error("Email già registrata")
-
-    # RESET PASSWORD
-    if mode == "Password dimenticata":
-        newp = st.text_input("Nuova password", type="password")
-
-        if st.button("Aggiorna password"):
-            if find_user(email):
-                update_user(email, {"password": newp})
-                st.success("Password aggiornata")
-            else:
-                st.error("Email non trovata")
-
-    st.stop()
-
-# =========================
-# STYLE
+# DESIGN GLOBAL
 # =========================
 st.markdown("""
 <style>
@@ -130,15 +65,17 @@ st.markdown("""
     margin:auto;
 }
 
+/* BOTTONI */
 div.stButton > button{
     background:#f4b400;
     color:black;
     border-radius:14px;
     width:100%;
-    font-weight:bold;
+    font-weight:700;
     border:none;
 }
 
+/* CARD */
 .card{
     background:#fffdf8;
     padding:14px;
@@ -147,6 +84,7 @@ div.stButton > button{
     border:1px solid #e7dfd2;
 }
 
+/* HEADER */
 .header{
     text-align:center;
     font-size:26px;
@@ -154,167 +92,195 @@ div.stButton > button{
     color:#5a4636;
 }
 
-.badge{
-    background:#fff1f2;
-    padding:10px;
-    border-radius:12px;
-    text-align:center;
-    border:1px solid #fda4af;
+/* MENU ICON GRANDE */
+.menu-btn button{
+    font-size:28px !important;
+    background:#5a4636 !important;
+    color:white !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# MENU
+# HEADER + HAMBURGER
 # =========================
-with st.sidebar:
-    st.title("☰ Menu")
-    if st.button("Home"): go("Home")
-    if st.button("Box"): go("Box")
-    if st.button("Vetrina"): go("Vetrina")
-    if st.button("Info"): go("Info")
-    if st.button("Chi Siamo"): go("ChiSiamo")
-    if st.button("Carrello"): go("Carrello")
-    if st.button("Profilo"): go("Profilo")
+col1, col2 = st.columns([8,1])
+
+with col1:
+    if logo:
+        st.image("logo.png", width=140)
+
+with col2:
+    if st.button("☰"):
+        st.session_state.menu_open = not st.session_state.menu_open
 
 # =========================
-# HOME
+# MENU (TOGGLE VERO)
+# =========================
+if st.session_state.menu_open:
+
+    st.markdown("### Navigazione")
+
+    if st.button("🏠 Home"): go("Home")
+    if st.button("📦 Box"): go("Box")
+    if st.button("🛍️ Vetrina"): go("Vetrina")
+    if st.button("ℹ️ Info"): go("Info")
+    if st.button("🔥 Promo Mamme Fondatrici"): go("Promo")
+    if st.button("👤 Profilo"): go("Profilo")
+    if st.button("🛒 Carrello"): go("Carrello")
+
+    st.markdown("---")
+
+# =========================
+# HOME (ORA FATTA BENE)
 # =========================
 if st.session_state.page == "Home":
 
-    u = st.session_state.user
-    nome = u.get("nome","")
-    fond = u.get("fondatrice","NO")
+    d = st.session_state.dati
 
     st.markdown("<div class='header'>🌸 LoopBaby</div>", unsafe_allow_html=True)
 
-    st.title(f"Ciao {nome} 👋")
+    st.markdown(f"## 👋 Ciao **{d.get('nome','benvenuto')}**")
 
-    if fond == "SI":
-        st.markdown('<div class="badge">🌸 Mamma Fondatrice</div>', unsafe_allow_html=True)
+    # MAMME FONDATRICI (IMPORTANTE)
+    st.markdown("""
+<div class="card" style="background:#fff1f2;border:1px solid #fda4af;">
+<b>🌸 Mamme Fondatrici</b><br>
+Diventa parte del primo sistema circolare per bambini in Italia
+</div>
+""", unsafe_allow_html=True)
 
     st.markdown("""
 ✔ crescita circolare  
-✔ bambini al centro  
 ✔ risparmio reale  
-✔ sistema riuso intelligente  
+✔ vestiti sempre utili  
+✔ zero sprechi  
 """)
 
+    if st.button("Scopri Box"):
+        go("Box")
+
 # =========================
-# BOX
+# PROMO
+# =========================
+if st.session_state.page == "Promo":
+
+    st.title("🔥 Mamme Fondatrici")
+
+    st.markdown("""
+🎁 Dona 10+ capi  
+📦 Box gratuita  
+🚚 spedizione inclusa  
+
+Diventa parte del sistema LoopBaby.
+""")
+
+    st.text_input("Peso pacco")
+    st.text_input("Dimensioni")
+
+    if st.button("Invia richiesta"):
+        st.success("✔ Ti contattiamo entro 48h")
+
+# =========================
+# BOX (COLORI ORIGINALI FIXATI)
 # =========================
 if st.session_state.page == "Box":
 
-    st.title("Box LoopBaby")
+    st.title("📦 Box LoopBaby")
 
-    st.markdown("💛 Prezzo standard 14,90€")
+    st.markdown("💛 Prezzo: 14,90€")
 
-    box = [
-        "LUNA 🌙",
-        "SOLE ☀️",
-        "NUVOLA ☁️",
-        "PREMIUM 💎"
+    boxes = [
+        ("SOLE ☀️", "#FFD600"),
+        ("LUNA 🌙", "#E5E7EB"),
+        ("NUVOLA ☁️", "#94A3B8")
     ]
 
-    for b in box:
-        st.markdown(f"<div class='card'>{b}</div>", unsafe_allow_html=True)
-        if st.button(f"Aggiungi {b}"):
-            price = 14.90 if "PREMIUM" not in b else 24.90
-            st.session_state.cart.append({"name": b, "price": price})
+    for name, color in boxes:
+
+        st.markdown(f"""
+        <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0;font-weight:700">
+        {name}
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button(f"Aggiungi {name}"):
+            st.session_state.cart.append({"name": name, "price": 14.90})
 
 # =========================
 # VETRINA
 # =========================
 if st.session_state.page == "Vetrina":
 
-    st.title("Vetrina 🛍️")
+    st.title("🛍️ Vetrina")
 
     st.markdown("""
-💛 Questi capi rimangono a te per sempre  
-🚚 Spedizione semplice e trasparente
+✔ questi capi rimangono a te  
+🚚 spedizione gratuita sopra 50€ o con Box  
+💰 altrimenti 7,90€
 """)
 
-    for n,p in [("Body",9.9),("Maglia",8.9),("Pantaloni",12.9)]:
-        st.markdown(f"<div class='card'>{n} - {p}€</div>", unsafe_allow_html=True)
-        if st.button(f"Aggiungi {n}"):
-            st.session_state.cart.append({"name": n, "price": p})
+    if st.button("Aggiungi capo"):
+        st.session_state.cart.append({"name": "Body", "price": 9.90})
 
 # =========================
-# INFO (SPEDIZIONE ESATTA)
+# INFO
 # =========================
 if st.session_state.page == "Info":
 
-    st.title("Come funziona 🚚")
+    st.title("ℹ️ Come funziona")
 
     st.markdown("""
-✔ Box andata sempre gratuita  
+1. ricevi Box  
+2. usi i capi  
+3. cambi quando cresce  
 
-✔ Dopo 90 giorni:
-- continui → ritorno gratuito  
-- ti fermi → 7,90€ per etichetta reso  
-
-✔ se richiedi prima → sempre gratuito  
-
-✔ sistema circolare completo LoopBaby  
+🚚 spedizione:
+- gratis Box
+- gratis sopra 50€
+- 7,90€ senza Box
 """)
 
 # =========================
-# CHI SIAMO
-# =========================
-if st.session_state.page == "ChiSiamo":
-
-    st.title("Chi siamo ❤️")
-
-    st.markdown("""
-Siamo genitori.
-
-Abbiamo creato LoopBaby perché:
-
-✔ i bambini crescono troppo in fretta  
-✔ i vestiti costano troppo  
-✔ lo spreco è enorme  
-
-LoopBaby è un sistema, non un negozio.
-""")
-
-# =========================
-# CARRELLO (RIMOZIONE)
+# CARRELLO
 # =========================
 if st.session_state.page == "Carrello":
 
-    st.title("Carrello 🛒")
+    st.title("🛒 Carrello")
+
+    total = 0
 
     for i,item in enumerate(st.session_state.cart):
-        col1,col2,col3 = st.columns([3,1,1])
-        col1.write(item["name"])
-        col2.write(f"{item['price']}€")
-        if col3.button("❌", key=i):
+        c1,c2,c3 = st.columns([3,1,1])
+        c1.write(item["name"])
+        c2.write(f"{item['price']}€")
+        if c3.button("❌", key=i):
             st.session_state.cart.pop(i)
             st.rerun()
+        total += item["price"]
 
-    tot = sum(i["price"] for i in st.session_state.cart)
-
-    st.markdown(f"**Totale:** {tot}€")
+    st.markdown(f"### Totale: {total}€")
 
 # =========================
-# PROFILO COMPLETO
+# PROFILO
 # =========================
 if st.session_state.page == "Profilo":
 
-    st.title("Profilo 👤")
+    st.title("👤 Profilo")
 
-    u = st.session_state.user
+    d = st.session_state.dati
 
-    nome = st.text_input("Nome", u.get("nome",""))
-    tel = st.text_input("Telefono", u.get("telefono",""))
-    citta = st.text_input("Città", u.get("citta",""))
-    bambino = st.text_input("Bambino", u.get("bambino",""))
+    d["nome"] = st.text_input("Nome", d["nome"])
+    d["email"] = st.text_input("Email", d["email"])
+    d["telefono"] = st.text_input("Telefono", d["telefono"])
+    d["bimbo"] = st.text_input("Bambino", d["bimbo"])
 
     if st.button("Salva"):
-        update_user(u["email"], {
-            "nome": nome,
-            "telefono": tel,
-            "citta": citta,
-            "bambino": bambino
-        })
-        st.success("Profilo aggiornato")
+        save(d)
+        st.success("✔ Salvato")
+
+# =========================
+# FOOTER
+# =========================
+st.markdown("---")
+st.markdown("📞 WhatsApp | ✉️ assistenza@loopbaby.it")

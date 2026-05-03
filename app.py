@@ -8,7 +8,7 @@ st.set_page_config(page_title="LoopBaby", layout="centered")
 DB_FILE = "db.json"
 
 # =========================
-# LOAD IMG
+# IMMAGINE LOGO
 # =========================
 def load_img(path):
     if os.path.exists(path):
@@ -18,7 +18,7 @@ def load_img(path):
 logo = load_img("logo.png")
 
 # =========================
-# STYLE
+# STILE
 # =========================
 st.markdown("""
 <style>
@@ -74,7 +74,7 @@ def go(p):
     st.session_state.menu = False
 
 # =========================
-# LOGIN
+# LOGIN / REGISTRAZIONE
 # =========================
 if not st.session_state.user:
 
@@ -153,25 +153,25 @@ if st.session_state.page == "Home":
     st.markdown(f"## 👋 Ciao **{u.get('nome','')}**")
 
     st.markdown("""
-**LoopBaby non è un e-commerce. È un sistema.**
+**LoopBaby non è un e-commerce. È un sistema circolare.**
 
-♻️ crescita circolare  
-🔄 riuso intelligente  
-💛 risparmio reale  
+👶 vestiti sempre della taglia giusta  
+♻️ crescita circolare intelligente  
+🔄 riuso senza sprechi  
+💛 risparmio reale ogni mese  
+📦 zero pensieri  
 """)
 
     st.markdown("### 🔥 Mamme Fondatrici")
 
     st.markdown("""
-Dona almeno 10 capi e ricevi una **Box gratuita**.
-
-Noi ci occupiamo di tutto:
-- spedizione
-- etichetta
-- gestione capi
+🎁 Dona almeno 10 capi  
+📦 Ricevi una Box gratuita  
+🚚 Spedizione inclusa  
+♻️ Entri nel sistema LoopBaby  
 """)
 
-    if st.button("Partecipa"):
+    if st.button("Partecipa ora"):
         go("Promo")
 
 # =========================
@@ -182,18 +182,16 @@ if st.session_state.page == "Promo":
     st.title("🔥 Mamme Fondatrici")
 
     st.markdown("""
-**Come funziona:**
-
 1. Prepara almeno 10 capi  
-2. Inserisci dati spedizione  
+2. Inserisci i dati  
 3. Ricevi etichetta entro 48h  
 4. Spedisci gratis  
-5. Ricevi Box gratuita  
+5. Ricevi Box  
 """)
 
     peso = st.text_input("Peso pacco")
     dim = st.text_input("Dimensioni")
-    locker = st.text_input("Locker (scrivi quello che preferisci)")
+    locker = st.text_input("Locker preferito")
 
     if st.button("Invia richiesta"):
         st.success("✔ Etichetta inviata entro 48h")
@@ -203,7 +201,7 @@ if st.session_state.page == "Promo":
 # =========================
 if st.session_state.page == "Box":
 
-    st.title("📦 Box")
+    st.title("📦 Box LoopBaby")
 
     st.markdown("### Standard 14,90€")
 
@@ -216,7 +214,7 @@ if st.session_state.page == "Box":
     for i, (name, color) in enumerate(boxes):
         st.markdown(f"<div style='background:{color};padding:15px;border-radius:15px'>{name}</div>", unsafe_allow_html=True)
 
-        if st.button(f"Aggiungi {name}", key=i):
+        if st.button(f"Aggiungi {name}", key=f"b{i}"):
             st.session_state.cart.append({"name": name, "price": 14.90})
 
     st.markdown("### Premium 24,90€")
@@ -289,19 +287,19 @@ if st.session_state.page == "Profilo":
 # =========================
 if st.session_state.page == "Info":
 
-    st.title("ℹ️ Come funziona")
+    st.title("ℹ️ Come funziona LoopBaby")
 
     st.markdown("""
-1. Ricevi la Box  
-2. Usi i capi fino a 90 giorni  
-3. Se cresce → cambi subito  
-
-🔄 Fine ciclo:
-- nuova Box → spedizione GRATIS
-- restituzione → 7,90€
+📦 Ricevi la Box  
+👶 Usi i capi fino a 90 giorni  
+🔄 Cambi quando cresce  
 
 🚚 Spedizione:
-sempre gratuita se continui
+- GRATIS se continui
+- 7,90€ se interrompi  
+
+♻️ Patto 10x10:
+Ricevi 10 capi → restituisci 10 capi  
 """)
 
 # =========================
@@ -314,16 +312,8 @@ if st.session_state.page == "Chi":
     st.markdown("""
 Siamo genitori.
 
-Abbiamo creato LoopBaby per risolvere un problema reale:
-i bambini crescono troppo velocemente.
+LoopBaby nasce per ridurre sprechi e semplificare la vita.
 
-I vestiti vengono usati pochissimo e poi buttati.
-
-LoopBaby cambia questo:
-- meno sprechi
-- meno costi
-- più semplicità
-
-Non vendiamo solo vestiti.
-Creiamo un sistema.
+I bambini crescono troppo velocemente:
+noi abbiamo creato un sistema per usare i vestiti nel momento giusto.
 """)

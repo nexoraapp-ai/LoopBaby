@@ -6,7 +6,7 @@ API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 # =========================
-# SESSION
+# STATE
 # =========================
 if "auth" not in st.session_state:
     st.session_state.auth = False
@@ -22,7 +22,7 @@ def go(p):
     st.rerun()
 
 # =========================
-# DB FUNCTIONS
+# DATABASE
 # =========================
 def get_users():
     try:
@@ -39,9 +39,10 @@ def find_user(email):
 def create_user(data):
     users = get_users()
 
+    # ❌ EMAIL SOLO UNA VOLTA
     for u in users:
         if u.get("email","").lower() == data["email"].lower():
-            return False  # già registrata
+            return False
 
     data["fondatrice"] = "SI" if len(users) < 100 else "NO"
     data["locker"] = ""
@@ -63,7 +64,7 @@ if not st.session_state.auth:
     st.markdown("""
     <div style='text-align:center'>
         <h1 style='color:#5a4636'>🌸 LoopBaby</h1>
-        <p style='color:#a38f7b'>Crescita circolare per bambini</p>
+        <p style='color:#a38f7b'>Crescita circolare bambini</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -101,15 +102,15 @@ if not st.session_state.auth:
             })
 
             if ok:
-                st.success("Account creato")
+                st.success("Account creato con successo")
             else:
-                st.error("Questa email è già registrata")
+                st.error("Email già registrata")
 
     # RESET PASSWORD
     if mode == "Password dimenticata":
         newp = st.text_input("Nuova password", type="password")
 
-        if st.button("Aggiorna"):
+        if st.button("Aggiorna password"):
             if find_user(email):
                 update_user(email, {"password": newp})
                 st.success("Password aggiornata")
@@ -119,7 +120,7 @@ if not st.session_state.auth:
     st.stop()
 
 # =========================
-# DESIGN SYSTEM
+# STYLE
 # =========================
 st.markdown("""
 <style>
@@ -143,7 +144,7 @@ div.stButton > button{
     padding:14px;
     border-radius:16px;
     margin:10px 0;
-    border:1px solid #eadfcd;
+    border:1px solid #e7dfd2;
 }
 
 .header{
@@ -151,6 +152,14 @@ div.stButton > button{
     font-size:26px;
     font-weight:800;
     color:#5a4636;
+}
+
+.badge{
+    background:#fff1f2;
+    padding:10px;
+    border-radius:12px;
+    text-align:center;
+    border:1px solid #fda4af;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -182,13 +191,13 @@ if st.session_state.page == "Home":
     st.title(f"Ciao {nome} 👋")
 
     if fond == "SI":
-        st.success("🌸 Mamma Fondatrice")
+        st.markdown('<div class="badge">🌸 Mamma Fondatrice</div>', unsafe_allow_html=True)
 
     st.markdown("""
 ✔ crescita circolare  
 ✔ bambini al centro  
 ✔ risparmio reale  
-✔ riuso intelligente  
+✔ sistema riuso intelligente  
 """)
 
 # =========================
@@ -198,12 +207,20 @@ if st.session_state.page == "Box":
 
     st.title("Box LoopBaby")
 
-    st.markdown("💛 Standard 14,90€")
+    st.markdown("💛 Prezzo standard 14,90€")
 
-    for n in ["LUNA 🌙","SOLE ☀️","NUVOLA ☁️"]:
-        st.markdown(f"<div class='card'>{n}</div>", unsafe_allow_html=True)
-        if st.button(f"Aggiungi {n}"):
-            st.session_state.cart.append({"name": n, "price": 14.90})
+    box = [
+        "LUNA 🌙",
+        "SOLE ☀️",
+        "NUVOLA ☁️",
+        "PREMIUM 💎"
+    ]
+
+    for b in box:
+        st.markdown(f"<div class='card'>{b}</div>", unsafe_allow_html=True)
+        if st.button(f"Aggiungi {b}"):
+            price = 14.90 if "PREMIUM" not in b else 24.90
+            st.session_state.cart.append({"name": b, "price": price})
 
 # =========================
 # VETRINA
@@ -223,18 +240,22 @@ if st.session_state.page == "Vetrina":
             st.session_state.cart.append({"name": n, "price": p})
 
 # =========================
-# INFO (SPEDIZIONE CHIARA)
+# INFO (SPEDIZIONE ESATTA)
 # =========================
 if st.session_state.page == "Info":
 
     st.title("Come funziona 🚚")
 
     st.markdown("""
-1. Ricevi Box GRATIS andata  
-2. Usi i capi  
-3. Dopo 90 giorni puoi:
-   - continuare → ritorno GRATIS  
-   - fermarti → 7,90€ per reso etichetta  
+✔ Box andata sempre gratuita  
+
+✔ Dopo 90 giorni:
+- continui → ritorno gratuito  
+- ti fermi → 7,90€ per etichetta reso  
+
+✔ se richiedi prima → sempre gratuito  
+
+✔ sistema circolare completo LoopBaby  
 """)
 
 # =========================
@@ -245,20 +266,19 @@ if st.session_state.page == "ChiSiamo":
     st.title("Chi siamo ❤️")
 
     st.markdown("""
-Siamo genitori come te.
+Siamo genitori.
 
-Abbiamo creato LoopBaby per:
+Abbiamo creato LoopBaby perché:
 
-✔ ridurre sprechi  
-✔ far risparmiare famiglie  
-✔ semplificare la crescita dei bambini  
+✔ i bambini crescono troppo in fretta  
+✔ i vestiti costano troppo  
+✔ lo spreco è enorme  
 
-Non è un e-commerce.  
-È un sistema circolare.
+LoopBaby è un sistema, non un negozio.
 """)
 
 # =========================
-# CARRELLO (CON RIMOZIONE)
+# CARRELLO (RIMOZIONE)
 # =========================
 if st.session_state.page == "Carrello":
 
@@ -273,6 +293,7 @@ if st.session_state.page == "Carrello":
             st.rerun()
 
     tot = sum(i["price"] for i in st.session_state.cart)
+
     st.markdown(f"**Totale:** {tot}€")
 
 # =========================

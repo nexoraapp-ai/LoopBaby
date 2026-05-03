@@ -129,7 +129,6 @@ if st.session_state.page == "Login":
                     st.error("Telefono errato")
             else:
                 st.error("Utente non trovato")
-    st.stop()
 
     # ===== REGISTRAZIONE =====
     with tab2:
@@ -165,7 +164,7 @@ if st.session_state.page == "Login":
             else:
                 st.error("Errore registrazione")
 
-
+    st.stop()  
 # =========================
 # HEADER
 # =========================

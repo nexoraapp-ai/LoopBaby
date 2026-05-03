@@ -2,16 +2,13 @@ import streamlit as st
 import os
 import json
 import base64
-import hashlib
-import uuid
+import requests
 
-# =========================
-# CONFIG
-# =========================
+API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
+
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
-DB_FILE = "users.json"
-ORDER_FILE = "orders.json"
+DB_FILE = "db.json"
 
 
 # =========================
@@ -27,32 +24,37 @@ baby = load_img("bimbo.jpg")
 
 
 # =========================
-# DATABASE LOCALE
+# DB LOCALE
 # =========================
-def load_db(file):
-    if os.path.exists(file):
-        return json.load(open(file))
-    return {}
+def load():
+    if os.path.exists(DB_FILE):
+        return json.load(open(DB_FILE))
+    return {
+        "nome": "",
+        "email": "",
+        "telefono": "",
+        "bimbo": "",
+        "taglia": "50-56",
+        "paese": "Italia",
+        "citta": "",
+        "locker": ""
+    }
 
-def save_db(file, data):
-    json.dump(data, open(file, "w"))
+def save(d):
+    json.dump(d, open(DB_FILE, "w"))
 
 
-users = load_db(DB_FILE)
-orders = load_db(ORDER_FILE)
-
-
-# =========================
-# SESSION
-# =========================
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
-
-if "user" not in st.session_state:
-    st.session_state.user = None
+if "dati" not in st.session_state:
+    st.session_state.dati = load()
 
 if "cart" not in st.session_state:
     st.session_state.cart = []
+
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
+
+if "logged" not in st.session_state:
+    st.session_state.logged = False
 
 
 def go(p):
@@ -60,33 +62,34 @@ def go(p):
 
 
 # =========================
-# PASSWORD HASH (base futura Firebase)
-# =========================
-def hash_pw(p):
-    return hashlib.sha256(p.encode()).hexdigest()
-
-
-# =========================
-# LOCKER ITALIA
+# LOCKER
 # =========================
 LOCKERS = {
-    "Milano": ["Centrale", "Porta Romana", "Bicocca"],
-    "Roma": ["Termini", "Tiburtina"],
-    "Napoli": ["Centro", "Vomero"],
-    "Torino": ["Porta Nuova"],
-    "Palermo": ["Centro"],
-    "Bologna": ["Centro"],
-    "Firenze": ["SMN"],
-    "Bari": ["Centro"],
-    "Catania": ["Centrale"],
-    "Brescia": ["Centro"],
-    "Verona": ["Centro"],
-    "Genova": ["Porto Antico"]
+    "Italia": {
+        "Milano": ["Centrale", "Porta Romana", "Bicocca"],
+        "Roma": ["Termini", "Tiburtina"],
+        "Napoli": ["Centro", "Vomero"],
+        "Torino": ["Porta Nuova"],
+        "Palermo": ["Centro"],
+        "Catania": ["Centrale"],
+        "Bergamo": ["Centro"],
+        "Brescia": ["Centro"],
+        "Firenze": ["SMN"],
+        "Bari": ["Centro"],
+        "Canicattì": ["Hub"],
+        "Giffone": ["Reggio Calabria Locker"]
+    }
 }
+
+def locker_ui():
+    paese = st.selectbox("Paese", list(LOCKERS.keys()), key="paese_sel")
+    citta = st.selectbox("Città", list(LOCKERS[paese].keys()), key="citta_sel")
+    locker = st.selectbox("Locker", LOCKERS[paese][citta], key="locker_sel")
+    return paese, citta, locker
 
 
 # =========================
-# SIDEBAR (STESSO DESIGN TUO)
+# SIDEBAR
 # =========================
 with st.sidebar:
     if logo:
@@ -117,12 +120,95 @@ if logo:
 
 
 # =========================
+# LOGIN / REGISTRAZIONE
+# =========================
+if st.session_state.page == "Login":
+
+    st.title("🔐 Accesso")
+
+    tab1, tab2 = st.tabs(["Login", "Registrati"])
+
+    # LOGIN
+    with tab1:
+
+        email = st.text_input("Email", key="login_email")
+        password = st.text_input("Password", type="password", key="login_pass")
+
+        if st.button("Accedi"):
+
+            if email and password:
+
+                res = requests.get(API_URL, params={"email": email})
+
+                if res.status_code == 200 and len(res.json()) > 0:
+
+                    user = res.json()[0]
+
+                    if user.get("password") == password:
+                        st.session_state.logged = True
+                        st.session_state.dati = user
+                        st.success("✔ Login effettuato")
+                        go("Home")
+                    else:
+                        st.error("Password errata")
+
+                else:
+                    st.error("Utente non trovato")
+
+    # REGISTRAZIONE
+    with tab2:
+
+        nome = st.text_input("Nome", key="reg_nome")
+        email_r = st.text_input("Email", key="reg_email")
+        telefono_r = st.text_input("Telefono", key="reg_tel")
+        bimbo = st.text_input("Nome bambino", key="reg_bimbo")
+        password = st.text_input("Password", type="password", key="reg_pass")
+
+        paese, citta, locker = locker_ui()
+
+        if st.button("Registrati"):
+
+            if nome and email_r and telefono_r and password:
+
+                check = requests.get(API_URL, params={"email": email_r})
+
+                if len(check.json()) > 0:
+                    st.error("Email già registrata")
+                else:
+
+                    data = {
+                        "data": {
+                            "nome": nome,
+                            "email": email_r,
+                            "telefono": telefono_r,
+                            "password": password,
+                            "bimbo": bimbo,
+                            "paese": paese,
+                            "citta": citta,
+                            "locker": locker
+                        }
+                    }
+
+                    res = requests.post(API_URL, json=data)
+
+                    if res.status_code in [200, 201]:
+                        st.success("✔ Registrazione completata")
+                        st.session_state.logged = True
+                        st.session_state.dati = data["data"]
+                        go("Home")
+                    else:
+                        st.error("Errore registrazione")
+
+    st.stop()
+
+
+# =========================
 # HOME
 # =========================
 if st.session_state.page == "Home":
 
-    user = st.session_state.user
-    nome = user["nome"] if user else ""
+    d = st.session_state.dati
+    nome = d.get("nome", "")
 
     st.markdown(f"## 👋 Ciao **{nome if nome else 'benvenuto'}**")
 
@@ -140,7 +226,7 @@ if st.session_state.page == "Home":
 
     with col2:
         if baby:
-            st.image("bimbo.jpg", width=120, caption="👶 Il tuo bambino")
+            st.image("bimbo.jpg", width=120, caption=d.get("bimbo", "Il tuo bambino"))
 
     st.markdown("### 🔥 Promo Mamme Fondatrici")
     st.markdown("Dona 10+ capi → Box omaggio")
@@ -150,135 +236,26 @@ if st.session_state.page == "Home":
 
 
 # =========================
-# LOGIN / REGISTER
-# =========================
-if st.session_state.page == "Login":
-
-    st.title("🔐 Accesso LoopBaby")
-
-    tab1, tab2, tab3 = st.tabs(["Login", "Registrati", "Password dimenticata"])
-
-
-    # =========================
-    # LOGIN
-    # =========================
-    with tab1:
-
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-
-        if st.button("Accedi"):
-
-            if email in users:
-
-                if users[email]["password"] == hash_pw(password):
-
-                    st.session_state.user = users[email]
-                    st.success("Login effettuato")
-                    go("Home")
-
-                else:
-                    st.error("Password errata")
-
-            else:
-                st.error("Utente non trovato")
-
-
-    # =========================
-    # REGISTER
-    # =========================
-    with tab2:
-
-        nome = st.text_input("Nome")
-        email_r = st.text_input("Email")
-        telefono = st.text_input("Telefono")
-        bimbo = st.text_input("Nome bambino")
-        password_r = st.text_input("Password", type="password")
-
-        paese = st.selectbox("Paese", ["Italia"])
-        citta = st.selectbox("Città", list(LOCKERS.keys()))
-        locker = st.selectbox("Locker", LOCKERS[citta])
-
-        if st.button("Registrati"):
-
-            if email_r in users:
-                st.error("Email già registrata")
-
-            else:
-
-                users[email_r] = {
-                    "nome": nome,
-                    "email": email_r,
-                    "telefono": telefono,
-                    "bimbo": bimbo,
-                    "password": hash_pw(password_r),
-                    "paese": paese,
-                    "citta": citta,
-                    "locker": locker
-                }
-
-                save_db(DB_FILE, users)
-
-                st.success("Registrazione completata")
-                st.session_state.user = users[email_r]
-                go("Home")
-
-
-    # =========================
-    # PASSWORD RESET (SIMULATO)
-    # =========================
-    with tab3:
-
-        email_f = st.text_input("Email recupero")
-
-        if st.button("Reset password"):
-
-            if email_f in users:
-
-                token = str(uuid.uuid4())[:6]
-
-                users[email_f]["reset_code"] = token
-                save_db(DB_FILE, users)
-
-                st.success(f"Codice reset (simulato): {token}")
-
-            else:
-                st.error("Email non trovata")
-
-        code = st.text_input("Codice")
-        new_pw = st.text_input("Nuova password", type="password")
-
-        if st.button("Cambia password"):
-
-            if email_f in users and users[email_f].get("reset_code") == code:
-
-                users[email_f]["password"] = hash_pw(new_pw)
-                users[email_f]["reset_code"] = ""
-
-                save_db(DB_FILE, users)
-
-                st.success("Password aggiornata")
-
-            else:
-                st.error("Codice errato")
-
-    st.stop()
-
-
-# =========================
 # PROMO
 # =========================
 if st.session_state.page == "Promo":
 
     st.title("🔥 Promo Mamme Fondatrici")
 
-    st.text_input("Peso pacco")
-    st.text_input("Dimensioni")
+    st.markdown("""
+🎁 Doni 10 o più capi  
+📦 Ricevi Box gratuita  
+🚚 Spedizione inclusa  
+♻️ Economia circolare
+""")
 
-    st.selectbox("Città locker", list(LOCKERS.keys()))
+    peso = st.text_input("Peso pacco")
+    dim = st.text_input("Dimensioni")
+
+    locker_ui()
 
     if st.button("Invia richiesta"):
-        st.success("✔ Richiesta inviata")
+        st.success("✔ Etichetta inviata entro 48h")
 
 
 # =========================
@@ -288,8 +265,29 @@ if st.session_state.page == "Box":
 
     st.title("📦 Box LoopBaby")
 
-    if st.button("Aggiungi Box 14.90€"):
-        st.session_state.cart.append({"name": "Box", "price": 14.90})
+    tipo = st.radio("Scegli", ["Standard", "Premium"])
+
+    if tipo == "Standard":
+
+        st.markdown("### 14,90€")
+
+        for name, color, desc in [
+            ("SOLE ☀️", "#FFD600", "colorati"),
+            ("LUNA 🌙", "#E5E7EB", "neutri"),
+            ("NUVOLA ☁️", "#94A3B8", "soft")
+        ]:
+
+            st.markdown(f"<div style='background:{color};padding:10px;border-radius:10px'><b>{name}</b> {desc}</div>", unsafe_allow_html=True)
+
+            if st.button(f"Aggiungi {name}"):
+                st.session_state.cart.append({"name": name, "price": 14.90})
+
+    else:
+
+        st.markdown("### PREMIUM 24,90€")
+
+        if st.button("Aggiungi Premium"):
+            st.session_state.cart.append({"name": "Premium", "price": 24.90})
 
 
 # =========================
@@ -303,7 +301,6 @@ if st.session_state.page == "Carrello":
 
     for i, item in enumerate(st.session_state.cart):
         c1, c2, c3 = st.columns([3, 1, 1])
-
         c1.write(item["name"])
         c2.write(f"{item['price']}€")
 
@@ -317,26 +314,19 @@ if st.session_state.page == "Carrello":
 
 
 # =========================
-# INFO
+# INFO / PROFILO / VETRINA
 # =========================
 if st.session_state.page == "Info":
+    st.title("ℹ️ Info")
+    st.write("Sistema LoopBaby")
 
-    st.title("ℹ️ LoopBaby")
+if st.session_state.page == "Profilo":
+    st.title("👤 Profilo")
+    d = st.session_state.dati
+    st.write(d)
 
-    st.markdown("""
-♻️ Sistema circolare bambini  
-👶 crescita intelligente  
-💛 risparmio reale  
-""")
-
-
-# =========================
-# VETRINA
-# =========================
 if st.session_state.page == "Vetrina":
-
     st.title("🛍️ Vetrina")
-
     if st.button("Aggiungi capo"):
         st.session_state.cart.append({"name": "Body", "price": 9.90})
 

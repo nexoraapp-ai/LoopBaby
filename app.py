@@ -1,348 +1,296 @@
 import streamlit as st
-import os
 import json
-import base64
-import requests
+import os
 
-# =========================
-# CONFIG
-# =========================
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
-API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 DB_FILE = "db.json"
 
 # =========================
-# IMMAGINI
+# STYLE (BEIGE CLEAN APP)
 # =========================
-def load_img(path):
-    if os.path.exists(path):
-        return base64.b64encode(open(path, "rb").read()).decode()
-    return ""
+st.markdown("""
+<style>
+.stApp {
+    background-color: #F5F1E8;
+    max-width: 430px;
+    margin: auto;
+}
+button {
+    border-radius: 14px !important;
+    font-weight: 600 !important;
+}
+.card {
+    background: white;
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #eee;
+}
+.title {
+    font-size: 26px;
+    font-weight: 800;
+}
+.subtitle {
+    color: #555;
+    font-size: 14px;
+}
+</style>
+""", unsafe_allow_html=True)
 
-logo = load_img("logo.png")
-
 # =========================
-# DB LOCAL
+# DB
 # =========================
-def load():
+def load_db():
     if os.path.exists(DB_FILE):
         return json.load(open(DB_FILE))
-    return {
-        "nome": "",
-        "email": "",
-        "telefono": "",
-        "bimbo": "",
-        "taglia": "50-56",
-        "paese": "Italia",
-        "citta": "",
-        "locker": ""
-    }
+    return {}
 
-def save(d):
-    json.dump(d, open(DB_FILE, "w"))
+def save_db(db):
+    json.dump(db, open(DB_FILE, "w"))
 
-if "dati" not in st.session_state:
-    st.session_state.dati = load()
+db = load_db()
+
+# =========================
+# SESSION
+# =========================
+if "user" not in st.session_state:
+    st.session_state.user = None
+
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
 
 if "cart" not in st.session_state:
     st.session_state.cart = []
-
-if "page" not in st.session_state:
-    st.session_state.page = "Login"
 
 if "menu" not in st.session_state:
     st.session_state.menu = False
 
 def go(p):
     st.session_state.page = p
-    st.rerun()
+    st.session_state.menu = False
 
 # =========================
-# STYLE PREMIUM BEIGE (ZALANDO STYLE CLEAN)
+# AUTH
 # =========================
-st.markdown("""
-<style>
-.stApp{
-    background:#f5efe6;
-    max-width:520px;
-    margin:auto;
-    font-family:Arial;
-}
+if not st.session_state.user:
 
-/* HEADER */
-.header{
-    text-align:center;
-    font-size:30px;
-    font-weight:900;
-    color:#2b2b2b;
-    margin-top:10px;
-}
+    st.markdown("<div class='title'>LoopBaby</div>", unsafe_allow_html=True)
 
-.sub{
-    text-align:center;
-    font-size:13px;
-    color:#6b6258;
-}
+    mode = st.radio("Accesso", ["Login", "Registrati"])
 
-/* CARD */
-.card{
-    background:white;
-    border-radius:16px;
-    padding:16px;
-    margin:10px 0;
-    border:1px solid #e8dfd2;
-}
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
 
-/* BUTTON */
-div.stButton > button{
-    background:#f4b400 !important;
-    color:black !important;
-    width:100%;
-    border-radius:12px;
-    font-weight:700;
-}
-</style>
-""", unsafe_allow_html=True)
+    if mode == "Registrati":
 
-# =========================
-# HEADER LOGO
-# =========================
-if logo:
-    st.markdown(
-        f"<div style='text-align:center'><img src='data:image/png;base64,{logo}' width='160'></div>",
-        unsafe_allow_html=True
-    )
-
-# =========================
-# LOGIN / REGISTER (FIX EMAIL UNIQUE)
-# =========================
-if st.session_state.page == "Login":
-
-    st.markdown("<div class='header'>LoopBaby</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sub'>Sistema circolare per bambini</div>", unsafe_allow_html=True)
-
-    tab1, tab2 = st.tabs(["Login", "Registrati"])
-
-    # LOGIN
-    with tab1:
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-
-        if st.button("Accedi"):
-
-            r = requests.get(API_URL, params={"email": email}).json()
-
-            if not r:
-                st.error("Utente non trovato")
-            elif r[0].get("password") != password:
-                st.error("Password errata")
-            else:
-                st.session_state.dati = r[0]
-                go("Home")
-
-    # REGISTER
-    with tab2:
         nome = st.text_input("Nome")
-        email_r = st.text_input("Email")
         telefono = st.text_input("Telefono")
-        password_r = st.text_input("Password", type="password")
+        bimbo = st.text_input("Nome bambino")
 
-        if st.button("Registrati"):
-
-            check = requests.get(API_URL, params={"email": email_r}).json()
-
-            if check:
+        if st.button("Crea account"):
+            if email in db:
                 st.error("Email già registrata")
             else:
-                payload = {
-                    "data": {
-                        "nome": nome,
-                        "email": email_r,
-                        "telefono": telefono,
-                        "password": password_r
-                    }
+                db[email] = {
+                    "password": password,
+                    "nome": nome,
+                    "telefono": telefono,
+                    "bimbo": bimbo,
+                    "fondatrice": False
                 }
-
-                requests.post(API_URL, json=payload)
-                st.success("Registrazione completata")
+                save_db(db)
+                st.success("Account creato")
+                st.session_state.user = db[email]
+                st.session_state.user["email"] = email
                 st.rerun()
+
+    else:
+        if st.button("Entra"):
+            if email in db and db[email]["password"] == password:
+                st.session_state.user = db[email]
+                st.session_state.user["email"] = email
+                st.rerun()
+            else:
+                st.error("Credenziali errate")
 
     st.stop()
 
 # =========================
-# USER HEADER
+# HEADER + MENU
 # =========================
-user = st.session_state.dati
-nome = user.get("nome", "")
+col1, col2 = st.columns([1,5])
 
-st.markdown(f"<div class='header'>Ciao {nome} 👋</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub'>Benvenuto in LoopBaby</div>", unsafe_allow_html=True)
+with col1:
+    if st.button("☰"):
+        st.session_state.menu = not st.session_state.menu
 
-# =========================
-# NAV BAR (SEMPLICE MA COMPLETA)
-# =========================
-c1,c2,c3,c4,c5 = st.columns(5)
+with col2:
+    st.markdown("<b>LoopBaby</b>", unsafe_allow_html=True)
 
-with c1:
-    if st.button("Home"): go("Home")
-with c2:
-    if st.button("Box"): go("Box")
-with c3:
-    if st.button("Vetrina"): go("Vetrina")
-with c4:
-    if st.button("Info"): go("Info")
-with c5:
-    if st.button("Profilo"): go("Profilo")
+if st.session_state.menu:
+    st.button("🏠 Home", on_click=lambda: go("Home"))
+    st.button("📦 Box", on_click=lambda: go("Box"))
+    st.button("🛍️ Vetrina", on_click=lambda: go("Vetrina"))
+    st.button("🔥 Promo", on_click=lambda: go("Promo"))
+    st.button("ℹ️ Info", on_click=lambda: go("Info"))
+    st.button("❤️ Chi siamo", on_click=lambda: go("Chi"))
+    st.button("👤 Profilo", on_click=lambda: go("Profilo"))
+    st.button("🛒 Carrello", on_click=lambda: go("Carrello"))
 
 # =========================
-# HOME (PULITA + BRAND)
+# HOME
 # =========================
 if st.session_state.page == "Home":
 
-    st.markdown("""
-    <div class="card">
-    <b>LoopBaby è un sistema circolare per la crescita del bambino.</b><br><br>
-    Non compri tutto subito.<br>
-    Usi solo ciò che serve mentre cresce.
-    </div>
-    """, unsafe_allow_html=True)
+    u = st.session_state.user
+
+    st.markdown(f"## 👋 Ciao **{u.get('nome','')}**")
 
     st.markdown("""
-    <div class="card">
-    ♻️ zero sprechi<br>
-    👶 crescita continua<br>
-    💛 risparmio reale<br>
-    📦 sistema intelligente
-    </div>
-    """, unsafe_allow_html=True)
+LoopBaby non è un e-commerce.
+
+È un sistema circolare intelligente per vestire il tuo bambino senza sprechi.
+""")
 
     st.markdown("""
-    <div class="card" style="background:#fff1f2">
-    <b>🔥 Mamme Fondatrici</b><br>
-    Dona 10+ capi → Box omaggio
-    </div>
-    """, unsafe_allow_html=True)
+♻️ riuso intelligente  
+🔄 crescita circolare  
+💛 risparmio reale  
+""")
+
+    st.markdown("### 🔥 Mamme Fondatrici")
+
+    if st.checkbox("Diventa mamma fondatrice"):
+        u["fondatrice"] = True
+        db[u["email"]] = u
+        save_db(db)
+        st.success("Sei nel programma fondatrici")
 
 # =========================
-# BOX (TUO SISTEMA ORIGINALE MIGLIORATO)
+# BOX
 # =========================
 if st.session_state.page == "Box":
 
-    st.title("📦 Box LoopBaby")
+    st.markdown("## 📦 Box")
 
-    boxes = [
-        ("SOLE ☀️", "#FFD600"),
-        ("LUNA 🌙", "#E5E7EB"),
-        ("NUVOLA ☁️", "#94A3B8")
-    ]
+    tipo = st.radio("Tipo", ["Standard", "Premium"])
 
-    for name, color in boxes:
+    if tipo == "Standard":
 
-        st.markdown(f"""
-        <div class="card" style="background:{color}">
-        <b>{name}</b><br>
-        14,90€
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("### 14,90€")
 
-        if st.button(f"Aggiungi {name}"):
-            st.session_state.cart.append({"name": name, "price": 14.90})
+        for i, b in enumerate(["SOLE", "LUNA", "NUVOLA"]):
+            st.markdown(f"<div class='card'><b>{b}</b><br><span class='subtitle'>Box standard</span></div>", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="card" style="background:#4F46E5;color:white">
-    <b>BOX PREMIUM 💎</b><br>
-    24,90€
-    </div>
-    """, unsafe_allow_html=True)
+            if st.button(f"Aggiungi {b}", key=f"box_{i}"):
+                st.session_state.cart.append({"name": b, "price": 14.90})
 
-    if st.button("Aggiungi Premium"):
-        st.session_state.cart.append({"name": "Premium", "price": 24.90})
+    else:
+
+        st.markdown("<div class='card'><b>Premium</b><br>24,90€</div>", unsafe_allow_html=True)
+
+        if st.button("Aggiungi Premium"):
+            st.session_state.cart.append({"name": "Premium", "price": 24.90})
 
 # =========================
-# VETRINA (PRODOTTI TUOI)
+# VETRINA
 # =========================
 if st.session_state.page == "Vetrina":
 
-    st.title("🛍️ Vetrina")
+    st.markdown("## 🛍️ Vetrina")
 
     st.markdown("""
-    <div class="card">
-    Questi capi rimangono tuoi per sempre.<br>
-    Spedizione: GRATIS sopra 50€ o con Box / 7,90€ standard
-    </div>
-    """, unsafe_allow_html=True)
+Questi capi rimangono a te per sempre.
 
-    products = [
-        ("Body cotone bio", 9.90),
-        ("Tutina soft", 12.90),
-        ("Set notte", 14.90)
+🚚 GRATIS sopra 50€  
+📦 GRATIS con Box  
+🚚 7,90€ senza Box  
+""")
+
+    prodotti = [
+        ("Body", 9.90),
+        ("Tutina", 12.90),
+        ("Completo", 19.90)
     ]
 
-    for n,p in products:
-        st.markdown(f"<div class='card'><b>{n}</b><br>{p}€</div>", unsafe_allow_html=True)
+    for i, p in enumerate(prodotti):
+        st.markdown(f"<div class='card'><b>{p[0]}</b><br>{p[1]}€</div>", unsafe_allow_html=True)
 
-        if st.button(f"Aggiungi {n}"):
-            st.session_state.cart.append({"name": n, "price": p})
-
-# =========================
-# INFO (TUO TESTO MIGLIORATO SOLO FLUIDO)
-# =========================
-if st.session_state.page == "Info":
-
-    st.title("ℹ️ Come funziona LoopBaby")
-
-    st.markdown("""
-<div class="card">
-♻️ LoopBaby è un sistema circolare<br><br>
-
-📦 Ricevi Box → usi → cambi quando cresce<br>
-⏱ controllo qualità 48h<br>
-🔄 ciclo continuo senza sprechi<br><br>
-
-🚚 Spedizione:
-- GRATIS sopra 50€
-- GRATIS con Box
-- 7,90€ standard
-</div>
-""", unsafe_allow_html=True)
-
-# =========================
-# PROFILO (COMPLETO E SALVABILE)
-# =========================
-if st.session_state.page == "Profilo":
-
-    st.title("👤 Profilo")
-
-    user["nome"] = st.text_input("Nome", user.get("nome",""))
-    user["email"] = st.text_input("Email", user.get("email",""))
-    user["telefono"] = st.text_input("Telefono", user.get("telefono",""))
-    user["bimbo"] = st.text_input("Nome bambino", user.get("bimbo",""))
-
-    if st.button("Salva"):
-        st.session_state.dati = user
-        save(user)
-        st.success("Profilo salvato")
+        if st.button(f"Aggiungi {p[0]}", key=f"prod_{i}"):
+            st.session_state.cart.append({"name": p[0], "price": p[1]})
 
 # =========================
 # CARRELLO
 # =========================
 if st.session_state.page == "Carrello":
 
-    st.title("🛒 Carrello")
+    st.markdown("## 🛒 Carrello")
 
-    total = 0
+    totale = 0
 
-    for i,item in enumerate(st.session_state.cart):
+    for i, item in enumerate(st.session_state.cart):
+        c1, c2, c3 = st.columns([3,1,1])
 
-        c1,c2,c3 = st.columns([3,1,1])
         c1.write(item["name"])
         c2.write(f"{item['price']}€")
 
-        if c3.button("❌", key=i):
+        if c3.button("❌", key=f"del_{i}"):
             st.session_state.cart.pop(i)
             st.rerun()
 
-        total += item["price"]
+        totale += item["price"]
 
-    st.markdown(f"### Totale: {total}€")
+    st.markdown(f"### Totale: {totale}€")
+
+# =========================
+# PROFILO
+# =========================
+if st.session_state.page == "Profilo":
+
+    u = st.session_state.user
+
+    st.markdown("## 👤 Profilo")
+
+    u["nome"] = st.text_input("Nome", u.get("nome",""))
+    u["telefono"] = st.text_input("Telefono", u.get("telefono",""))
+    u["bimbo"] = st.text_input("Bambino", u.get("bimbo",""))
+
+    if st.button("Salva"):
+        db[u["email"]] = u
+        save_db(db)
+        st.success("Dati aggiornati")
+
+# =========================
+# INFO
+# =========================
+if st.session_state.page == "Info":
+
+    st.markdown("## ℹ️ Come funziona")
+
+    st.markdown("""
+Ricevi una Box → usi i capi → li cambi quando il bambino cresce.
+
+⏳ Durata: 90 giorni  
+🔄 Cambio libero  
+
+🚚 Spedizione:
+- GRATIS con Box
+- 7,90€ se interrompi
+""")
+
+# =========================
+# CHI SIAMO
+# =========================
+if st.session_state.page == "Chi":
+
+    st.markdown("## ❤️ Chi siamo")
+
+    st.markdown("""
+Siamo genitori.
+
+LoopBaby nasce per eliminare sprechi e semplificare la vita alle famiglie.
+
+I bambini crescono troppo in fretta:
+noi abbiamo creato un sistema per usare i vestiti nel momento giusto.
+""")

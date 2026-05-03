@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import json
 import base64
+API_URL = "https://sheetdb.io/api/v1/ju68nzk8x69ta"
 
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
@@ -52,7 +53,8 @@ if "page" not in st.session_state:
 
 def go(p):
     st.session_state.page = p
-
+if "logged" not in st.session_state:
+    st.session_state.logged = False
 
 # =========================
 # LOCKER
@@ -95,6 +97,68 @@ with st.sidebar:
     st.button("🔥 Promo", on_click=lambda: go("Promo"))
     st.button("👤 Profilo", on_click=lambda: go("Profilo"))
     st.button("🛒 Carrello", on_click=lambda: go("Carrello"))
+    if st.session_state.page == "Login":
+
+    st.title("🔐 Accesso")
+
+    tab1, tab2 = st.tabs(["Login", "Registrati"])
+
+    # ================= LOGIN =================
+    with tab1:
+        email = st.text_input("Email")
+        telefono = st.text_input("Telefono")
+
+        if st.button("Accedi"):
+
+            res = requests.get(API_URL, params={"email": email})
+
+            if res.status_code == 200 and len(res.json()) > 0:
+                user = res.json()[0]
+
+                if user["telefono"] == telefono:
+                    st.session_state.logged = True
+                    st.session_state.dati = user
+                    st.success("✔ Login effettuato")
+                    go("Home")
+                else:
+                    st.error("Telefono errato")
+            else:
+                st.error("Utente non trovato")
+
+
+    # ================= REGISTRAZIONE =================
+    with tab2:
+
+        nome = st.text_input("Nome")
+        email = st.text_input("Email")
+        telefono = st.text_input("Telefono")
+        bimbo = st.text_input("Nome bambino")
+
+        paese, citta, locker = locker_ui()
+
+        if st.button("Registrati"):
+
+            data = {
+                "data": {
+                    "nome": nome,
+                    "email": email,
+                    "telefono": telefono,
+                    "bimbo": bimbo,
+                    "paese": paese,
+                    "citta": citta,
+                    "locker": locker
+                }
+            }
+
+            res = requests.post(API_URL, json=data)
+
+            if res.status_code == 201:
+                st.success("✔ Registrazione completata")
+                st.session_state.logged = True
+                st.session_state.dati = data["data"]
+                go("Home")
+            else:
+                st.error("Errore registrazione")
 
     st.markdown("---")
     st.markdown("📞 WhatsApp: https://wa.me/393921404637")

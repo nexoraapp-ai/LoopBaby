@@ -55,7 +55,7 @@ def go(p):
 
 
 # =========================
-# LOCKER (ITALIA LOGICA)
+# LOCKER
 # =========================
 LOCKERS = {
     "Italia": {
@@ -102,7 +102,7 @@ with st.sidebar:
 
 
 # =========================
-# HEADER LOGO
+# HEADER
 # =========================
 if logo:
     st.markdown(
@@ -112,49 +112,26 @@ if logo:
 
 
 # =========================
-# HOME (FIX UI MIGLIORE)
+# HOME (FIX LAYOUT + NOME + IMMAGINE PROPORZIONATA)
 # =========================
 if st.session_state.page == "Home":
 
     d = st.session_state.dati
     nome = d.get("nome", "")
 
-    # HEADER USER NAME
-    st.markdown(f"""
-    <div style="text-align:left;margin-bottom:10px;">
-        <div style="font-size:22px;font-weight:800;">
-            Ciao {nome or '👋'} ✨
-        </div>
-        <div style="font-size:12px;color:gray;">
-            Benvenuto in LoopBaby
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # GREETING PIÙ EVIDENTE
+    st.markdown(f"## 👋 Ciao **{nome if nome else 'benvenuto'}**")
 
-    # LAYOUT 2 COLONNE
-    col1, col2 = st.columns([1.6, 1])
+    col1, col2 = st.columns([3, 2])  # 👈 PROPORZIONE MIGLIORE TESTO/IMMAGINE
 
     with col1:
         st.markdown("""
-<div style="font-size:14px; line-height:1.6">
+**LoopBaby non è un e-commerce. È un sistema.**
 
-<b>LoopBaby non è un e-commerce. È un sistema.</b><br><br>
-
-♻️ crescita circolare<br>
-👶 bambini al centro<br>
-🔄 riuso intelligente<br>
-💛 risparmio reale<br><br>
-
-<b>💡 Capi tuoi per sempre</b><br>
-Usi, restituisci, cresciamo insieme al tuo bambino.
-</div>
-""", unsafe_allow_html=True)
-
-        st.markdown("""
-### 🚚 Spedizione
-- GRATIS sopra 50€
-- GRATIS con Box
-- oppure 7,90€
+♻️ crescita circolare  
+👶 bambini al centro  
+🔄 riuso intelligente  
+💛 risparmio reale  
 """)
 
     with col2:
@@ -162,13 +139,11 @@ Usi, restituisci, cresciamo insieme al tuo bambino.
             st.image(
                 "bimbo.jpg",
                 use_container_width=True,
-                caption="LoopBaby Kids"
+                caption=d.get("bimbo", "Il tuo bambino")
             )
 
-    st.markdown("""
-### 🔥 Promo Mamme Fondatrici
-Dona 10+ capi → Box omaggio
-""")
+    st.markdown("### 🔥 Promo Mamme Fondatrici")
+    st.markdown("Dona 10+ capi → Box omaggio")
 
     if st.button("Partecipa alla promo"):
         go("Promo")
@@ -245,7 +220,7 @@ if st.session_state.page == "Box":
 
 
 # =========================
-# INFO (COMPLETA VERA)
+# INFO
 # =========================
 if st.session_state.page == "Info":
 
@@ -263,18 +238,17 @@ if st.session_state.page == "Info":
 
 Ricevi Box → Usi capi → ciclo continuo
 
-⏱ **2 giorni dalla consegna: controllo qualità**
-
-👉 Se qualcosa non va: **CONTATTACI SUBITO**
+⏱ 2 giorni dalla consegna: controllo qualità  
+👉 Se qualcosa non va: CONTATTACI SUBITO
 
 ---
 
 ## ⏳ Utilizzo
 
-Usi i capi fino a **90 giorni**
+Usi i capi fino a 90 giorni
 
 Se il bambino cresce prima:
-👉 contattaci subito (cambio taglia)
+👉 contattaci subito
 
 ---
 
@@ -289,32 +263,15 @@ Decidi:
 
 ---
 
-## 🚚 Spedizione
-
-- GRATIS sopra 50€
-- GRATIS con Box
-- 7,90€ senza Box
-
----
-
 ## 🌍 Chi siamo
 
 Siamo genitori.
 
 LoopBaby nasce per:
 - ridurre sprechi
-- risparmiare denaro
-- creare moda circolare reale
+- creare moda circolare
+- far risparmiare famiglie
 - eliminare acquisti inutili
-
----
-
-## 📍 Perché locker
-
-- libertà totale
-- niente attese
-- più sostenibilità
-- ritiro ovunque
 """, unsafe_allow_html=True)
 
 

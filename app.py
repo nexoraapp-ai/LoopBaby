@@ -45,6 +45,7 @@ if "page" not in st.session_state:
 def go(p):
     st.session_state.page = p
 
+
 # =========================
 # LOCKER
 # =========================
@@ -72,11 +73,11 @@ def locker_ui():
     locker = st.selectbox("Locker", LOCKERS[paese][citta])
     return paese, citta, locker
 
+
 # =========================
-# SIDEBAR
+# SIDEBAR (HAMBURGER)
 # =========================
 with st.sidebar:
-
     if logo:
         st.image("logo.png", width=130)
 
@@ -92,14 +93,16 @@ with st.sidebar:
     st.markdown("📞 WhatsApp: https://wa.me/393921404637")
     st.markdown("✉️ assistenza.loopbaby@gmail.com")
 
+
 # =========================
-# LOGO HEADER
+# HEADER
 # =========================
 if logo:
     st.markdown(
         f"<div style='text-align:center'><img src='data:image/png;base64,{logo}' width='180'></div>",
         unsafe_allow_html=True
     )
+
 
 # =========================
 # HOME
@@ -109,11 +112,11 @@ if st.session_state.page == "Home":
     d = st.session_state.dati
     nome = d.get("nome","")
 
+    st.markdown(f"## Ciao {nome or '👋'}")
+
     col1, col2 = st.columns([2,1])
 
     with col1:
-        st.markdown(f"## Ciao {nome or '👋'}")
-
         st.markdown("""
 **LoopBaby non è un e-commerce. È un sistema.**
 
@@ -127,13 +130,12 @@ if st.session_state.page == "Home":
         if baby:
             st.image("bimbo.jpg", use_container_width=True)
 
-    st.markdown("""
-### 🔥 Promo Mamme Fondatrici
-Dona 10+ capi → Box omaggio
-""")
+    st.markdown("### 🔥 Promo Mamme Fondatrici")
+    st.markdown("Dona 10+ capi → Box omaggio")
 
     if st.button("Partecipa alla promo"):
         go("Promo")
+
 
 # =========================
 # PROMO
@@ -152,11 +154,9 @@ Un programma speciale per mamme fondatrici.
 """)
 
     st.markdown("""
-## 📊 Come funziona
-- raccolta capi
-- controllo qualità
-- attivazione box
-- ciclo LoopBaby
+## ♻️ Obiettivo LoopBaby
+Ridurre sprechi tessili, creare un sistema di riuso reale,
+e far risparmiare le famiglie in modo continuo.
 """)
 
     peso = st.text_input("Peso pacco")
@@ -166,6 +166,7 @@ Un programma speciale per mamme fondatrici.
 
     if st.button("Invia richiesta"):
         st.success("✔ Etichetta inviata entro 48h")
+
 
 # =========================
 # BOX
@@ -178,20 +179,19 @@ if st.session_state.page == "Box":
 
     if tipo == "Standard":
 
-        st.markdown("### Box Standard - 14,90€")
+        st.markdown("### Standard 14,90€")
 
         boxes = [
-            ("SOLE ☀️","#FFD600","energici e colorati"),
-            ("LUNA 🌙","#E5E7EB","neutri soft"),
+            ("SOLE ☀️","#FFD600","colorati e vivaci"),
+            ("LUNA 🌙","#E5E7EB","neutri e soft"),
             ("NUVOLA ☁️","#94A3B8","delicati")
         ]
 
         for name,color,desc in boxes:
             st.markdown(f"""
-            <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0;color:black">
+            <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0">
                 <b>{name}</b><br>
-                {desc}<br>
-                capi selezionati in ottimo stato
+                {desc}
             </div>
             """, unsafe_allow_html=True)
 
@@ -203,15 +203,16 @@ if st.session_state.page == "Box":
         st.markdown("""
         <div style="background:#4F46E5;color:white;padding:15px;border-radius:15px">
         <b>BOX PREMIUM 💎</b><br>
-        capi nuovi o semi-nuovi - 24,90€
+        capi nuovi/semi-nuovi - 24,90€
         </div>
         """, unsafe_allow_html=True)
 
         if st.button("Aggiungi Premium"):
             st.session_state.cart.append({"name":"Premium Box","price":24.90})
 
+
 # =========================
-# INFO
+# INFO (COMPLETA)
 # =========================
 if st.session_state.page == "Info":
 
@@ -221,37 +222,36 @@ if st.session_state.page == "Info":
 ♻️ crescita circolare  
 👶 bambini al centro  
 🔄 riuso intelligente  
-💛 risparmio reale  
 
 ---
 
-## 📦 Sistema LoopBaby
+## 📦 Sistema
 
 - Ricevi Box
 - Usi i capi
 
 ⏱ **2 giorni dalla consegna: controllo qualità**
 
-Se qualcosa non va → supporto immediato
+Se qualcosa non va → **supporto immediato**
+
+👉 <a href='https://wa.me/393921404637' style='font-weight:bold;text-decoration:underline;color:#f43f5e'>CONTATTACI SUBITO</a>
 
 ---
 
 ## 🔄 Ciclo 90 giorni
 
 - nuova taglia (ritiro gratuito)
-- oppure restituzione (7,90€)
+- oppure restituzione
 
 ---
 
 ## 📍 Perché i locker
 
-Abbiamo scelto i locker perché:
-
-- libertà totale (non sei a casa)
-- zero attese corriere
+- libertà totale
+- niente attese corriere
 - ritiro quando vuoi
-- meno emissioni CO₂
-- rete capillare in Italia
+- meno CO₂
+- rete nazionale
 
 ---
 
@@ -261,16 +261,15 @@ LoopBaby nasce da genitori.
 
 Non da un’azienda.
 
-Abbiamo creato un sistema per:
-
-- ridurre sprechi tessili
+Creata per:
+- ridurre sprechi
+- creare moda circolare
 - far risparmiare famiglie
 - eliminare acquisti inutili
-- creare moda circolare reale
 
-👉 Non è un e-commerce.
-È un ciclo.
-""")
+👉 Non è un e-commerce. È un sistema.
+""", unsafe_allow_html=True)
+
 
 # =========================
 # CARRELLO
@@ -294,6 +293,7 @@ if st.session_state.page == "Carrello":
 
     st.markdown(f"### Totale: {total}€")
 
+
 # =========================
 # PROFILO
 # =========================
@@ -302,6 +302,8 @@ if st.session_state.page == "Profilo":
     d = st.session_state.dati
 
     st.title("👤 Profilo")
+
+    st.markdown(f"### Ciao {d.get('nome','')} 👋")
 
     d["nome"] = st.text_input("Nome", d["nome"])
     d["email"] = st.text_input("Email", d["email"])
@@ -314,6 +316,7 @@ if st.session_state.page == "Profilo":
         save(d)
         st.success("✔ Salvato")
 
+
 # =========================
 # VETRINA
 # =========================
@@ -322,13 +325,14 @@ if st.session_state.page == "Vetrina":
     st.title("🛍️ Vetrina")
 
     st.markdown("""
-I capi restano tuoi per sempre.
+Capi tuoi per sempre.
 
-🚚 spedizione gratuita sopra 50€
+🚚 gratis sopra 50€
 """)
 
-    if st.button("Aggiungi capo 9.90€"):
+    if st.button("Aggiungi capo"):
         st.session_state.cart.append({"name":"Body","price":9.90})
+
 
 # =========================
 # FOOTER

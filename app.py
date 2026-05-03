@@ -46,16 +46,22 @@ def go(p):
     st.session_state.page = p
 
 # =========================
-# LOCKER (MIGLIORATO)
+# LOCKER
 # =========================
 LOCKERS = {
     "Italia": {
-        "Milano": ["Milano Centrale","Porta Romana"],
+        "Milano": ["Centrale","Porta Romana","Bicocca"],
         "Lecco": ["Calolziocorte","Lecco Centro"],
         "Roma": ["Termini","Tiburtina"],
-        "Palermo": ["Palermo Centro"],
-        "Catania": ["Catania Centrale"],
-        "Canicattì": ["Canicattì Hub"],
+        "Napoli": ["Centro","Vomero"],
+        "Palermo": ["Centro"],
+        "Catania": ["Centrale"],
+        "Bergamo": ["Centro"],
+        "Brescia": ["Centro"],
+        "Torino": ["Porta Nuova"],
+        "Firenze": ["SMN"],
+        "Bari": ["Centro"],
+        "Canicattì": ["Hub"],
         "Giffone": ["Reggio Calabria Locker"]
     }
 }
@@ -67,9 +73,10 @@ def locker_ui():
     return paese, citta, locker
 
 # =========================
-# SIDEBAR (HAMBURGER)
+# SIDEBAR
 # =========================
 with st.sidebar:
+
     if logo:
         st.image("logo.png", width=130)
 
@@ -86,16 +93,16 @@ with st.sidebar:
     st.markdown("✉️ assistenza.loopbaby@gmail.com")
 
 # =========================
-# HEADER LOGO (SOLO LOGO)
+# LOGO HEADER
 # =========================
 if logo:
     st.markdown(
-        f"<div style='text-align:center'><img src='data:image/png;base64,{logo}' width='170'></div>",
+        f"<div style='text-align:center'><img src='data:image/png;base64,{logo}' width='180'></div>",
         unsafe_allow_html=True
     )
 
 # =========================
-# HOME (FIX COMPLETO)
+# HOME
 # =========================
 if st.session_state.page == "Home":
 
@@ -108,22 +115,21 @@ if st.session_state.page == "Home":
         st.markdown(f"## Ciao {nome or '👋'}")
 
         st.markdown("""
-**LoopBaby non è un e-commerce.**
-
-È uno stile. Una scelta. Un sistema.
+**LoopBaby non è un e-commerce. È un sistema.**
 
 ♻️ crescita circolare  
 👶 bambini al centro  
 🔄 riuso intelligente  
+💛 risparmio reale  
 """)
 
     with col2:
         if baby:
-            st.image("bimbo.jpg")
+            st.image("bimbo.jpg", use_container_width=True)
 
     st.markdown("""
 ### 🔥 Promo Mamme Fondatrici
-Dona 10 capi → ricevi BOX OMAGGIO
+Dona 10+ capi → Box omaggio
 """)
 
     if st.button("Partecipa alla promo"):
@@ -134,15 +140,23 @@ Dona 10 capi → ricevi BOX OMAGGIO
 # =========================
 if st.session_state.page == "Promo":
 
-    st.title("Promo Mamme Fondatrici")
+    st.title("🔥 Promo Mamme Fondatrici")
 
     st.markdown("""
-**Cos’è:**
+## Cos’è
 Un programma speciale per mamme fondatrici.
 
-🎁 Doni 10 capi  
+🎁 Doni 10 o più capi  
 📦 Ricevi Box gratuita  
 🚚 Spedizione inclusa  
+""")
+
+    st.markdown("""
+## 📊 Come funziona
+- raccolta capi
+- controllo qualità
+- attivazione box
+- ciclo LoopBaby
 """)
 
     peso = st.text_input("Peso pacco")
@@ -151,32 +165,33 @@ Un programma speciale per mamme fondatrici.
     paese, citta, locker = locker_ui()
 
     if st.button("Invia richiesta"):
-        st.success("Entro 48h riceverai etichetta via email/WhatsApp")
+        st.success("✔ Etichetta inviata entro 48h")
 
 # =========================
 # BOX
 # =========================
 if st.session_state.page == "Box":
 
-    st.title("Box LoopBaby")
+    st.title("📦 Box LoopBaby")
 
-    tipo = st.radio("Scegli tipo", ["Standard","Premium"])
+    tipo = st.radio("Scegli", ["Standard","Premium"])
 
     if tipo == "Standard":
 
-        st.markdown("### Box Standard 14,90€ (spedizione inclusa)")
+        st.markdown("### Box Standard - 14,90€")
 
         boxes = [
-            ("SOLE ☀️","giallo"),
-            ("LUNA 🌙","grigio"),
-            ("NUVOLA ☁️","blu")
+            ("SOLE ☀️","#FFD600","energici e colorati"),
+            ("LUNA 🌙","#E5E7EB","neutri soft"),
+            ("NUVOLA ☁️","#94A3B8","delicati")
         ]
 
-        for name,color in boxes:
+        for name,color,desc in boxes:
             st.markdown(f"""
-            <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0">
+            <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0;color:black">
                 <b>{name}</b><br>
-                capi usati in ottimo stato
+                {desc}<br>
+                capi selezionati in ottimo stato
             </div>
             """, unsafe_allow_html=True)
 
@@ -188,36 +203,73 @@ if st.session_state.page == "Box":
         st.markdown("""
         <div style="background:#4F46E5;color:white;padding:15px;border-radius:15px">
         <b>BOX PREMIUM 💎</b><br>
-        capi nuovi o seminuovi - 24,90€
+        capi nuovi o semi-nuovi - 24,90€
         </div>
         """, unsafe_allow_html=True)
 
         if st.button("Aggiungi Premium"):
-            st.session_state.cart.append({"name":"Premium","price":24.90})
+            st.session_state.cart.append({"name":"Premium Box","price":24.90})
 
 # =========================
-# INFO (COMPLETO VERO SISTEMA)
+# INFO
 # =========================
 if st.session_state.page == "Info":
 
-    st.title("Come funziona LoopBaby")
+    st.title("ℹ️ Come funziona LoopBaby")
 
     st.markdown("""
-LoopBaby è un sistema:
-
-📦 Ricevi Box  
-👶 Usi i capi  
-
-⏱ 10 giorni: controllo qualità  
-♻️ Patto del 10: equilibrio circolare  
-
-Dopo 90 giorni:
-- nuova taglia (ritiro gratis)
-- oppure restituzione (7,90€)
-
 ♻️ crescita circolare  
 👶 bambini al centro  
 🔄 riuso intelligente  
+💛 risparmio reale  
+
+---
+
+## 📦 Sistema LoopBaby
+
+- Ricevi Box
+- Usi i capi
+
+⏱ **2 giorni dalla consegna: controllo qualità**
+
+Se qualcosa non va → supporto immediato
+
+---
+
+## 🔄 Ciclo 90 giorni
+
+- nuova taglia (ritiro gratuito)
+- oppure restituzione (7,90€)
+
+---
+
+## 📍 Perché i locker
+
+Abbiamo scelto i locker perché:
+
+- libertà totale (non sei a casa)
+- zero attese corriere
+- ritiro quando vuoi
+- meno emissioni CO₂
+- rete capillare in Italia
+
+---
+
+## ❤️ Chi siamo
+
+LoopBaby nasce da genitori.
+
+Non da un’azienda.
+
+Abbiamo creato un sistema per:
+
+- ridurre sprechi tessili
+- far risparmiare famiglie
+- eliminare acquisti inutili
+- creare moda circolare reale
+
+👉 Non è un e-commerce.
+È un ciclo.
 """)
 
 # =========================
@@ -225,16 +277,16 @@ Dopo 90 giorni:
 # =========================
 if st.session_state.page == "Carrello":
 
-    st.title("Carrello")
+    st.title("🛒 Carrello")
 
     total = 0
 
     for i,item in enumerate(st.session_state.cart):
         c1,c2,c3 = st.columns([3,1,1])
         c1.write(item["name"])
-        c2.write(str(item["price"])+"€")
+        c2.write(f"{item['price']}€")
 
-        if c3.button("❌",key=i):
+        if c3.button("❌", key=i):
             st.session_state.cart.pop(i)
             st.rerun()
 
@@ -249,7 +301,7 @@ if st.session_state.page == "Profilo":
 
     d = st.session_state.dati
 
-    st.title("Profilo")
+    st.title("👤 Profilo")
 
     d["nome"] = st.text_input("Nome", d["nome"])
     d["email"] = st.text_input("Email", d["email"])
@@ -260,14 +312,14 @@ if st.session_state.page == "Profilo":
 
     if st.button("Salva"):
         save(d)
-        st.success("Salvato")
+        st.success("✔ Salvato")
 
 # =========================
 # VETRINA
 # =========================
 if st.session_state.page == "Vetrina":
 
-    st.title("Vetrina")
+    st.title("🛍️ Vetrina")
 
     st.markdown("""
 I capi restano tuoi per sempre.
@@ -282,4 +334,4 @@ I capi restano tuoi per sempre.
 # FOOTER
 # =========================
 st.markdown("---")
-st.markdown("📞 WhatsApp: https://wa.me/393921404637 | ✉️ assistenza.loopbaby@gmail.com")
+st.markdown("📞 WhatsApp | ✉️ assistenza.loopbaby@gmail.com")

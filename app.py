@@ -298,21 +298,85 @@ if st.session_state.page == "Carrello":
     st.write(f"Totale: {totale}€")
 
 # =========================
-# PROFILO
+# PROFILO COMPLETO
 # =========================
 if st.session_state.page == "Profilo":
 
-    st.title("Profilo")
+    st.title("👤 Profilo")
 
+    users = load_users()
     user = st.session_state.user
 
-    user["nome"] = st.text_input("Nome", user["nome"])
-    user["telefono"] = st.text_input("Telefono", user["telefono"])
+    st.markdown(f"### Ciao {user.get('nome','')} 👋")
 
-    if st.button("Salva"):
-        users = load_users()
+    # =========================
+    # DATI GENITORE
+    # =========================
+    st.subheader("👤 Dati Genitore")
+
+    nome = st.text_input("Nome e Cognome", user.get("nome",""))
+    telefono = st.text_input("Telefono", user.get("telefono",""))
+    email = user.get("email","")
+    st.text_input("Email (non modificabile)", email, disabled=True)
+
+    # =========================
+    # DATI BAMBINO
+    # =========================
+    st.subheader("👶 Dati Bambino")
+
+    nome_bimbo = st.text_input("Nome bambino", user.get("nome_bimbo",""))
+    sesso = st.selectbox("Sesso", ["Non specificato","Maschio","Femmina"], index=0)
+    nascita = st.date_input("Data nascita")
+    taglia = st.selectbox("Taglia attuale", [
+        "50-56","62-68","74-80","86-92"
+    ])
+
+    # =========================
+    # INDIRIZZO
+    # =========================
+    st.subheader("📍 Indirizzo")
+
+    via = st.text_input("Via e numero", user.get("via",""))
+    citta = st.text_input("Città", user.get("citta",""))
+    cap = st.text_input("CAP", user.get("cap",""))
+
+    # =========================
+    # PREFERENZE BOX
+    # =========================
+    st.subheader("📦 Preferenze Box")
+
+    stile = st.selectbox("Stile preferito", [
+        "Neutro",
+        "Colorato",
+        "Misto"
+    ])
+
+    note = st.text_area("Note (allergie, preferenze, ecc.)", user.get("note",""))
+
+    # =========================
+    # SALVA
+    # =========================
+    if st.button("💾 Salva Profilo"):
+
+        user.update({
+            "nome": nome,
+            "telefono": telefono,
+            "nome_bimbo": nome_bimbo,
+            "sesso": sesso,
+            "nascita": str(nascita),
+            "taglia": taglia,
+            "via": via,
+            "citta": citta,
+            "cap": cap,
+            "stile": stile,
+            "note": note
+        })
+
+        # aggiorna DB
         for u in users:
-            if u["email"] == user["email"]:
+            if u["email"] == email:
                 u.update(user)
+
         save_users(users)
-        st.success("Salvato")
+
+        st.success("Profilo aggiornato ✅")

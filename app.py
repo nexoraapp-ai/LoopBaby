@@ -23,23 +23,30 @@ if "menu" not in st.session_state:
 if "cart" not in st.session_state:
     st.session_state.cart = []
 
-def go(p):
-    st.session_state.page = p
+# =========================
+# NAV
+# =========================
+def go(page):
+    st.session_state.page = page
     st.session_state.menu = False
     st.rerun()
 
 # =========================
-# API USER
+# API SAFE
 # =========================
 def get_user(email):
-    r = requests.get(API_URL, params={"email": email})
-    return r.json()
+    try:
+        r = requests.get(API_URL, params={"email": email})
+        data = r.json()
+        return data if isinstance(data, list) else []
+    except:
+        return []
 
-def register_user(data):
+def create_user(data):
     return requests.post(API_URL, json={"data": data})
 
 # =========================
-# STYLE
+# STYLE BASE
 # =========================
 st.markdown("""
 <style>
@@ -47,16 +54,6 @@ st.markdown("""
     background:#F5F1E8;
     max-width:480px;
     margin:auto;
-    font-family:Arial;
-}
-
-/* HEADER */
-.title{
-    text-align:center;
-    font-size:30px;
-    font-weight:900;
-    color:#5a4636;
-    margin-top:10px;
 }
 
 /* BUTTON */
@@ -76,22 +73,6 @@ div.stButton > button{
     margin:10px 0;
     border:1px solid #e6dccd;
 }
-
-/* MENU */
-.menu-bg{
-    position:fixed;
-    top:0;left:0;
-    width:100%;height:100%;
-    background:rgba(0,0,0,0.5);
-    z-index:999;
-}
-.menu-box{
-    background:white;
-    width:80%;
-    margin:80px auto;
-    padding:20px;
-    border-radius:20px;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -100,47 +81,55 @@ div.stButton > button{
 # =========================
 if st.session_state.user is None:
 
-    st.markdown("## 🌸 LoopBaby")
+    st.title("🌸 LoopBaby")
 
-    tab1, tab2 = st.tabs(["Login","Registrati"])
+    tab1, tab2 = st.tabs(["Login", "Registrati"])
 
+    # ---------------- LOGIN ----------------
     with tab1:
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
+        email = st.text_input("Email", key="login_email")
+        password = st.text_input("Password", type="password", key="login_pass")
 
-        if st.button("Entra"):
+        if st.button("Entra", key="login_btn"):
             users = get_user(email)
-            if users and users[0]["password"] == password:
+
+            if len(users) == 0:
+                st.error("Utente non trovato")
+            elif users[0].get("password") != password:
+                st.error("Password errata")
+            else:
                 st.session_state.user = users[0]
                 st.rerun()
-            else:
-                st.error("Errore login")
 
+    # ---------------- REGISTER ----------------
     with tab2:
-        n = st.text_input("Nome")
-        e = st.text_input("Email")
-        p = st.text_input("Password")
-        tel = st.text_input("Telefono")
+        nome = st.text_input("Nome", key="reg_nome")
+        email_r = st.text_input("Email", key="reg_email")
+        pass_r = st.text_input("Password", key="reg_pass")
+        tel = st.text_input("Telefono", key="reg_tel")
 
-        if st.button("Registrati"):
+        if st.button("Registrati", key="reg_btn"):
 
-            check = get_user(e)
-
-            if len(check) > 0:
-                st.error("Email già registrata")
+            if not email_r or not pass_r:
+                st.error("Compila tutti i campi")
             else:
-                register_user({
-                    "nome": n,
-                    "email": e,
-                    "password": p,
-                    "telefono": tel
-                })
-                st.success("Registrazione completata")
+                check = get_user(email_r)
+
+                if len(check) > 0:
+                    st.error("Email già registrata")
+                else:
+                    create_user({
+                        "nome": nome,
+                        "email": email_r,
+                        "password": pass_r,
+                        "telefono": tel
+                    })
+                    st.success("Registrazione completata")
 
     st.stop()
 
 # =========================
-# HEADER APP
+# HEADER
 # =========================
 user = st.session_state.user
 nome = user.get("nome","")
@@ -148,30 +137,25 @@ nome = user.get("nome","")
 col1,col2 = st.columns([8,1])
 
 with col1:
-    st.markdown(f"<div class='title'>Ciao {nome} 👋</div>", unsafe_allow_html=True)
+    st.markdown(f"## 👋 Ciao {nome}")
 
 with col2:
-    if st.button("☰"):
+    if st.button("☰", key="menu_btn"):
         st.session_state.menu = not st.session_state.menu
 
 # =========================
-# MENU OVERLAY
+# MENU OVERLAY (NO DUPLICATI)
 # =========================
 if st.session_state.menu:
-    st.markdown("""
-    <div class="menu-bg">
-      <div class="menu-box">
-    """, unsafe_allow_html=True)
 
-    if st.button("🏠 Home"): go("home")
-    if st.button("📦 Box"): go("box")
-    if st.button("🛍️ Vetrina"): go("vetrina")
-    if st.button("ℹ️ Info"): go("info")
-    if st.button("🌸 Mamme Fondatrici"): go("promo")
-    if st.button("👤 Profilo"): go("profilo")
-    if st.button("🛒 Carrello"): go("carrello")
+    st.markdown("### MENU")
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    if st.button("Home", key="m_home"): go("home")
+    if st.button("Box", key="m_box"): go("box")
+    if st.button("Vetrina", key="m_vetrina"): go("vetrina")
+    if st.button("Info", key="m_info"): go("info")
+    if st.button("Promo", key="m_promo"): go("promo")
+    if st.button("Carrello", key="m_cart"): go("carrello")
 
 # =========================
 # HOME
@@ -180,18 +164,16 @@ if st.session_state.page == "home":
 
     st.markdown("""
     <div class="card">
-    <b>LoopBaby è un sistema circolare per bambini.</b><br><br>
-
+    <b>LoopBaby è un sistema circolare per bambini</b><br><br>
     ♻️ crescita intelligente<br>
     👶 vestiti che seguono il bambino<br>
-    💛 risparmio reale per famiglie
+    💛 risparmio reale
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="card" style="background:#fff1f2">
-    🌸 <b>Mamme Fondatrici</b><br>
-    Accesso esclusivo + box gratuita
+    🌸 Mamme Fondatrici attive
     </div>
     """, unsafe_allow_html=True)
 
@@ -200,7 +182,7 @@ if st.session_state.page == "home":
 # =========================
 if st.session_state.page == "box":
 
-    st.title("📦 Box LoopBaby")
+    st.title("📦 Box")
 
     boxes = [
         ("SOLE ☀️","#FFD600"),
@@ -209,15 +191,16 @@ if st.session_state.page == "box":
         ("PREMIUM 💎","#4F46E5")
     ]
 
-    for name,color in boxes:
+    for i,(name,color) in enumerate(boxes):
+
         st.markdown(f"""
-        <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0;font-weight:800">
+        <div style="background:{color};padding:15px;border-radius:15px;margin:10px 0;font-weight:700">
         {name}
         </div>
         """, unsafe_allow_html=True)
 
-        if st.button(f"Aggiungi {name}"):
-            price = 14.90 if "PREMIUM" not in name else 24.90
+        if st.button(f"Aggiungi {name}", key=f"box_{i}"):
+            price = 24.90 if "PREMIUM" in name else 14.90
             st.session_state.cart.append({"name":name,"price":price})
 
 # =========================
@@ -229,13 +212,13 @@ if st.session_state.page == "vetrina":
 
     st.markdown("""
 <div class="card">
-✔ questi capi rimangono a te<br>
+✔ rimangono a te<br>
 🚚 spedizione gratis sopra 50€ o con box<br>
 💸 7,90€ senza box
 </div>
 """, unsafe_allow_html=True)
 
-    if st.button("Aggiungi capo"):
+    if st.button("Aggiungi capo", key="v1"):
         st.session_state.cart.append({"name":"Body","price":9.90})
 
 # =========================
@@ -243,14 +226,13 @@ if st.session_state.page == "vetrina":
 # =========================
 if st.session_state.page == "info":
 
-    st.title("ℹ️ Come funziona")
+    st.title("ℹ️ Info")
 
     st.markdown("""
 <div class="card">
-✔ Box gratis andata<br>
-✔ uso 90 giorni<br>
-✔ ritorno gratuito con box<br>
-✔ 7,90€ senza box
+✔ box gratis andata<br>
+✔ 90 giorni utilizzo<br>
+✔ ritorno 7,90€ senza box
 </div>
 """, unsafe_allow_html=True)
 
@@ -264,7 +246,7 @@ if st.session_state.page == "promo":
     st.markdown("""
 <div class="card">
 ✔ dona 10 capi<br>
-✔ ricevi box gratuita<br>
+✔ box gratuita<br>
 ✔ spedizione inclusa
 </div>
 """, unsafe_allow_html=True)
@@ -279,26 +261,15 @@ if st.session_state.page == "carrello":
     total = 0
 
     for i,item in enumerate(st.session_state.cart):
+
         c1,c2,c3 = st.columns([3,1,1])
         c1.write(item["name"])
         c2.write(f"{item['price']}€")
-        if c3.button("❌",key=i):
+
+        if c3.button("❌", key=f"del_{i}"):
             st.session_state.cart.pop(i)
             st.rerun()
+
         total += item["price"]
 
     st.markdown(f"### Totale: {total}€")
-
-# =========================
-# PROFILO
-# =========================
-if st.session_state.page == "profilo":
-
-    st.title("👤 Profilo")
-
-    user["nome"] = st.text_input("Nome", user.get("nome",""))
-    user["telefono"] = st.text_input("Telefono", user.get("telefono",""))
-
-    if st.button("Salva"):
-        requests.patch(API_URL, json={"data":user})
-        st.success("Salvato")

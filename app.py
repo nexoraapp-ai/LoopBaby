@@ -1,7 +1,5 @@
 import streamlit as st
 import requests
-import base64
-import os
 
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
@@ -14,7 +12,7 @@ if "user" not in st.session_state:
     st.session_state.user = None
 
 if "page" not in st.session_state:
-    st.session_state.page = "landing"
+    st.session_state.page = "home"
 
 if "cart" not in st.session_state:
     st.session_state.cart = []
@@ -24,43 +22,42 @@ def go(p):
     st.rerun()
 
 # =========================
-# STYLE AZIENDALE
+# STYLE (ZALANDO INSPIRED CLEAN)
 # =========================
 st.markdown("""
 <style>
 .stApp{
-    background:#F5F0E6;
-    max-width:480px;
+    background:#f6f1e8;
+    max-width:520px;
     margin:auto;
     font-family:Arial;
 }
 
-/* HERO STYLE */
-.hero{
-    padding:20px;
+/* HEADER */
+.header{
     text-align:center;
-}
-
-.title{
     font-size:28px;
     font-weight:900;
-    color:#3b2f24;
-}
-
-.subtitle{
-    font-size:14px;
-    color:#6b5b4d;
+    color:#2f2a24;
     margin-top:10px;
-    line-height:1.4;
 }
 
-/* CARD */
+/* SUB */
+.sub{
+    text-align:center;
+    color:#6b6258;
+    font-size:13px;
+    margin-bottom:15px;
+}
+
+/* CARD (ZALANDO STYLE) */
 .card{
     background:white;
+    border-radius:16px;
     padding:16px;
-    border-radius:18px;
-    margin:12px 0;
-    border:1px solid #e6d8c7;
+    margin:10px 0;
+    border:1px solid #e8dfd2;
+    box-shadow:0 2px 8px rgba(0,0,0,0.03);
 }
 
 /* BUTTON */
@@ -68,41 +65,29 @@ div.stButton > button{
     background:#F4B400 !important;
     color:black !important;
     width:100%;
-    border-radius:14px;
+    border-radius:12px;
     font-weight:700;
-}
-
-/* MENU */
-.menu{
-    background:white;
-    padding:10px;
-    border-radius:16px;
+    border:none;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# LOGIN (semplice ma reale)
+# AUTH (CLEAN)
 # =========================
 if st.session_state.user is None:
 
-    st.markdown("""
-    <div class="hero">
-        <div class="title">LoopBaby</div>
-        <div class="subtitle">
-        Non vendiamo vestiti.<br>
-        Gestiamo la crescita dei bambini in modo circolare.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<div class='header'>LoopBaby</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub'>Sistema circolare per la crescita dei bambini</div>", unsafe_allow_html=True)
 
     tab1, tab2 = st.tabs(["Accedi", "Registrati"])
 
+    # LOGIN
     with tab1:
         email = st.text_input("Email")
         pw = st.text_input("Password", type="password")
 
-        if st.button("Entra"):
+        if st.button("Accedi"):
             r = requests.get(API, params={"email": email}).json()
 
             if not r:
@@ -113,10 +98,11 @@ if st.session_state.user is None:
                 st.session_state.user = r[0]
                 go("home")
 
+    # REGISTER
     with tab2:
         nome = st.text_input("Nome")
-        email_r = st.text_input("Email ")
-        pw_r = st.text_input("Password ", type="password")
+        email_r = st.text_input("Email")
+        pw_r = st.text_input("Password")
 
         if st.button("Crea account"):
 
@@ -128,9 +114,7 @@ if st.session_state.user is None:
                 requests.post(API, json={"data":{
                     "nome":nome,
                     "email":email_r,
-                    "password":pw_r,
-                    "telefono":"",
-                    "taglia":"50-56"
+                    "password":pw_r
                 }})
 
                 st.success("Account creato")
@@ -144,63 +128,99 @@ if st.session_state.user is None:
 user = st.session_state.user
 nome = user.get("nome","")
 
-st.markdown(f"""
-<div class="hero">
-    <div class="title">Ciao {nome}</div>
-    <div class="subtitle">
-        Gestisci tutto da qui: Box, vestiti e crescita del tuo bambino.
-    </div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(f"<div class='header'>Ciao {nome}</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub'>Gestisci Box, Shop e crescita bambino</div>", unsafe_allow_html=True)
 
 # =========================
-# NAV AZIENDALE (3 COSE SOLO)
+# NAV (SIMPLE ZALANDO STYLE)
 # =========================
-col1, col2, col3 = st.columns(3)
+col1,col2,col3,col4 = st.columns(4)
 
 with col1:
-    if st.button("🏠 Home"):
+    if st.button("Home"):
         go("home")
 
 with col2:
-    if st.button("📦 Box"):
+    if st.button("Box"):
         go("box")
 
 with col3:
-    if st.button("🛍️ Shop"):
+    if st.button("Shop"):
         go("shop")
 
+with col4:
+    if st.button("Profilo"):
+        go("profile")
+
 # =========================
-# HOME (AZIENDA)
+# HOME (ZALANDO STYLE HERO)
 # =========================
 if st.session_state.page == "home":
 
     st.markdown("""
     <div class="card">
-    <b>Cos’è LoopBaby?</b><br><br>
-    È un sistema che sostituisce l’acquisto continuo di vestiti bambini con un modello circolare intelligente.
+    <b>LoopBaby è un sistema di crescita circolare</b><br><br>
+    Non compri vestiti ogni mese.<br>
+    Li gestisci con la crescita del bambino.
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="card">
-    ✔ Risparmi soldi<br>
-    ✔ Niente sprechi<br>
-    ✔ Vestiti sempre della taglia giusta
+    ✔ sempre taglia giusta<br>
+    ✔ meno sprechi<br>
+    ✔ risparmio continuo<br>
+    ✔ sistema intelligente
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("Inizia con una Box"):
-        go("box")
-
 # =========================
-# BOX
+# BOX (CORE BUSINESS)
 # =========================
 if st.session_state.page == "box":
 
     st.title("📦 Box LoopBaby")
 
-    for name,price in [("SOLE ☀️",14.90),("LUNA 🌙",14.90),("NUVOLA ☁️",14.90),("PREMIUM 💎",24.90)]:
+    boxes = [
+        ("SOLE ☀️",14.90),
+        ("LUNA 🌙",14.90),
+        ("NUVOLA ☁️",14.90),
+        ("PREMIUM 💎",24.90)
+    ]
+
+    for name,price in boxes:
+
+        st.markdown(f"""
+        <div class="card">
+        <b>{name}</b><br>
+        <span>{price}€</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button(f"Aggiungi {name}"):
+            st.session_state.cart.append({"name":name,"price":price})
+
+# =========================
+# SHOP (ZALANDO STYLE)
+# =========================
+if st.session_state.page == "shop":
+
+    st.title("🛍️ Vetrina")
+
+    st.markdown("""
+    <div class="card">
+    Capi singoli disponibili.<br>
+    Rimangono sempre tuoi.
+    </div>
+    """, unsafe_allow_html=True)
+
+    products = [
+        ("Body cotone premium",9.90),
+        ("Tutina soft",12.90),
+        ("Pigiama bambino",8.90)
+    ]
+
+    for name,price in products:
 
         st.markdown(f"""
         <div class="card">
@@ -212,35 +232,33 @@ if st.session_state.page == "box":
             st.session_state.cart.append({"name":name,"price":price})
 
 # =========================
-# SHOP (VETRINA SERIA)
+# PROFILE
 # =========================
-if st.session_state.page == "shop":
+if st.session_state.page == "profile":
 
-    st.title("🛍️ Vetrina")
+    st.title("👤 Profilo")
 
-    st.markdown("""
-    <div class="card">
-    I capi acquistati qui restano tuoi per sempre.<br>
-    Spedizione gratuita sopra 50€ o con Box.
-    </div>
-    """, unsafe_allow_html=True)
+    user["nome"] = st.text_input("Nome", user.get("nome",""))
+    user["email"] = st.text_input("Email", user.get("email",""))
 
-    if st.button("Aggiungi capo"):
-        st.session_state.cart.append({"name":"Body premium","price":9.90})
+    if st.button("Salva"):
+        st.session_state.user = user
+        st.success("Profilo aggiornato")
 
 # =========================
-# CARRELLO
+# CART (SEMPLICE + SERIO)
 # =========================
 st.markdown("---")
 
 total = 0
 
 for i,item in enumerate(st.session_state.cart):
+
     c1,c2,c3 = st.columns([3,1,1])
     c1.write(item["name"])
     c2.write(f"{item['price']}€")
 
-    if c3.button("❌", key=i):
+    if c3.button("❌", key=f"x{i}"):
         st.session_state.cart.pop(i)
         st.rerun()
 

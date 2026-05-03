@@ -60,11 +60,7 @@ def update_user(email, data):
 # =========================
 if not st.session_state.auth:
 
-    st.markdown("""
-    <div style='text-align:center;margin-bottom:20px'>
-        <h1 style='color:#5a4636'>🌸 LoopBaby</h1>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;color:#5a4636'>🌸 LoopBaby</h1>", unsafe_allow_html=True)
 
     mode = st.radio("Accesso", ["Login", "Registrati", "Reset Password"])
 
@@ -84,7 +80,7 @@ if not st.session_state.auth:
     if mode == "Registrati":
         nome = st.text_input("Nome")
         telefono = st.text_input("Telefono")
-        bambino = st.text_input("Bambino")
+        bambino = st.text_input("Nome bambino")
         citta = st.text_input("Città")
 
         if st.button("Crea account"):
@@ -115,7 +111,7 @@ if not st.session_state.auth:
     st.stop()
 
 # =========================
-# DESIGN SYSTEM
+# DESIGN
 # =========================
 st.markdown("""
 <style>
@@ -124,16 +120,13 @@ st.markdown("""
     max-width:480px;
     margin:auto;
 }
-
 div.stButton > button{
     background:#f43f5e;
     color:white;
     border-radius:14px;
     width:100%;
     font-weight:bold;
-    border:none;
 }
-
 .card{
     background:#fffdf9;
     padding:14px;
@@ -141,7 +134,6 @@ div.stButton > button{
     margin:10px 0;
     border:1px solid #e7dfd2;
 }
-
 .badge{
     background:#fff1f2;
     padding:10px;
@@ -149,19 +141,11 @@ div.stButton > button{
     text-align:center;
     border:1px solid #fda4af;
 }
-
-.header{
-    text-align:center;
-    font-size:26px;
-    font-weight:800;
-    color:#5a4636;
-    margin-bottom:10px;
-}
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# SIDEBAR
+# MENU
 # =========================
 with st.sidebar:
     st.title("☰ Menu")
@@ -169,6 +153,7 @@ with st.sidebar:
     if st.button("Box"): go("Box")
     if st.button("Vetrina"): go("Vetrina")
     if st.button("Info"): go("Info")
+    if st.button("Chi Siamo"): go("ChiSiamo")
     if st.button("Carrello"): go("Carrello")
     if st.button("Profilo"): go("Profilo")
 
@@ -181,18 +166,18 @@ if st.session_state.page == "Home":
     nome = u.get("nome","")
     fond = u.get("fondatrice","NO")
 
-    st.markdown("<div class='header'>🌸 LoopBaby</div>", unsafe_allow_html=True)
-
     st.title(f"Ciao {nome} 👋")
 
     if fond == "SI":
         st.markdown('<div class="badge">🌸 Mamma Fondatrice</div>', unsafe_allow_html=True)
 
     st.markdown("""
-♻️ crescita circolare  
-👶 bambini al centro  
-💛 risparmio reale  
+♻️ LoopBaby è un sistema circolare  
+👶 pensato per crescere con il tuo bambino  
+💛 meno sprechi, più risparmio  
 """)
+
+    st.markdown('<div class="card">🔥 Promo: 10 capi → BOX GRATIS</div>', unsafe_allow_html=True)
 
 # =========================
 # BOX
@@ -224,17 +209,37 @@ if st.session_state.page == "Vetrina":
             st.session_state.cart.append({"name": n, "price": p})
 
 # =========================
-# INFO
+# INFO (COME FUNZIONA LOOPBABY)
 # =========================
 if st.session_state.page == "Info":
 
-    st.title("Come funziona")
+    st.title("Come funziona LoopBaby 🔄")
 
-    st.write("""
-1. Scegli Box  
-2. Ricevi al locker  
-3. Usa  
-4. Cambia taglia  
+    st.markdown("""
+1. Scegli la tua Box e ricevila nel locker  
+2. Hai 48h per controllare i capi  
+3. Usi i vestiti fino a 3 mesi  
+4. Quando il bambino cresce cambi taglia  
+5. Spedizioni sempre semplici e circolari  
+""")
+
+    st.markdown('<div class="card">🚚 Spedizione gratuita sopra 50€ o con Box</div>', unsafe_allow_html=True)
+
+# =========================
+# CHI SIAMO
+# =========================
+if st.session_state.page == "ChiSiamo":
+
+    st.title("Chi siamo ❤️")
+
+    st.markdown("""
+Siamo genitori come te.
+
+Abbiamo creato LoopBaby per:
+
+- semplificare la vita  
+- ridurre gli sprechi  
+- far risparmiare famiglie  
 """)
 
 # =========================
@@ -252,8 +257,9 @@ if st.session_state.page == "Carrello":
     for i,item in enumerate(st.session_state.cart):
         st.write(f"{item['name']} - {item['price']}€")
 
-    st.write("Spedizione:", sped)
-    st.write("Totale:", tot + sped)
+    st.markdown(f"**Totale:** {tot}€")
+    st.markdown(f"**Spedizione:** {sped}€")
+    st.markdown(f"**Totale finale:** {tot + sped}€")
 
 # =========================
 # PROFILO

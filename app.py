@@ -22,7 +22,7 @@ def go(p):
     st.rerun()
 
 # =========================
-# DB
+# DB FUNCTIONS
 # =========================
 def get_users():
     try:
@@ -41,7 +41,7 @@ def create_user(data):
 
     for u in users:
         if u.get("email","").lower() == data["email"].lower():
-            return False
+            return False  # già registrata
 
     data["fondatrice"] = "SI" if len(users) < 100 else "NO"
     data["locker"] = ""
@@ -56,17 +56,23 @@ def update_user(email, data):
     })
 
 # =========================
-# LOGIN
+# LOGIN / REGISTER
 # =========================
 if not st.session_state.auth:
 
-    st.markdown("<h1 style='text-align:center;color:#5a4636'>🌸 LoopBaby</h1>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center'>
+        <h1 style='color:#5a4636'>🌸 LoopBaby</h1>
+        <p style='color:#a38f7b'>Crescita circolare per bambini</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    mode = st.radio("Accesso", ["Login", "Registrati", "Reset Password"])
+    mode = st.radio("Accesso", ["Login", "Registrati", "Password dimenticata"])
 
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
+    # LOGIN
     if mode == "Login":
         if st.button("Entra"):
             u = find_user(email)
@@ -77,8 +83,9 @@ if not st.session_state.auth:
             else:
                 st.error("Credenziali errate")
 
+    # REGISTER
     if mode == "Registrati":
-        nome = st.text_input("Nome")
+        nome = st.text_input("Nome e Cognome")
         telefono = st.text_input("Telefono")
         bambino = st.text_input("Nome bambino")
         citta = st.text_input("Città")
@@ -96,9 +103,10 @@ if not st.session_state.auth:
             if ok:
                 st.success("Account creato")
             else:
-                st.error("Email già registrata")
+                st.error("Questa email è già registrata")
 
-    if mode == "Reset Password":
+    # RESET PASSWORD
+    if mode == "Password dimenticata":
         newp = st.text_input("Nuova password", type="password")
 
         if st.button("Aggiorna"):
@@ -111,7 +119,7 @@ if not st.session_state.auth:
     st.stop()
 
 # =========================
-# DESIGN
+# DESIGN SYSTEM
 # =========================
 st.markdown("""
 <style>
@@ -120,26 +128,29 @@ st.markdown("""
     max-width:480px;
     margin:auto;
 }
+
 div.stButton > button{
-    background:#f43f5e;
-    color:white;
+    background:#f4b400;
+    color:black;
     border-radius:14px;
     width:100%;
     font-weight:bold;
+    border:none;
 }
+
 .card{
-    background:#fffdf9;
+    background:#fffdf8;
     padding:14px;
     border-radius:16px;
     margin:10px 0;
-    border:1px solid #e7dfd2;
+    border:1px solid #eadfcd;
 }
-.badge{
-    background:#fff1f2;
-    padding:10px;
-    border-radius:12px;
+
+.header{
     text-align:center;
-    border:1px solid #fda4af;
+    font-size:26px;
+    font-weight:800;
+    color:#5a4636;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -166,64 +177,65 @@ if st.session_state.page == "Home":
     nome = u.get("nome","")
     fond = u.get("fondatrice","NO")
 
+    st.markdown("<div class='header'>🌸 LoopBaby</div>", unsafe_allow_html=True)
+
     st.title(f"Ciao {nome} 👋")
 
     if fond == "SI":
-        st.markdown('<div class="badge">🌸 Mamma Fondatrice</div>', unsafe_allow_html=True)
+        st.success("🌸 Mamma Fondatrice")
 
     st.markdown("""
-♻️ LoopBaby è un sistema circolare  
-👶 pensato per crescere con il tuo bambino  
-💛 meno sprechi, più risparmio  
+✔ crescita circolare  
+✔ bambini al centro  
+✔ risparmio reale  
+✔ riuso intelligente  
 """)
-
-    st.markdown('<div class="card">🔥 Promo: 10 capi → BOX GRATIS</div>', unsafe_allow_html=True)
 
 # =========================
 # BOX
 # =========================
 if st.session_state.page == "Box":
 
-    st.title("Box")
+    st.title("Box LoopBaby")
 
-    for n,p in [
-        ("LUNA 🌙",19.9),
-        ("SOLE ☀️",19.9),
-        ("NUVOLA ☁️",19.9),
-        ("PREMIUM 💎",29.9)
-    ]:
-        st.markdown(f'<div class="card">{n} - {p}€</div>', unsafe_allow_html=True)
+    st.markdown("💛 Standard 14,90€")
+
+    for n in ["LUNA 🌙","SOLE ☀️","NUVOLA ☁️"]:
+        st.markdown(f"<div class='card'>{n}</div>", unsafe_allow_html=True)
         if st.button(f"Aggiungi {n}"):
-            st.session_state.cart.append({"name": n, "price": p})
+            st.session_state.cart.append({"name": n, "price": 14.90})
 
 # =========================
 # VETRINA
 # =========================
 if st.session_state.page == "Vetrina":
 
-    st.title("Vetrina")
+    st.title("Vetrina 🛍️")
+
+    st.markdown("""
+💛 Questi capi rimangono a te per sempre  
+🚚 Spedizione semplice e trasparente
+""")
 
     for n,p in [("Body",9.9),("Maglia",8.9),("Pantaloni",12.9)]:
-        st.markdown(f'<div class="card">{n} - {p}€</div>', unsafe_allow_html=True)
+        st.markdown(f"<div class='card'>{n} - {p}€</div>", unsafe_allow_html=True)
         if st.button(f"Aggiungi {n}"):
             st.session_state.cart.append({"name": n, "price": p})
 
 # =========================
-# INFO (COME FUNZIONA LOOPBABY)
+# INFO (SPEDIZIONE CHIARA)
 # =========================
 if st.session_state.page == "Info":
 
-    st.title("Come funziona LoopBaby 🔄")
+    st.title("Come funziona 🚚")
 
     st.markdown("""
-1. Scegli la tua Box e ricevila nel locker  
-2. Hai 48h per controllare i capi  
-3. Usi i vestiti fino a 3 mesi  
-4. Quando il bambino cresce cambi taglia  
-5. Spedizioni sempre semplici e circolari  
+1. Ricevi Box GRATIS andata  
+2. Usi i capi  
+3. Dopo 90 giorni puoi:
+   - continuare → ritorno GRATIS  
+   - fermarti → 7,90€ per reso etichetta  
 """)
-
-    st.markdown('<div class="card">🚚 Spedizione gratuita sopra 50€ o con Box</div>', unsafe_allow_html=True)
 
 # =========================
 # CHI SIAMO
@@ -237,47 +249,51 @@ Siamo genitori come te.
 
 Abbiamo creato LoopBaby per:
 
-- semplificare la vita  
-- ridurre gli sprechi  
-- far risparmiare famiglie  
+✔ ridurre sprechi  
+✔ far risparmiare famiglie  
+✔ semplificare la crescita dei bambini  
+
+Non è un e-commerce.  
+È un sistema circolare.
 """)
 
 # =========================
-# CARRELLO
+# CARRELLO (CON RIMOZIONE)
 # =========================
 if st.session_state.page == "Carrello":
 
-    st.title("Carrello")
-
-    tot = sum(i["price"] for i in st.session_state.cart)
-    has_box = any("Box" in i["name"] for i in st.session_state.cart)
-
-    sped = 0 if tot > 50 or has_box else 7.90
+    st.title("Carrello 🛒")
 
     for i,item in enumerate(st.session_state.cart):
-        st.write(f"{item['name']} - {item['price']}€")
+        col1,col2,col3 = st.columns([3,1,1])
+        col1.write(item["name"])
+        col2.write(f"{item['price']}€")
+        if col3.button("❌", key=i):
+            st.session_state.cart.pop(i)
+            st.rerun()
 
+    tot = sum(i["price"] for i in st.session_state.cart)
     st.markdown(f"**Totale:** {tot}€")
-    st.markdown(f"**Spedizione:** {sped}€")
-    st.markdown(f"**Totale finale:** {tot + sped}€")
 
 # =========================
-# PROFILO
+# PROFILO COMPLETO
 # =========================
 if st.session_state.page == "Profilo":
 
-    st.title("Profilo")
+    st.title("Profilo 👤")
 
     u = st.session_state.user
 
     nome = st.text_input("Nome", u.get("nome",""))
     tel = st.text_input("Telefono", u.get("telefono",""))
-    city = st.text_input("Città", u.get("citta",""))
+    citta = st.text_input("Città", u.get("citta",""))
+    bambino = st.text_input("Bambino", u.get("bambino",""))
 
     if st.button("Salva"):
         update_user(u["email"], {
             "nome": nome,
             "telefono": tel,
-            "citta": city
+            "citta": citta,
+            "bambino": bambino
         })
-        st.success("Salvato")
+        st.success("Profilo aggiornato")

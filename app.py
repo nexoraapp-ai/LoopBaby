@@ -213,7 +213,7 @@ if st.session_state.page == "Box":
     st.markdown("### ⭐ Box Premium")
 
     premium_boxes = [
-        ("SOLE PREMIUM ☀️✨", "#F59E0B")
+        ("PREMIUM ☀️✨", "#F59E0B")
     ]
 
     for name, color in premium_boxes:

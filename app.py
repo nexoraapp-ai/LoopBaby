@@ -101,7 +101,7 @@ if not st.session_state.user:
     # LOGIN
     with tab1:
         email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
+        password = st.text_input("Password", type="password", key="login_pwd")
 
         if st.button("Accedi"):
             for u in users:
@@ -115,7 +115,7 @@ if not st.session_state.user:
         nome = st.text_input("Nome")
         email_r = st.text_input("Email registrazione")
         telefono = st.text_input("Telefono")
-        password_r = st.text_input("Password", type="password")
+        password_r = st.text_input("Password", type="password", key="register_pwd")
 
         if st.button("Registrati"):
             if any(u["email"] == email_r for u in users):

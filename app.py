@@ -196,6 +196,20 @@ if st.session_state.page == "Box":
         ("SOLE ☀️", "#FFD600"),
         ("LUNA 🌙", "#E5E7EB"),
         ("NUVOLA ☁️", "#94A3B8")
+        st.markdown("### ⭐ Box Premium")
+
+premium_boxes = [
+    ("SOLE PREMIUM ☀️✨", "#F59E0B")  # colore diverso dalle standard
+]
+
+for name, color in premium_boxes:
+    st.markdown(
+        f"<div style='background:{color};padding:15px;border-radius:10px;font-weight:bold;color:white'>{name} - 24,90€</div>",
+        unsafe_allow_html=True
+    )
+
+    if st.button(f"Aggiungi {name} (24,90€)"):
+        st.session_state.cart.append({"name": name, "price": 24.90})
     ]
 
     for name, color in boxes:

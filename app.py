@@ -3,6 +3,14 @@ import os
 import json
 import base64
 
+# =========================
+# DATABASE INIT (CREA db.json SE NON ESISTE)
+# =========================
+DB_FILE = "db.json"
+
+if not os.path.exists(DB_FILE):
+    with open(DB_FILE, "w") as f:
+        f.write("[]")
 st.set_page_config(page_title="LoopBaby", layout="centered")
 
 # =========================
